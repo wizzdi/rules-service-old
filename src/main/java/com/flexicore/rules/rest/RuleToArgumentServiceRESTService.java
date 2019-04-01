@@ -10,8 +10,8 @@ import com.flexicore.rules.model.RuleToArgument;
 import com.flexicore.rules.request.RuleToArgumentCreate;
 import com.flexicore.rules.request.RuleToArgumentHolderFilter;
 import com.flexicore.rules.request.RuleToArgumentUpdate;
-import com.flexicore.rules.service.RuleToArgumentHolderService;
 
+import com.flexicore.rules.service.RuleToArgumentService;
 import com.flexicore.security.SecurityContext;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -24,13 +24,13 @@ import javax.ws.rs.core.Context;
 @PluginInfo(version = 1)
 @OperationsInside
 @Interceptors({SecurityImposer.class, DynamicResourceInjector.class})
-@Path("plugins/RulesToExecutionParameter")
-@Tag(name="RulesToExecutionParameter")
-public class RulesToExecutionParameterRESTService implements RestServicePlugin {
+@Path("plugins/RuleToArgument")
+@Tag(name="RuleToArgument")
+public class RuleToArgumentServiceRESTService implements RestServicePlugin {
 
     @Inject
     @PluginInfo(version = 1)
-    private RuleToArgumentHolderService service;
+    private RuleToArgumentService service;
 
     @POST
     @Produces("application/json")

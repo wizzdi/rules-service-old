@@ -30,7 +30,7 @@ import javax.ws.rs.core.Context;
 @Tag(name="Rules")
 @OpenAPIDefinition(
         tags = {@Tag(name = "Rules",description = "Rules Service"),
-                @Tag(name = "RulesToExecutionParameter",description = "RulesToExecutionParameter Service")})
+                @Tag(name = "RuleToArgument",description = "RuleToArgument Service")})
 public class RulesRESTService implements RestServicePlugin {
 
     @Inject
