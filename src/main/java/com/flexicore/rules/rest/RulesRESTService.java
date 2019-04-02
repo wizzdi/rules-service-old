@@ -75,6 +75,19 @@ public class RulesRESTService implements RestServicePlugin {
 
     @POST
     @Produces("application/json")
+    @Path("/getAllRuleLinks")
+    @Operation(summary = "getAllRuleLinks", description = "getAllRuleLinks")
+    public PaginationResponse<FlexiCoreRuleLink> getAllRuleLinks(
+            @HeaderParam("authenticationKey") String authenticationKey,
+            RuleLinkFilter ruleLinkFilter,
+            @Context SecurityContext securityContext) {
+        service.validate(ruleLinkFilter, securityContext);
+        return service.getAllRuleLinks(ruleLinkFilter, securityContext);
+    }
+
+
+    @POST
+    @Produces("application/json")
     @Path("/createRuleLink")
     @Operation(summary = "createRuleLink", description = "create Rule link")
     public FlexiCoreRuleLink createRuleLink(

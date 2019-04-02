@@ -22,9 +22,7 @@ import javax.script.*;
 import javax.ws.rs.BadRequestException;
 import java.io.File;
 import java.io.IOException;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -306,5 +304,21 @@ public class RulesService implements ServicePlugin {
             repository.merge(flexiCoreRuleLink);
         }
         return flexiCoreRuleLink;
+    }
+
+    public void validate(RuleLinkFilter ruleLinkFilter, SecurityContext securityContext) {
+        Set<String> opIds=ruleLinkFilter.getRuleOpsIds();
+        Map<String,FlexiCoreRuleOp> opMap=opIds.isEmpty()?new HashMap<>():repository.listByIds(FlexiCoreRuleOp.class,opIds,securityContext).parallelStream().collect(Collectors.toMap(f->f.getId(),f->f));
+        opIds.removeAll(opMap.keySet());
+        if(!opIds.isEmpty()){
+            throw new BadRequestException("No Rule Ops with ids "+opIds);
+        }
+        ruleLinkFilter.setFlexiCoreRuleOps(new ArrayList<>(opMap.values()));
+    }
+
+    public PaginationResponse<FlexiCoreRuleLink> getAllRuleLinks(RuleLinkFilter ruleLinkFilter, SecurityContext securityContext) {
+        List<FlexiCoreRuleLink> list=listAllRuleLinks(ruleLinkFilter,securityContext);
+        long count=repository.countAllRuleLinks(ruleLinkFilter, securityContext);
+        return new PaginationResponse<>(list,ruleLinkFilter,count);
     }
 }

@@ -52,6 +52,16 @@ public class RulesRepository extends AbstractRepositoryPlugin {
         return getAllFiltered(queryInformationHolder,preds,cb,q,r);
     }
 
+    public long countAllRuleLinks(RuleLinkFilter ruleLinkFilter, SecurityContext securityContext) {
+        CriteriaBuilder cb=em.getCriteriaBuilder();
+        CriteriaQuery<Long> q=cb.createQuery(Long.class);
+        Root<FlexiCoreRuleLink> r=q.from(FlexiCoreRuleLink.class);
+        List<Predicate> preds=new ArrayList<>();
+        addRulesLinkPredicate(preds,r,cb,ruleLinkFilter);
+        QueryInformationHolder<FlexiCoreRuleLink> queryInformationHolder=new QueryInformationHolder<>(ruleLinkFilter,FlexiCoreRuleLink.class,securityContext);
+        return countAllFiltered(queryInformationHolder,preds,cb,q,r);
+    }
+
     private void addRulesLinkPredicate(List<Predicate> preds, Root<FlexiCoreRuleLink> r, CriteriaBuilder cb, RuleLinkFilter ruleLinkFilter) {
         if(ruleLinkFilter.getFlexiCoreRuleOps()!=null && !ruleLinkFilter.getFlexiCoreRuleOps().isEmpty()){
             Set<String> ids=ruleLinkFilter.getFlexiCoreRuleOps().parallelStream().map(f->f.getId()).collect(Collectors.toSet());
