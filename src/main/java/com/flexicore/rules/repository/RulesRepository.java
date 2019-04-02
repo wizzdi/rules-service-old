@@ -3,16 +3,16 @@ package com.flexicore.rules.repository;
 import com.flexicore.annotations.plugins.PluginInfo;
 import com.flexicore.interfaces.AbstractRepositoryPlugin;
 import com.flexicore.model.QueryInformationHolder;
-import com.flexicore.rules.model.FlexiCoreRule;
+import com.flexicore.rules.model.*;
+import com.flexicore.rules.request.RuleLinkFilter;
 import com.flexicore.rules.request.RulesFilter;
 import com.flexicore.security.SecurityContext;
 
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
+import javax.persistence.criteria.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @PluginInfo(version = 1)
 public class RulesRepository extends AbstractRepositoryPlugin {
@@ -40,5 +40,24 @@ public class RulesRepository extends AbstractRepositoryPlugin {
         addRulesPredicate(preds,r,cb,filter);
         QueryInformationHolder<FlexiCoreRule> queryInformationHolder=new QueryInformationHolder<>(filter,FlexiCoreRule.class,securityContext);
         return countAllFiltered(queryInformationHolder,preds,cb,q,r);
+    }
+
+    public List<FlexiCoreRuleLink> listAllRuleLinks(RuleLinkFilter ruleLinkFilter, SecurityContext securityContext) {
+        CriteriaBuilder cb=em.getCriteriaBuilder();
+        CriteriaQuery<FlexiCoreRuleLink> q=cb.createQuery(FlexiCoreRuleLink.class);
+        Root<FlexiCoreRuleLink> r=q.from(FlexiCoreRuleLink.class);
+        List<Predicate> preds=new ArrayList<>();
+        addRulesLinkPredicate(preds,r,cb,ruleLinkFilter);
+        QueryInformationHolder<FlexiCoreRuleLink> queryInformationHolder=new QueryInformationHolder<>(ruleLinkFilter,FlexiCoreRuleLink.class,securityContext);
+        return getAllFiltered(queryInformationHolder,preds,cb,q,r);
+    }
+
+    private void addRulesLinkPredicate(List<Predicate> preds, Root<FlexiCoreRuleLink> r, CriteriaBuilder cb, RuleLinkFilter ruleLinkFilter) {
+        if(ruleLinkFilter.getFlexiCoreRuleOps()!=null && !ruleLinkFilter.getFlexiCoreRuleOps().isEmpty()){
+            Set<String> ids=ruleLinkFilter.getFlexiCoreRuleOps().parallelStream().map(f->f.getId()).collect(Collectors.toSet());
+            Join<FlexiCoreRuleLink, FlexiCoreRuleOp> join=r.join(FlexiCoreRuleLink_.ruleOp);
+            preds.add(join.get(FlexiCoreRuleOp_.id).in(ids));
+        }
+
     }
 }

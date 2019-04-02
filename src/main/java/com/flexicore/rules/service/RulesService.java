@@ -8,9 +8,7 @@ import com.flexicore.model.FileResource;
 import com.flexicore.request.ExecuteInvokerRequest;
 import com.flexicore.response.ExecuteInvokerResponse;
 import com.flexicore.response.ExecuteInvokersResponse;
-import com.flexicore.rules.model.FlexiCoreRule;
-import com.flexicore.rules.model.FunctionTypes;
-import com.flexicore.rules.model.RuleToArgument;
+import com.flexicore.rules.model.*;
 import com.flexicore.rules.repository.RulesRepository;
 import com.flexicore.rules.request.*;
 import com.flexicore.rules.response.EvaluateRuleResponse;
@@ -78,8 +76,8 @@ public class RulesService implements ServicePlugin {
     }
 
     public FlexiCoreRule updateRule(RuleUpdate creationContainer, SecurityContext securityContext) {
-        FlexiCoreRule flexiCoreRule=creationContainer.getFlexiCoreRule();
-        if(updateRuleNoMerge(flexiCoreRule,creationContainer)){
+        FlexiCoreRule flexiCoreRule = creationContainer.getFlexiCoreRule();
+        if (updateRuleNoMerge(flexiCoreRule, creationContainer)) {
             repository.merge(flexiCoreRule);
 
         }
@@ -88,43 +86,43 @@ public class RulesService implements ServicePlugin {
     }
 
     private FlexiCoreRule createRuleNoMerge(RuleCreate creationContainer, SecurityContext securityContext) {
-        FlexiCoreRule flexiCoreRule=FlexiCoreRule.s().CreateUnchecked(creationContainer.getName(),securityContext);
+        FlexiCoreRule flexiCoreRule = FlexiCoreRule.s().CreateUnchecked(creationContainer.getName(), securityContext);
         flexiCoreRule.Init();
-        updateRuleNoMerge(flexiCoreRule,creationContainer);
+        updateRuleNoMerge(flexiCoreRule, creationContainer);
         return flexiCoreRule;
     }
 
     private boolean updateRuleNoMerge(FlexiCoreRule flexiCoreRule, RuleCreate creationContainer) {
-        boolean update=false;
-        if(creationContainer.getName()!=null && !creationContainer.getName().equals(flexiCoreRule.getName())){
+        boolean update = false;
+        if (creationContainer.getName() != null && !creationContainer.getName().equals(flexiCoreRule.getName())) {
             flexiCoreRule.setName(creationContainer.getName());
-            update=true;
+            update = true;
         }
 
-        if(creationContainer.getDescription()!=null && !creationContainer.getDescription().equals(flexiCoreRule.getDescription())){
+        if (creationContainer.getDescription() != null && !creationContainer.getDescription().equals(flexiCoreRule.getDescription())) {
             flexiCoreRule.setDescription(creationContainer.getDescription());
-            update=true;
+            update = true;
         }
 
-        if(creationContainer.getEvaluationScript()!=null && (flexiCoreRule.getEvaluationScript()==null||!creationContainer.getEvaluationScript().equals(flexiCoreRule.getEvaluationScript()))){
+        if (creationContainer.getEvaluationScript() != null && (flexiCoreRule.getEvaluationScript() == null || !creationContainer.getEvaluationScript().equals(flexiCoreRule.getEvaluationScript()))) {
             flexiCoreRule.setEvaluationScript(creationContainer.getEvaluationScript());
-            update=true;
+            update = true;
         }
         return update;
 
     }
 
     public PaginationResponse<FlexiCoreRule> getAllRules(RulesFilter filter, SecurityContext securityContext) {
-        List<FlexiCoreRule> list=repository.listAllRules(filter,securityContext);
-        long count=repository.countAllRules(filter,securityContext);
-        return new PaginationResponse<>(list,filter,count);
+        List<FlexiCoreRule> list = repository.listAllRules(filter, securityContext);
+        long count = repository.countAllRules(filter, securityContext);
+        return new PaginationResponse<>(list, filter, count);
     }
 
 
     public void validate(EvaluateRuleRequest evaluateRuleRequest, SecurityContext securityContext) {
         String flexiCoreRuleId = evaluateRuleRequest.getRuleId();
         FlexiCoreRule flexiCoreRule = flexiCoreRuleId != null ? getByIdOrNull(flexiCoreRuleId, FlexiCoreRule.class, null, securityContext) : null;
-        if (flexiCoreRule == null ) {
+        if (flexiCoreRule == null) {
             throw new BadRequestException("No FlexiCoreRule with id " + flexiCoreRuleId);
         }
         evaluateRuleRequest.setRule(flexiCoreRule);
@@ -132,49 +130,181 @@ public class RulesService implements ServicePlugin {
     }
 
     public EvaluateRuleResponse evaluateRule(EvaluateRuleRequest evaluateRuleRequest, SecurityContext securityContext) {
+        if(evaluateRuleRequest.getRule() instanceof FlexiCoreRuleOp){
+            return evaluateRuleOp(evaluateRuleRequest,securityContext);
+        }
+        else{
+            return evaludateRuleNode(evaluateRuleRequest,securityContext);
+        }
+    }
+
+    private EvaluateRuleResponse evaluateRuleOp(EvaluateRuleRequest evaluateRuleRequest, SecurityContext securityContext) {
         EvaluateRuleResponse evaluateRuleResponse=new EvaluateRuleResponse();
-        FlexiCoreRule flexiCoreRule=evaluateRuleRequest.getRule();
-        List<RuleToArgument> arguments=ruleToArgumentHolderService.listRuleToArgument(new RuleToArgumentHolderFilter().setRules(Collections.singletonList(flexiCoreRule)),securityContext);
-        List<ExecuteInvokerResponse> results=arguments.stream()
-                .sorted(Comparator.comparing(f->f.getOrdinal()))
-                .map(f->f.getFlexiCoreRuleArgument())
-                .map(f->dynamicInvokersService.executeInvoker(new ExecuteInvokerRequest().setInvokerMethodName(f.getMethodName()).setInvokerNames(Collections.singleton(f.getInvokerName())).setExecutionParametersHolder(f.getExecutionParametersHolder()),securityContext)).filter(f->f.getResponses()!=null && !f.getResponses().isEmpty()).map(f->f.getResponses().get(0))
+        FlexiCoreRuleOp flexiCoreRuleOp= (FlexiCoreRuleOp) evaluateRuleRequest.getRule();
+        List<FlexiCoreRule> flexiCoreRules=listAllRuleLinks(new RuleLinkFilter().setFlexiCoreRuleOps(Collections.singletonList(flexiCoreRuleOp)),securityContext).parallelStream().map(f->f.getRuleToEval()).collect(Collectors.toList());
+        boolean res=false;
+        switch (flexiCoreRuleOp.getRuleOpType()){
+            case OR:
+                res=flexiCoreRules.stream().anyMatch(f->evaluateRule(new EvaluateRuleRequest().setRule(f),securityContext).isResult());
+                break;
+            case AND:
+                res= flexiCoreRules.stream().allMatch(f->evaluateRule(new EvaluateRuleRequest().setRule(f),securityContext).isResult());
+                break;
+
+
+        }
+        evaluateRuleResponse.setResult(res);
+        return evaluateRuleResponse;
+
+    }
+
+    private List<FlexiCoreRuleLink> listAllRuleLinks(RuleLinkFilter ruleLinkFilter, SecurityContext securityContext) {
+        return repository.listAllRuleLinks(ruleLinkFilter,securityContext);
+    }
+
+
+    private EvaluateRuleResponse evaludateRuleNode(EvaluateRuleRequest evaluateRuleRequest, SecurityContext securityContext) {
+        EvaluateRuleResponse evaluateRuleResponse = new EvaluateRuleResponse();
+        FlexiCoreRule flexiCoreRule = evaluateRuleRequest.getRule();
+        List<RuleToArgument> arguments = ruleToArgumentHolderService.listRuleToArgument(new RuleToArgumentHolderFilter().setRules(Collections.singletonList(flexiCoreRule)), securityContext);
+        List<ExecuteInvokerResponse> results = arguments.stream()
+                .sorted(Comparator.comparing(f -> f.getOrdinal()))
+                .map(f -> f.getFlexiCoreRuleArgument())
+                .map(f -> dynamicInvokersService.executeInvoker(new ExecuteInvokerRequest().setInvokerMethodName(f.getMethodName()).setInvokerNames(Collections.singleton(f.getInvokerName())).setExecutionParametersHolder(f.getExecutionParametersHolder()), securityContext)).filter(f -> f.getResponses() != null && !f.getResponses().isEmpty()).map(f -> f.getResponses().get(0))
                 .collect(Collectors.toList());
-        FileResource script=flexiCoreRule.getEvaluationScript();
+        FileResource script = flexiCoreRule.getEvaluationScript();
         try {
             File file = new File(script.getFullPath());
             ScriptObjectMirror loaded = loadScript(file, buildFunctionTableFunction(FunctionTypes.EVALUATE));
-            Object[] resultsArr=new ExecuteInvokerResponse[results.size()];
+            Object[] resultsArr = new ExecuteInvokerResponse[results.size()];
             results.toArray(resultsArr);
-            boolean res= (boolean)loaded.callMember(FunctionTypes.EVALUATE.getFunctionName(),resultsArr);
+            boolean res = (boolean) loaded.callMember(FunctionTypes.EVALUATE.getFunctionName(), resultsArr);
             evaluateRuleResponse.setResult(res);
 
-        }
-        catch (Exception e){
-            logger.log(Level.SEVERE,"failed executing script",e);
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, "failed executing script", e);
         }
         return evaluateRuleResponse;
 
     }
 
 
-
     private ScriptObjectMirror loadScript(File file, String functionTable) throws IOException, ScriptException {
-        String script= FileUtils.readFileToString(file);
-        script+=functionTable;
+        String script = FileUtils.readFileToString(file);
+        script += functionTable;
         CompiledScript compiled = ((Compilable) engine).compile(script);
-        ScriptObjectMirror table= (ScriptObjectMirror) compiled.eval();
+        ScriptObjectMirror table = (ScriptObjectMirror) compiled.eval();
         return (ScriptObjectMirror) table.call(null);
     }
 
     private String buildFunctionTableFunction(FunctionTypes... functionTypes) {
-        String base="function () {" +
-                "  return { " ;
-        String functions= Stream.of(functionTypes).map(f->"'"+f.getFunctionName()+"':"+f.getFunctionName()).collect(Collectors.joining(","));
-        base+=functions;
-        base+="};";
-        base+= "};";
+        String base = "function () {" +
+                "  return { ";
+        String functions = Stream.of(functionTypes).map(f -> "'" + f.getFunctionName() + "':" + f.getFunctionName()).collect(Collectors.joining(","));
+        base += functions;
+        base += "};";
+        base += "};";
         return base;
 
+    }
+
+    public void validate(RuleCreateOp creationContainer, SecurityContext securityContext) {
+        if (creationContainer.getRuleOpType() == null) {
+            throw new BadRequestException("rule op type may not be null");
+        }
+
+    }
+
+    public FlexiCoreRuleOp createRuleOp(RuleCreateOp creationContainer, SecurityContext securityContext) {
+        FlexiCoreRuleOp flexiCoreRuleOp = createRuleOpNoMerge(creationContainer, securityContext);
+        repository.merge(flexiCoreRuleOp);
+        return flexiCoreRuleOp;
+
+    }
+
+    private FlexiCoreRuleOp createRuleOpNoMerge(RuleCreateOp creationContainer, SecurityContext securityContext) {
+        FlexiCoreRuleOp flexiCoreRuleOp = FlexiCoreRuleOp.s().CreateUnchecked(creationContainer.getName(), securityContext);
+        flexiCoreRuleOp.Init();
+        updateRuleOpNoMerge(flexiCoreRuleOp, creationContainer);
+        return flexiCoreRuleOp;
+    }
+
+    private boolean updateRuleOpNoMerge(FlexiCoreRuleOp flexiCoreRuleOp, RuleCreateOp creationContainer) {
+        boolean update = false;
+        if (creationContainer.getName() != null && !creationContainer.getName().equals(flexiCoreRuleOp.getName())) {
+            flexiCoreRuleOp.setName(creationContainer.getName());
+            update = true;
+        }
+
+        if (creationContainer.getDescription() != null && !creationContainer.getDescription().equals(flexiCoreRuleOp.getDescription())) {
+            flexiCoreRuleOp.setDescription(creationContainer.getDescription());
+            update = true;
+        }
+        if (creationContainer.getRuleOpType() != null && (flexiCoreRuleOp.getRuleOpType() == null || !creationContainer.getRuleOpType().equals(flexiCoreRuleOp.getRuleOpType()))) {
+            flexiCoreRuleOp.setRuleOpType(creationContainer.getRuleOpType());
+            update = true;
+        }
+        return update;
+    }
+
+    public FlexiCoreRuleOp updateRuleOp(RuleUpdateOp ruleUpdate, SecurityContext securityContext) {
+        FlexiCoreRuleOp flexiCoreRuleOp = ruleUpdate.getFlexiCoreRuleOp();
+        if (updateRuleOpNoMerge(flexiCoreRuleOp, ruleUpdate)) {
+            repository.merge(flexiCoreRuleOp);
+        }
+        return flexiCoreRuleOp;
+    }
+
+    public void validate(RuleLinkCreate creationContainer, SecurityContext securityContext) {
+        String ruleOpId = creationContainer.getRuleOpId();
+        FlexiCoreRuleOp flexiCoreRuleOp = ruleOpId != null ? getByIdOrNull(ruleOpId, FlexiCoreRuleOp.class, null, securityContext) : null;
+        if (flexiCoreRuleOp == null && (!(creationContainer instanceof RuleLinkUpdate) || ruleOpId != null)) {
+            throw new BadRequestException("No FlexiCoreRuleOp with id " + ruleOpId);
+        }
+        creationContainer.setFlexiCoreRuleOp(flexiCoreRuleOp);
+
+
+        String ruleid = creationContainer.getRuleid();
+        FlexiCoreRule flexiCoreRule = ruleid != null ? getByIdOrNull(ruleid, FlexiCoreRule.class, null, securityContext) : null;
+        if (flexiCoreRule == null && (!(creationContainer instanceof RuleLinkUpdate) || ruleid != null)) {
+            throw new BadRequestException("No FlexiCoreRule with id " + ruleid);
+        }
+        creationContainer.setFlexiCoreRule(flexiCoreRule);
+
+    }
+
+    public FlexiCoreRuleLink createRuleLink(RuleLinkCreate creationContainer, SecurityContext securityContext) {
+        FlexiCoreRuleLink flexiCoreRuleLink = createRuleLinkNoMerge(creationContainer, securityContext);
+        repository.merge(flexiCoreRuleLink);
+        return flexiCoreRuleLink;
+    }
+
+    private FlexiCoreRuleLink createRuleLinkNoMerge(RuleLinkCreate creationContainer, SecurityContext securityContext) {
+        FlexiCoreRuleLink flexiCoreRuleLink = FlexiCoreRuleLink.s().CreateUnchecked("RuleLink", securityContext);
+        flexiCoreRuleLink.Init();
+        updateRuleLinkNoMerge(flexiCoreRuleLink, creationContainer);
+        return flexiCoreRuleLink;
+    }
+
+    private boolean updateRuleLinkNoMerge(FlexiCoreRuleLink flexiCoreRuleLink, RuleLinkCreate creationContainer) {
+        boolean update = false;
+        if (creationContainer.getFlexiCoreRule() != null && (flexiCoreRuleLink.getRuleToEval() == null || !creationContainer.getFlexiCoreRule().getId().equals(flexiCoreRuleLink.getRuleToEval().getId()))) {
+            flexiCoreRuleLink.setRuleToEval(creationContainer.getFlexiCoreRule());
+            update = true;
+        }
+
+        if (creationContainer.getFlexiCoreRuleOp() != null && (flexiCoreRuleLink.getRuleOp() == null || !creationContainer.getFlexiCoreRuleOp().getId().equals(flexiCoreRuleLink.getRuleOp().getId()))) {
+            flexiCoreRuleLink.setRuleOp(creationContainer.getFlexiCoreRuleOp());
+            update = true;
+        }
+        return update;
+    }
+
+    public FlexiCoreRuleLink updateRuleLink(RuleLinkUpdate ruleLinkUpdate, SecurityContext securityContext) {
+        FlexiCoreRuleLink flexiCoreRuleLink = ruleLinkUpdate.getFlexiCoreRuleLink();
+        if (updateRuleLinkNoMerge(flexiCoreRuleLink, ruleLinkUpdate)) {
+            repository.merge(flexiCoreRuleLink);
+        }
+        return flexiCoreRuleLink;
     }
 }
