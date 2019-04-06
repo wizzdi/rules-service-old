@@ -34,8 +34,8 @@ public class RuleToArgumentServiceRESTService implements RestServicePlugin {
 
     @POST
     @Produces("application/json")
-    @Path("/createRuleToArgument")
-    @Operation(summary = "getAllRulesToExecutionParameter", description = "create RuleToArgument")
+    @Path("/getAllRulesToExecutionParameter")
+    @Operation(summary = "getAllRulesToExecutionParameter", description = "getAllRulesToExecutionParameter")
     public PaginationResponse<RuleToArgument> getAllRulesToExecutionParameter(
             @HeaderParam("authenticationKey") String authenticationKey,
             RuleToArgumentHolderFilter filter,

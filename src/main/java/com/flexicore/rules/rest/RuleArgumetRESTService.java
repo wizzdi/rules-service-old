@@ -34,8 +34,8 @@ public class RuleArgumetRESTService implements RestServicePlugin {
 
     @POST
     @Produces("application/json")
-    @Path("/createRule")
-    @Operation(summary = "getAllFlexiCoreRuleArgument", description = "create RuleArgument")
+    @Path("/getAllFlexiCoreRuleArgument")
+    @Operation(summary = "getAllFlexiCoreRuleArgument", description = "getAllFlexiCoreRuleArgument")
     public PaginationResponse<FlexiCoreRuleArgument> getAllFlexiCoreRuleArgument(
             @HeaderParam("authenticationKey") String authenticationKey,
             RuleArgumentFilter filter,

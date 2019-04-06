@@ -7,7 +7,6 @@ import com.flexicore.model.Baseclass;
 import com.flexicore.model.FileResource;
 import com.flexicore.request.ExecuteInvokerRequest;
 import com.flexicore.response.ExecuteInvokerResponse;
-import com.flexicore.response.ExecuteInvokersResponse;
 import com.flexicore.rules.model.*;
 import com.flexicore.rules.repository.RulesRepository;
 import com.flexicore.rules.request.*;

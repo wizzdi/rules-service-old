@@ -82,7 +82,7 @@ public class RuleArgumentService implements ServicePlugin {
             update=true;
         }
 
-        if(creationContainer.getExecutionParametersHolder()!=null && (flexiCoreRuleArgument.getExecutionParametersHolder()==null||!creationContainer.getExecutionParametersHolder().equals(flexiCoreRuleArgument.getExecutionParametersHolder()))){
+        if(creationContainer.getExecutionParametersHolder()!=null && (flexiCoreRuleArgument.getExecutionParametersHolder()==null||!creationContainer.getExecutionParametersHolder().getId().equals(flexiCoreRuleArgument.getExecutionParametersHolder().getId()))){
             flexiCoreRuleArgument.setExecutionParametersHolder(creationContainer.getExecutionParametersHolder());
             update=true;
         }
