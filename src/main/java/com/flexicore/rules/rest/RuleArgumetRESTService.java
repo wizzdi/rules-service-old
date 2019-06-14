@@ -23,8 +23,8 @@ import javax.ws.rs.core.Context;
 @PluginInfo(version = 1)
 @OperationsInside
 @Interceptors({SecurityImposer.class, DynamicResourceInjector.class})
-@Path("plugins/FlexiCoreRuleArgument")
-@Tag(name="FlexiCoreRuleArgument")
+@Path("plugins/RuleArgument")
+@Tag(name="RuleArgument")
 
 public class RuleArgumetRESTService implements RestServicePlugin {
 
@@ -34,9 +34,9 @@ public class RuleArgumetRESTService implements RestServicePlugin {
 
     @POST
     @Produces("application/json")
-    @Path("/getAllFlexiCoreRuleArgument")
-    @Operation(summary = "getAllFlexiCoreRuleArgument", description = "getAllFlexiCoreRuleArgument")
-    public PaginationResponse<FlexiCoreRuleArgument> getAllFlexiCoreRuleArgument(
+    @Path("/getAllRuleArgument")
+    @Operation(summary = "getAllRuleArgument", description = "getAllRuleArgument")
+    public PaginationResponse<FlexiCoreRuleArgument> getAllRuleArgument(
             @HeaderParam("authenticationKey") String authenticationKey,
             RuleArgumentFilter filter,
             @Context SecurityContext securityContext) {
@@ -48,7 +48,7 @@ public class RuleArgumetRESTService implements RestServicePlugin {
 
     @POST
     @Produces("application/json")
-    @Path("/createRule")
+    @Path("/createRuleArgument")
     @Operation(summary = "createRuleArgument", description = "create RuleArgument")
     public FlexiCoreRuleArgument createRuleArgument(
             @HeaderParam("authenticationKey") String authenticationKey,
@@ -60,7 +60,7 @@ public class RuleArgumetRESTService implements RestServicePlugin {
 
     @PUT
     @Produces("application/json")
-    @Path("/updateRule")
+    @Path("/updateRuleArgument")
     @Operation(summary = "updateRuleArgument", description = "Update RuleArgument")
     public FlexiCoreRuleArgument updateRuleArgument(
             @HeaderParam("authenticationKey") String authenticationKey,

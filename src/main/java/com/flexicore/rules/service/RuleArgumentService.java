@@ -12,6 +12,7 @@ import com.flexicore.rules.request.RuleArgumentCreate;
 import com.flexicore.rules.request.RuleArgumentFilter;
 import com.flexicore.rules.request.RuleArgumentUpdate;
 import com.flexicore.security.SecurityContext;
+import com.flexicore.service.DynamicInvokersService;
 
 import javax.inject.Inject;
 import javax.ws.rs.BadRequestException;
@@ -25,6 +26,8 @@ public class RuleArgumentService implements ServicePlugin {
     @PluginInfo(version = 1)
     private RuleArgumentRepository repository;
 
+    @Inject
+    private DynamicInvokersService dynamicInvokersService;
 
 
     public void validate(RuleArgumentFilter ruleArgumentArgumentFilter, SecurityContext securityContext) {
@@ -33,13 +36,9 @@ public class RuleArgumentService implements ServicePlugin {
     }
 
     public void validate(RuleArgumentCreate creationContainer, SecurityContext securityContext) {
-        String executionParametersHolderId = creationContainer.getExecutionParametersHolderId();
-        ExecutionParametersHolder executionParametersHolder = executionParametersHolderId != null ? findByIdOrNull(ExecutionParametersHolder.class,executionParametersHolderId) : null;
-        if (executionParametersHolder == null && executionParametersHolderId != null) {
-            throw new BadRequestException("No ExecutionParametersHolder with id " + executionParametersHolderId);
+        if(creationContainer.getServiceCanonicalNames()==null || creationContainer.getServiceCanonicalNames().size()!=1){
+            throw new BadRequestException("rule argument must contain exactly one service canonical name");
         }
-        creationContainer.setExecutionParametersHolder(executionParametersHolder);
-
     }
 
     public <T extends Baseclass> T getByIdOrNull(String id, Class<T> c, List<String> batchString, SecurityContext securityContext) {
@@ -54,8 +53,8 @@ public class RuleArgumentService implements ServicePlugin {
     }
 
     public FlexiCoreRuleArgument updateRuleArgument(RuleArgumentUpdate creationContainer, SecurityContext securityContext) {
-        FlexiCoreRuleArgument flexiCoreRuleArgument=creationContainer.getFlexiCoreRuleArgument();
-        if(updateRuleArgumentNoMerge(flexiCoreRuleArgument,creationContainer)){
+        FlexiCoreRuleArgument flexiCoreRuleArgument = creationContainer.getFlexiCoreRuleArgument();
+        if (updateRuleArgumentNoMerge(flexiCoreRuleArgument, creationContainer)) {
             repository.merge(flexiCoreRuleArgument);
 
         }
@@ -64,36 +63,22 @@ public class RuleArgumentService implements ServicePlugin {
     }
 
     private FlexiCoreRuleArgument createRuleArgumentNoMerge(RuleArgumentCreate creationContainer, SecurityContext securityContext) {
-        FlexiCoreRuleArgument flexiCoreRuleArgument=FlexiCoreRuleArgument.s().CreateUnchecked(creationContainer.getName(),securityContext);
+        FlexiCoreRuleArgument flexiCoreRuleArgument = FlexiCoreRuleArgument.s().CreateUnchecked(creationContainer.getName(), securityContext);
         flexiCoreRuleArgument.Init();
-        updateRuleArgumentNoMerge(flexiCoreRuleArgument,creationContainer);
+        updateRuleArgumentNoMerge(flexiCoreRuleArgument, creationContainer);
         return flexiCoreRuleArgument;
     }
 
     private boolean updateRuleArgumentNoMerge(FlexiCoreRuleArgument flexiCoreRuleArgument, RuleArgumentCreate creationContainer) {
-        boolean update=false;
-        if(creationContainer.getName()!=null && !creationContainer.getName().equals(flexiCoreRuleArgument.getName())){
-            flexiCoreRuleArgument.setName(creationContainer.getName());
-            update=true;
-        }
-
-        if(creationContainer.getDescription()!=null && !creationContainer.getDescription().equals(flexiCoreRuleArgument.getDescription())){
-            flexiCoreRuleArgument.setDescription(creationContainer.getDescription());
-            update=true;
-        }
-
-        if(creationContainer.getExecutionParametersHolder()!=null && (flexiCoreRuleArgument.getExecutionParametersHolder()==null||!creationContainer.getExecutionParametersHolder().getId().equals(flexiCoreRuleArgument.getExecutionParametersHolder().getId()))){
-            flexiCoreRuleArgument.setExecutionParametersHolder(creationContainer.getExecutionParametersHolder());
-            update=true;
-        }
+        boolean update = dynamicInvokersService.updateDynamicExecutionNoMerge(creationContainer, flexiCoreRuleArgument);
         return update;
 
     }
 
     public PaginationResponse<FlexiCoreRuleArgument> getAllRuleArguments(RuleArgumentFilter filter, SecurityContext securityContext) {
-        List<FlexiCoreRuleArgument> list=repository.listAllRuleArguments(filter,securityContext);
-        long count=repository.countAllRuleArguments(filter,securityContext);
-        return new PaginationResponse<>(list,filter,count);
+        List<FlexiCoreRuleArgument> list = repository.listAllRuleArguments(filter, securityContext);
+        long count = repository.countAllRuleArguments(filter, securityContext);
+        return new PaginationResponse<>(list, filter, count);
     }
 
 

@@ -38,8 +38,8 @@ public class RulesRESTService implements RestServicePlugin {
 
     @POST
     @Produces("application/json")
-    @Path("/createRule")
-    @Operation(summary = "getAllRules", description = "create Rule")
+    @Path("/getAllRules")
+    @Operation(summary = "getAllRules", description = "get all rules")
     public PaginationResponse<FlexiCoreRule> getAllRules(
             @HeaderParam("authenticationKey") String authenticationKey,
             RulesFilter filter,
