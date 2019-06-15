@@ -2,7 +2,9 @@ package com.flexicore.rules.request;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.flexicore.rules.model.FlexiCoreRule;
+import io.swagger.v3.oas.annotations.media.Schema;
 
+@Schema(name = "EvaluateRuleRequest",description = "defines a rule to be evaluated, uses previously retrieved RuleId ")
 public class EvaluateRuleRequest {
     private String ruleId;
     @JsonIgnore

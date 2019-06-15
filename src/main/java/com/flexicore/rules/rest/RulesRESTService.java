@@ -15,6 +15,8 @@ import com.flexicore.rules.service.RulesService;
 import com.flexicore.security.SecurityContext;
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 import javax.inject.Inject;
@@ -26,7 +28,7 @@ import javax.ws.rs.core.Context;
 @OperationsInside
 @Interceptors({SecurityImposer.class, DynamicResourceInjector.class})
 @Path("plugins/Rules")
-@Tag(name="Rules")
+
 @OpenAPIDefinition(
         tags = {@Tag(name = "Rules",description = "Rules Service"),
                 @Tag(name = "RuleToArgument",description = "RuleToArgument Service")})
@@ -39,11 +41,11 @@ public class RulesRESTService implements RestServicePlugin {
     @POST
     @Produces("application/json")
     @Path("/getAllRules")
-    @Operation(summary = "getAllRules", description = "get all rules")
+    @Operation(summary = "getAllRules", description = "get all rules , these are filtered by the server to include only instances the current user can view")
     public PaginationResponse<FlexiCoreRule> getAllRules(
             @HeaderParam("authenticationKey") String authenticationKey,
-            RulesFilter filter,
-            @Context SecurityContext securityContext) {
+            @RequestBody(description = "an empty object {} or legal FilteringInformationHolder constructed to filter the returned dataset.") RulesFilter filter,
+            @Context @Parameter(description = "should not be  provided by client, injected by the server") SecurityContext securityContext) {
         service.validate(filter, securityContext);
         return service.getAllRules(filter, securityContext);
     }
@@ -51,7 +53,7 @@ public class RulesRESTService implements RestServicePlugin {
     @POST
     @Produces("application/json")
     @Path("/evaluateRule")
-    @Operation(summary = "evaluateRule", description = "Evaluate Rule")
+    @Operation(summary = "evaluateRule", description = "Evaluate Rule, use for testing a single rule.")
     public EvaluateRuleResponse evaluateRule(
             @HeaderParam("authenticationKey") String authenticationKey,
             EvaluateRuleRequest evaluateRuleRequest,

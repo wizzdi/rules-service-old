@@ -13,6 +13,7 @@ import com.flexicore.rules.request.RuleToArgumentUpdate;
 
 import com.flexicore.rules.service.RuleToArgumentService;
 import com.flexicore.security.SecurityContext;
+import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
@@ -25,7 +26,9 @@ import javax.ws.rs.core.Context;
 @OperationsInside
 @Interceptors({SecurityImposer.class, DynamicResourceInjector.class})
 @Path("plugins/RuleToArgument")
-@Tag(name="RuleToArgument")
+@OpenAPIDefinition(
+        tags = {@Tag(name = "Rules",description = "Rules Service"),
+                @Tag(name = "RuleToArgument",description = "RuleToArgument Service")})
 public class RuleToArgumentServiceRESTService implements RestServicePlugin {
 
     @Inject
@@ -47,7 +50,7 @@ public class RuleToArgumentServiceRESTService implements RestServicePlugin {
     @POST
     @Produces("application/json")
     @Path("/createRuleToArgument")
-    @Operation(summary = "createRuleToArgument", description = "create RuleToArgument")
+    @Operation(summary = "createRuleToArgument", description = "Links a Rule to RuleArgument")
     public RuleToArgument createRuleToArgument(
             @HeaderParam("authenticationKey") String authenticationKey,
             RuleToArgumentCreate creationContainer,
