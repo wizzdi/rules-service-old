@@ -12,7 +12,10 @@ import com.flexicore.rules.request.ScenarioToTriggerFilter;
 import com.flexicore.rules.request.ScenarioToTriggerUpdate;
 import com.flexicore.rules.service.ScenarioToTriggerService;
 import com.flexicore.security.SecurityContext;
+import io.swagger.v3.oas.annotations.ExternalDocumentation;
+import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 import javax.inject.Inject;
@@ -24,7 +27,13 @@ import javax.ws.rs.core.Context;
 @OperationsInside
 @Interceptors({SecurityImposer.class, DynamicResourceInjector.class})
 @Path("plugins/ScenarioToTrigger")
-@Tag(name="ScenarioToTrigger")
+@OpenAPIDefinition(
+        tags = {@Tag(name = "Rules",description = "Rules Service"),
+                @Tag(name = "ScenarioToTrigger",description = "APIs for handling ScenarioToTrigger CRUD" +
+                        "Scenario is the top hierarchy object in a the Rules system , ScenarioToTrigger connects ScenarioTriggers with Scenarios")},
+        externalDocs = @ExternalDocumentation(
+                description = "instructions for how to use FlexiCore Rules, ScenarioToTrigger",
+                url = "http:www.wizzdi.com"))
 
 public class ScenarioToTriggerRESTService implements RestServicePlugin {
 
@@ -35,10 +44,10 @@ public class ScenarioToTriggerRESTService implements RestServicePlugin {
     @POST
     @Produces("application/json")
     @Path("/getAllScenarioToTriggers")
-    @Operation(summary = "getAllScenarioToTriggers", description = "get all ScenarioToTriggers")
+    @Operation(summary = "getAllScenarioToTriggers", description = "get all ScenarioToTriggers, filtered, paged (optionally")
     public PaginationResponse<ScenarioToTrigger> getAllScenarioToTrigger(
             @HeaderParam("authenticationKey") String authenticationKey,
-            ScenarioToTriggerFilter filter,
+            @RequestBody(description = "Valid ScenarioToTriggerFilter or empty {} ") ScenarioToTriggerFilter filter,
             @Context SecurityContext securityContext) {
         service.validate(filter, securityContext);
         return service.getAllScenarioToTriggers(filter, securityContext);
@@ -49,10 +58,10 @@ public class ScenarioToTriggerRESTService implements RestServicePlugin {
     @POST
     @Produces("application/json")
     @Path("/createScenarioToTrigger")
-    @Operation(summary = "createScenarioToTrigger", description = "create ScenarioToTrigger")
+    @Operation(summary = "createScenarioToTrigger", description = "create ScenarioToTrigger, practically linking a ScenarioTrigger with a Scenario")
     public ScenarioToTrigger createScenarioToTrigger(
             @HeaderParam("authenticationKey") String authenticationKey,
-            ScenarioToTriggerCreate creationContainer,
+           @RequestBody(description = "A valid ScenarioToTriggerCreate instance ") ScenarioToTriggerCreate creationContainer,
             @Context SecurityContext securityContext) {
         service.validate(creationContainer, securityContext);
         return service.createScenarioToTrigger(creationContainer, securityContext);
@@ -61,10 +70,10 @@ public class ScenarioToTriggerRESTService implements RestServicePlugin {
     @PUT
     @Produces("application/json")
     @Path("/updateScenarioToTrigger")
-    @Operation(summary = "updateScenarioToTrigger", description = "Update ScenarioToTrigger")
+    @Operation(summary = "updateScenarioToTrigger", description = "Update ScenarioToTrigger, update an exciting link")
     public ScenarioToTrigger updateScenarioToTrigger(
             @HeaderParam("authenticationKey") String authenticationKey,
-            ScenarioToTriggerUpdate scenarioToTriggerUpdate,
+            @RequestBody(description = "A valid ScenarioToTriggerUpdate update container") ScenarioToTriggerUpdate scenarioToTriggerUpdate,
             @Context SecurityContext securityContext) {
         ScenarioToTrigger scenarioToTrigger=scenarioToTriggerUpdate.getId()!=null?service.getByIdOrNull(scenarioToTriggerUpdate.getId(),ScenarioToTrigger.class,null,securityContext):null;
         if(scenarioToTrigger==null ){
