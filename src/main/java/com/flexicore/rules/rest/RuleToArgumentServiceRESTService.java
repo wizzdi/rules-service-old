@@ -27,7 +27,12 @@ import javax.ws.rs.core.Context;
 @Interceptors({SecurityImposer.class, DynamicResourceInjector.class})
 @Path("plugins/RuleToArgument")
 @OpenAPIDefinition(
-        tags = {@Tag(name = "Rules",description = "Rules Service"),
+        tags = {@Tag(name = "Rules",description = "Rules Service, the rules service provides required API to" +
+                "create scenarios containing hierarchical rules, the rules in a scenario describe an expression" +
+                "the expression consists of OR,AND,NOT and JavaScript snippet" +
+                "The Javascript is provided with arguments evaluated by the server in run time." +
+                "a Scenario evaluates to true or false, when true, it may fire ScenarioAction(s)" +
+                "Scenarios are triggered by ScenarioTrigger(s), for example a timer or a TCP incoming message.  "),
                 @Tag(name = "RuleToArgument",description = "RuleToArgument Service")})
 public class RuleToArgumentServiceRESTService implements RestServicePlugin {
 
@@ -38,7 +43,7 @@ public class RuleToArgumentServiceRESTService implements RestServicePlugin {
     @POST
     @Produces("application/json")
     @Path("/getAllRulesToExecutionParameter")
-    @Operation(summary = "getAllRulesToExecutionParameter", description = "getAllRulesToExecutionParameter")
+    @Operation(summary = "getAllRulesToExecutionParameter", description = "Get all the ExecutionParameters , note that RuleArguments can be reused in different Rules   ")
     public PaginationResponse<RuleToArgument> getAllRulesToExecutionParameter(
             @HeaderParam("authenticationKey") String authenticationKey,
             RuleToArgumentHolderFilter filter,
@@ -50,7 +55,7 @@ public class RuleToArgumentServiceRESTService implements RestServicePlugin {
     @POST
     @Produces("application/json")
     @Path("/createRuleToArgument")
-    @Operation(summary = "createRuleToArgument", description = "Links a Rule to RuleArgument")
+    @Operation(summary = "createRuleToArgument", description = "Links a Rule to RuleArgument, ")
     public RuleToArgument createRuleToArgument(
             @HeaderParam("authenticationKey") String authenticationKey,
             RuleToArgumentCreate creationContainer,

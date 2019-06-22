@@ -4,7 +4,9 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.flexicore.model.dynamic.ExecutionParametersHolder;
 import com.flexicore.rules.model.FlexiCoreRule;
 import com.flexicore.rules.model.FlexiCoreRuleArgument;
+import io.swagger.v3.oas.annotations.media.Schema;
 
+@Schema(description = "a container for creating a link between Rule and Argument")
 public class RuleToArgumentCreate {
     private String name;
     private String description;
@@ -15,7 +17,7 @@ public class RuleToArgumentCreate {
     private String flexicoreRuleArgumentId;
     @JsonIgnore
     private FlexiCoreRuleArgument flexiCoreRuleArgument;
-
+    @Schema(description = "Name of the new link")
     public String getName() {
         return name;
     }
@@ -33,7 +35,7 @@ public class RuleToArgumentCreate {
         this.description = description;
         return (T) this;
     }
-
+    @Schema(description = "The RuleId to link with")
     public String getFlexiCoreRuleId() {
         return flexiCoreRuleId;
     }
@@ -52,7 +54,7 @@ public class RuleToArgumentCreate {
         this.flexiCoreRule = flexiCoreRule;
         return (T) this;
     }
-
+    @Schema(description = "The RuleArgument ID to link with")
     public String getFlexicoreRuleArgumentId() {
         return flexicoreRuleArgumentId;
     }

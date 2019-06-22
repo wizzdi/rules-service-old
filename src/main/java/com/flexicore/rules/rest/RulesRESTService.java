@@ -13,6 +13,7 @@ import com.flexicore.rules.request.*;
 import com.flexicore.rules.response.EvaluateRuleResponse;
 import com.flexicore.rules.service.RulesService;
 import com.flexicore.security.SecurityContext;
+import io.swagger.v3.oas.annotations.ExternalDocumentation;
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -31,7 +32,11 @@ import javax.ws.rs.core.Context;
 
 @OpenAPIDefinition(
         tags = {@Tag(name = "Rules",description = "Rules Service"),
-                @Tag(name = "RuleToArgument",description = "RuleToArgument Service")})
+                @Tag(name = "RuleToArgument",description = "RuleToArgument Service")},
+        externalDocs = @ExternalDocumentation(
+                description = "instructions for how to use FlexiCore Rules",
+                url = "http:www.wizzdi.com"))
+
 public class RulesRESTService implements RestServicePlugin {
 
     @Inject

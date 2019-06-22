@@ -34,7 +34,7 @@ import javax.ws.rs.core.Context;
         },
         externalDocs = @ExternalDocumentation(
                 description = "instructions for how to use FlexiCore Rules",
-                url = ""))
+                url = "http:www.wizzdi.com"))
 public class RuleArgumentRESTService implements RestServicePlugin {
 
     @Inject

@@ -2,7 +2,9 @@ package com.flexicore.rules.request;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.flexicore.rules.model.FlexiCoreRule;
+import io.swagger.v3.oas.annotations.media.Schema;
 
+@Schema(description = "A container class for the creation of a new Scenario")
 public class ScenarioCreate {
 
     private String name;
@@ -10,7 +12,7 @@ public class ScenarioCreate {
     private String ruleId;
     @JsonIgnore
     private FlexiCoreRule flexiCoreRule;
-
+    @Schema(description = "The name of the Scenario")
     public String getName() {
         return name;
     }
@@ -19,7 +21,7 @@ public class ScenarioCreate {
         this.name = name;
         return (T) this;
     }
-
+    @Schema(description = "The description of the Scenario")
     public String getDescription() {
         return description;
     }
@@ -28,7 +30,7 @@ public class ScenarioCreate {
         this.description = description;
         return (T) this;
     }
-
+    @Schema(description = "A RuleID, this will be the single RuleID, the top AND,OR,NOT RuleID or empty, can be updated later")
     public String getRuleId() {
         return ruleId;
     }

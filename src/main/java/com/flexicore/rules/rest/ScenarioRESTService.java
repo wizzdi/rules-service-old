@@ -12,7 +12,10 @@ import com.flexicore.rules.request.ScenarioFilter;
 import com.flexicore.rules.request.ScenarioUpdate;
 import com.flexicore.rules.service.ScenarioService;
 import com.flexicore.security.SecurityContext;
+import io.swagger.v3.oas.annotations.ExternalDocumentation;
+import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 import javax.inject.Inject;
@@ -24,7 +27,13 @@ import javax.ws.rs.core.Context;
 @OperationsInside
 @Interceptors({SecurityImposer.class, DynamicResourceInjector.class})
 @Path("plugins/Scenario")
-@Tag(name="Scenario")
+@OpenAPIDefinition(
+        tags = {@Tag(name = "Rules",description = "Rules Service"),
+                @Tag(name = "Scenario",description = "Scenario API for handling Scenarios," +
+                        "Scenario is the top hierarchy object in a the Rules system ")},
+        externalDocs = @ExternalDocumentation(
+                description = "instructions for how to use FlexiCore Rules, Scenario",
+                url = "http:www.wizzdi.com"))
 
 public class ScenarioRESTService implements RestServicePlugin {
 
@@ -35,7 +44,7 @@ public class ScenarioRESTService implements RestServicePlugin {
     @POST
     @Produces("application/json")
     @Path("/getAllScenarios")
-    @Operation(summary = "getAllScenarios", description = "get all Scenarios")
+    @Operation(summary = "getAllScenarios", description = "get all available Scenarios, filtered and paged")
     public PaginationResponse<Scenario> getAllScenario(
             @HeaderParam("authenticationKey") String authenticationKey,
             ScenarioFilter filter,
@@ -49,10 +58,10 @@ public class ScenarioRESTService implements RestServicePlugin {
     @POST
     @Produces("application/json")
     @Path("/createScenario")
-    @Operation(summary = "createScenario", description = "create Scenario")
+    @Operation(summary = "createScenario", description = "create a new Scenario")
     public Scenario createScenario(
             @HeaderParam("authenticationKey") String authenticationKey,
-            ScenarioCreate creationContainer,
+            @RequestBody(description = "A ScenarioCreate Container ") ScenarioCreate creationContainer,
             @Context SecurityContext securityContext) {
         service.validate(creationContainer, securityContext);
         return service.createScenario(creationContainer, securityContext);
@@ -61,10 +70,10 @@ public class ScenarioRESTService implements RestServicePlugin {
     @PUT
     @Produces("application/json")
     @Path("/updateScenario")
-    @Operation(summary = "updateScenario", description = "Update Scenario")
+    @Operation(summary = "updateScenario", description = "Update Scenario, in a normal workflow, updated once the first top rule is created")
     public Scenario updateScenario(
             @HeaderParam("authenticationKey") String authenticationKey,
-            ScenarioUpdate scenarioUpdate,
+            @RequestBody(description = "A Scenario Update container",required = true) ScenarioUpdate scenarioUpdate,
             @Context SecurityContext securityContext) {
         Scenario scenario=scenarioUpdate.getId()!=null?service.getByIdOrNull(scenarioUpdate.getId(),Scenario.class,null,securityContext):null;
         if(scenario==null ){
