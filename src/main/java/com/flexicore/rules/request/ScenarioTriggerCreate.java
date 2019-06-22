@@ -29,7 +29,7 @@ public class ScenarioTriggerCreate {
     public String getEventCanonicalClassName() {
         return eventCanonicalClassName;
     }
-    @Schema(description = "The canonical class name of the event, for example:" )
+    @Schema(description = ".unique identifier for the trigger - when this will be a system generated event this field will contain the canonical class of the event " )
     public <T extends ScenarioTriggerCreate> T setEventCanonicalClassName(String eventCanonicalClassName) {
         this.eventCanonicalClassName = eventCanonicalClassName;
         return (T) this;
