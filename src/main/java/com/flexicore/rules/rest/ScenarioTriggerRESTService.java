@@ -15,6 +15,7 @@ import com.flexicore.security.SecurityContext;
 import io.swagger.v3.oas.annotations.ExternalDocumentation;
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
@@ -48,7 +49,7 @@ public class ScenarioTriggerRESTService implements RestServicePlugin {
     @Operation(summary = "getAllScenarioTriggers", description = "get all ScenarioTriggers, filtered, paged (optionally)")
     public PaginationResponse<ScenarioTrigger> getAllScenarioTrigger(
             @HeaderParam("authenticationKey") String authenticationKey,
-            @RequestBody(description = "A valid ScenarioTriggerFilter or an empty one (new instance, {}") ScenarioTriggerFilter filter,
+            @Parameter(description = "A valid ScenarioTriggerFilter or an empty one (new instance, {}") ScenarioTriggerFilter filter,
             @Context SecurityContext securityContext) {
         service.validate(filter, securityContext);
         return service.getAllScenarioTriggers(filter, securityContext);
@@ -74,7 +75,7 @@ public class ScenarioTriggerRESTService implements RestServicePlugin {
     @Operation(summary = "updateScenarioTrigger", description = "Update ScenarioTrigger")
     public ScenarioTrigger updateScenarioTrigger(
             @HeaderParam("authenticationKey") String authenticationKey,
-           @RequestBody(description = "A valid ScenarioTriggerUpdate instance with a valid Id of an existing ScenarioTrigger ") ScenarioTriggerUpdate scenarioTriggerUpdate,
+           @Parameter(description = "A valid ScenarioTriggerUpdate instance with a valid Id of an existing ScenarioTrigger ") ScenarioTriggerUpdate scenarioTriggerUpdate,
             @Context SecurityContext securityContext) {
         ScenarioTrigger scenarioTrigger=scenarioTriggerUpdate.getId()!=null?service.getByIdOrNull(scenarioTriggerUpdate.getId(),ScenarioTrigger.class,null,securityContext):null;
         if(scenarioTrigger==null ){

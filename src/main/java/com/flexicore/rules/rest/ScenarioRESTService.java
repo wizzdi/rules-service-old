@@ -15,6 +15,7 @@ import com.flexicore.security.SecurityContext;
 import io.swagger.v3.oas.annotations.ExternalDocumentation;
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
@@ -61,7 +62,7 @@ public class ScenarioRESTService implements RestServicePlugin {
     @Operation(summary = "createScenario", description = "create a new Scenario")
     public Scenario createScenario(
             @HeaderParam("authenticationKey") String authenticationKey,
-            @RequestBody(description = "A ScenarioCreate Container ") ScenarioCreate creationContainer,
+            @Parameter(description = "A ScenarioCreate Container ") ScenarioCreate creationContainer,
             @Context SecurityContext securityContext) {
         service.validate(creationContainer, securityContext);
         return service.createScenario(creationContainer, securityContext);
@@ -73,7 +74,7 @@ public class ScenarioRESTService implements RestServicePlugin {
     @Operation(summary = "updateScenario", description = "Update Scenario, in a normal workflow, updated once the first top rule is created")
     public Scenario updateScenario(
             @HeaderParam("authenticationKey") String authenticationKey,
-            @RequestBody(description = "A Scenario Update container",required = true) ScenarioUpdate scenarioUpdate,
+            @Parameter(description = "A Scenario Update container",required = true) ScenarioUpdate scenarioUpdate,
             @Context SecurityContext securityContext) {
         Scenario scenario=scenarioUpdate.getId()!=null?service.getByIdOrNull(scenarioUpdate.getId(),Scenario.class,null,securityContext):null;
         if(scenario==null ){

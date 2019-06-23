@@ -15,6 +15,7 @@ import com.flexicore.security.SecurityContext;
 import io.swagger.v3.oas.annotations.ExternalDocumentation;
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
@@ -48,7 +49,7 @@ public class ScenarioToActionRESTService implements RestServicePlugin {
     @Operation(summary = "getAllScenarioToActions", description = "get all ScenarioToActions")
     public PaginationResponse<ScenarioToAction> getAllScenarioToAction(
             @HeaderParam("authenticationKey") String authenticationKey,
-            @RequestBody(description = "Valid ScenarioToActionFilter, " +
+            @Parameter(description = "Valid ScenarioToActionFilter, " +
                     "can be {} (empty body for all instances," +
                     " using pagination in filters is highly recommended") ScenarioToActionFilter filter,
             @Context SecurityContext securityContext) {
@@ -64,7 +65,7 @@ public class ScenarioToActionRESTService implements RestServicePlugin {
     @Operation(summary = "createScenarioToAction", description = "create a new ScenarioToAction")
     public ScenarioToAction createScenarioToAction(
             @HeaderParam("authenticationKey") String authenticationKey,
-            @RequestBody(description = "A valid ScenarioToActionCreate including " +
+            @Parameter(description = "A valid ScenarioToActionCreate including " +
                     "required fields for a new ScenarioToAction") ScenarioToActionCreate creationContainer,
             @Context SecurityContext securityContext) {
         service.validate(creationContainer, securityContext);
@@ -77,7 +78,7 @@ public class ScenarioToActionRESTService implements RestServicePlugin {
     @Operation(summary = "updateScenarioToAction", description = "Update ScenarioToAction")
     public ScenarioToAction updateScenarioToAction(
             @HeaderParam("authenticationKey") String authenticationKey,
-            @RequestBody(description = "A valid ScenarioToActionUpdate including required" +
+            @Parameter(description = "A valid ScenarioToActionUpdate including required" +
                     " fields for a updating ScenarioToAction") ScenarioToActionUpdate scenarioToActionUpdate,
             @Context SecurityContext securityContext) {
         ScenarioToAction scenarioToAction=scenarioToActionUpdate.getId()!=null?service.getByIdOrNull(scenarioToActionUpdate.getId(),ScenarioToAction.class,null,securityContext):null;

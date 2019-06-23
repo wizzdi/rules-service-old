@@ -49,7 +49,7 @@ public class RulesRESTService implements RestServicePlugin {
     @Operation(summary = "getAllRules", description = "get all rules , these are filtered by the server to include only instances the current user can view")
     public PaginationResponse<FlexiCoreRule> getAllRules(
             @HeaderParam("authenticationKey") String authenticationKey,
-            @RequestBody(description = "an empty object {} or legal FilteringInformationHolder constructed to filter the returned dataset.") RulesFilter filter,
+            @Parameter(description = "an empty object {} or legal FilteringInformationHolder constructed to filter the returned dataset.") RulesFilter filter,
             @Context @Parameter(description = "should not be  provided by client, injected by the server") SecurityContext securityContext) {
         service.validate(filter, securityContext);
         return service.getAllRules(filter, securityContext);

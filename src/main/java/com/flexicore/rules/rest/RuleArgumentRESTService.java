@@ -40,7 +40,7 @@ public class RuleArgumentRESTService implements RestServicePlugin {
     @Inject
     @PluginInfo(version = 1)
     private RuleArgumentService service;
-
+//        @Parameter(description = " an empty object {} or fully/partially filled filter")
     @POST
     @Produces("application/json")
     @Path("/getAllRuleArgument")
@@ -48,7 +48,7 @@ public class RuleArgumentRESTService implements RestServicePlugin {
 
     public PaginationResponse<FlexiCoreRuleArgument> getAllRuleArgument(
             @HeaderParam("authenticationKey") String authenticationKey,
-           @RequestBody(description = " an empty object {} or fully/partially filled filter") RuleArgumentFilter filter,
+    RuleArgumentFilter filter,
            @Parameter(name = "SecurityContext",description = "Must be last in parameters and injected by the system") @Context SecurityContext securityContext) {
         service.validate(filter, securityContext);
         return service.getAllRuleArguments(filter, securityContext);
@@ -63,7 +63,7 @@ public class RuleArgumentRESTService implements RestServicePlugin {
             "The argument defines a list of SubParameters providing a filter for returning the desired collection")
     public FlexiCoreRuleArgument createRuleArgument(
             @HeaderParam("authenticationKey") String authenticationKey,
-            @RequestBody(description = "Properly created RuleArgumentCreate") RuleArgumentCreate creationContainer,
+            @Parameter(description = "Properly created RuleArgumentCreate") RuleArgumentCreate creationContainer,
             @Context SecurityContext securityContext) {
         service.validate(creationContainer, securityContext);
         return service.createRuleArgument(creationContainer, securityContext);
@@ -75,7 +75,7 @@ public class RuleArgumentRESTService implements RestServicePlugin {
     @Operation(summary = "updateRuleArgument", description = "Update RuleArgument")
     public FlexiCoreRuleArgument updateRuleArgument(
             @HeaderParam("authenticationKey") String authenticationKey,
-            @RequestBody(description = "Properly set RuleArgumentUpdate instance") RuleArgumentUpdate ruleUpdate,
+            @Parameter(description = "Properly set RuleArgumentUpdate instance") RuleArgumentUpdate ruleUpdate,
             @Context SecurityContext securityContext) {
         FlexiCoreRuleArgument flexiCoreRuleArgument = ruleUpdate.getId() != null ? service.getByIdOrNull(ruleUpdate.getId(), FlexiCoreRuleArgument.class, null, securityContext) : null;
         if (flexiCoreRuleArgument == null) {
