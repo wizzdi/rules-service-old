@@ -31,7 +31,7 @@ import javax.ws.rs.core.Context;
                 @Tag(name = "ScenarioAction",description = "ScenarioAction API for handling Scenario actions, Scenario actions are invoked when Scenario is evaluated to true and there are ScenarioActions connected to it")},
         externalDocs = @ExternalDocumentation(
                 description = "instructions for how to use FlexiCore Rules, ScenarioActions",
-                url = "http:www.wizzdi.com"))
+                url = "http://www.wizzdi.com"))
 
 public class ScenarioActionRESTService implements RestServicePlugin {
 

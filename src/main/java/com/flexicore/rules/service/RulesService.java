@@ -5,8 +5,8 @@ import com.flexicore.data.jsoncontainers.PaginationResponse;
 import com.flexicore.interfaces.ServicePlugin;
 import com.flexicore.model.Baseclass;
 import com.flexicore.model.FileResource;
-import com.flexicore.request.ExecuteInvokerRequest;
 import com.flexicore.response.ExecuteInvokerResponse;
+import com.flexicore.response.ExecuteInvokersResponse;
 import com.flexicore.rules.model.*;
 import com.flexicore.rules.repository.RulesRepository;
 import com.flexicore.rules.request.*;
@@ -21,6 +21,7 @@ import javax.script.*;
 import javax.ws.rs.BadRequestException;
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -131,7 +132,7 @@ public class RulesService implements ServicePlugin {
             return evaluateRuleOp(evaluateRuleRequest,securityContext);
         }
         else{
-            return evaludateRuleNode(evaluateRuleRequest,securityContext);
+            return evaluateRuleNode(evaluateRuleRequest,securityContext);
         }
     }
 
@@ -160,14 +161,15 @@ public class RulesService implements ServicePlugin {
     }
 
 
-    private EvaluateRuleResponse evaludateRuleNode(EvaluateRuleRequest evaluateRuleRequest, SecurityContext securityContext) {
+    private EvaluateRuleResponse evaluateRuleNode(EvaluateRuleRequest evaluateRuleRequest, SecurityContext securityContext) {
         EvaluateRuleResponse evaluateRuleResponse = new EvaluateRuleResponse();
         FlexiCoreRule flexiCoreRule = evaluateRuleRequest.getRule();
         List<RuleToArgument> arguments = ruleToArgumentHolderService.listRuleToArgument(new RuleToArgumentHolderFilter().setRules(Collections.singletonList(flexiCoreRule)), securityContext);
         List<ExecuteInvokerResponse> results = arguments.stream()
                 .sorted(Comparator.comparing(f -> f.getOrdinal()))
                 .map(f -> f.getFlexiCoreRuleArgument())
-                .map(f -> dynamicInvokersService.executeInvoker(f, securityContext)).filter(f -> f.getResponses() != null && !f.getResponses().isEmpty()).map(f -> f.getResponses().get(0))
+                .map(f -> f.getDynamicExecution()!=null?dynamicInvokersService.executeInvoker(f.getDynamicExecution(), securityContext):new ExecuteInvokersResponse(new ArrayList<>()))
+                .filter(f -> f.getResponses() != null && !f.getResponses().isEmpty()).map(f -> f.getResponses().get(0))
                 .collect(Collectors.toList());
         FileResource script = flexiCoreRule.getEvaluationScript();
         try {
@@ -187,7 +189,7 @@ public class RulesService implements ServicePlugin {
 
 
     private ScriptObjectMirror loadScript(File file, String functionTable) throws IOException, ScriptException {
-        String script = FileUtils.readFileToString(file);
+        String script = FileUtils.readFileToString(file, StandardCharsets.UTF_8);
         script += functionTable;
         CompiledScript compiled = ((Compilable) engine).compile(script);
         ScriptObjectMirror table = (ScriptObjectMirror) compiled.eval();

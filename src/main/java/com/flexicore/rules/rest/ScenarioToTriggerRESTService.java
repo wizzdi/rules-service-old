@@ -34,7 +34,7 @@ import javax.ws.rs.core.Context;
                         "Scenario is the top hierarchy object in a the Rules system , ScenarioToTrigger connects ScenarioTriggers with Scenarios")},
         externalDocs = @ExternalDocumentation(
                 description = "instructions for how to use FlexiCore Rules, ScenarioToTrigger",
-                url = "http:www.wizzdi.com"))
+                url = "http://www.wizzdi.com"))
 
 public class ScenarioToTriggerRESTService implements RestServicePlugin {
 

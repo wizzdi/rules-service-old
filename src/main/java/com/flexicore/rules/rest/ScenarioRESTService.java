@@ -34,7 +34,7 @@ import javax.ws.rs.core.Context;
                         "Scenario is the top hierarchy object in a the Rules system ")},
         externalDocs = @ExternalDocumentation(
                 description = "instructions for how to use FlexiCore Rules, Scenario",
-                url = "http:www.wizzdi.com"))
+                url = "http://www.wizzdi.com"))
 
 public class ScenarioRESTService implements RestServicePlugin {
 

@@ -35,7 +35,7 @@ import javax.ws.rs.core.Context;
                 @Tag(name = "RuleToArgument",description = "RuleToArgument Service")},
         externalDocs = @ExternalDocumentation(
                 description = "instructions for how to use FlexiCore Rules",
-                url = "http:www.wizzdi.com"))
+                url = "http://www.wizzdi.com"))
 
 public class RulesRESTService implements RestServicePlugin {
 

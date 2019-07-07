@@ -36,7 +36,7 @@ import javax.ws.rs.core.Context;
                         "a ScenarioAction may itself trigger another Scenario")},
         externalDocs = @ExternalDocumentation(
                 description = "instructions for how to use FlexiCore Rules, ScenarioTrigger",
-                url = "http:www.wizzdi.com"))
+                url = "http://www.wizzdi.com"))
 public class ScenarioTriggerRESTService implements RestServicePlugin {
 
     @Inject
