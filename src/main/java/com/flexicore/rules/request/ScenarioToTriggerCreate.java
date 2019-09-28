@@ -15,6 +15,7 @@ public class ScenarioToTriggerCreate {
     private Scenario scenario;
     @JsonIgnore
     private ScenarioTrigger scenarioTrigger;
+    private Boolean enabled;
 
     public String getName() {
         return name;
@@ -70,6 +71,15 @@ public class ScenarioToTriggerCreate {
 
     public <T extends ScenarioToTriggerCreate> T setScenarioTrigger(ScenarioTrigger scenarioTrigger) {
         this.scenarioTrigger = scenarioTrigger;
+        return (T) this;
+    }
+
+    public Boolean getEnabled() {
+        return enabled;
+    }
+
+    public <T extends ScenarioToTriggerCreate> T setEnabled(Boolean enabled) {
+        this.enabled = enabled;
         return (T) this;
     }
 }

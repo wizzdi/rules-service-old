@@ -16,7 +16,6 @@ import io.swagger.v3.oas.annotations.ExternalDocumentation;
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 import javax.inject.Inject;
@@ -28,14 +27,7 @@ import javax.ws.rs.core.Context;
 @OperationsInside
 @Interceptors({SecurityImposer.class, DynamicResourceInjector.class})
 @Path("plugins/Scenario")
-@OpenAPIDefinition(
-        tags = {@Tag(name = "Rules",description = "Rules Service"),
-                @Tag(name = "Scenario",description = "Scenario API for handling Scenarios," +
-                        "Scenario is the top hierarchy object in a the Rules system ")},
-        externalDocs = @ExternalDocumentation(
-                description = "instructions for how to use FlexiCore Rules, Scenario",
-                url = "http://www.wizzdi.com"))
-
+@Tag(name="Rules")
 public class ScenarioRESTService implements RestServicePlugin {
 
     @Inject

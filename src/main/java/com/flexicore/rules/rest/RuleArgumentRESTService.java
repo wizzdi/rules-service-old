@@ -18,6 +18,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.tags.Tags;
 
 import javax.inject.Inject;
 import javax.interceptor.Interceptors;
@@ -28,13 +29,8 @@ import javax.ws.rs.core.Context;
 @OperationsInside
 @Interceptors({SecurityImposer.class, DynamicResourceInjector.class})
 @Path("plugins/RuleArgument")
-@OpenAPIDefinition(
-        tags = {
-                @Tag(name = "RuleArgumentRESTService", description = "Operations about  RuleArgument"),
-        },
-        externalDocs = @ExternalDocumentation(
-                description = "instructions for how to use FlexiCore Rules",
-                url = "http://www.wizzdi.com"))
+@Tag(name="Rules")
+
 public class RuleArgumentRESTService implements RestServicePlugin {
 
     @Inject

@@ -26,14 +26,8 @@ import javax.ws.rs.core.Context;
 @OperationsInside
 @Interceptors({SecurityImposer.class, DynamicResourceInjector.class})
 @Path("plugins/RuleToArgument")
-@OpenAPIDefinition(
-        tags = {@Tag(name = "Rules",description = "Rules Service, the rules service provides required API to" +
-                "create scenarios containing hierarchical rules, the rules in a scenario describe an expression" +
-                "the expression consists of OR,AND,NOT and JavaScript snippet" +
-                "The Javascript is provided with arguments evaluated by the server in run time." +
-                "a Scenario evaluates to true or false, when true, it may fire ScenarioAction(s)" +
-                "Scenarios are triggered by ScenarioTrigger(s), for example a timer or a TCP incoming message.  "),
-                @Tag(name = "RuleToArgument",description = "RuleToArgument Service")})
+@Tag(name="Rules")
+
 public class RuleToArgumentServiceRESTService implements RestServicePlugin {
 
     @Inject

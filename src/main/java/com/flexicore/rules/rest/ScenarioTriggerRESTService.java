@@ -28,15 +28,8 @@ import javax.ws.rs.core.Context;
 @OperationsInside
 @Interceptors({SecurityImposer.class, DynamicResourceInjector.class})
 @Path("plugins/ScenarioTrigger")
-@OpenAPIDefinition(
-        tags = {@Tag(name = "Rules",description = "Flexicore Rules Service"),
-                @Tag(name = "ScenarioTrigger",description = "APIs for handling ScenarioTrigger CRUD" +
-                        "Scenario is the top hierarchy object in a the Rules system , ScenarioTrigger" +
-                        "is the object triggering Scenario evaluation and if evaluated to true, fires all connected actions. Without confusion" +
-                        "a ScenarioAction may itself trigger another Scenario")},
-        externalDocs = @ExternalDocumentation(
-                description = "instructions for how to use FlexiCore Rules, ScenarioTrigger",
-                url = "http://www.wizzdi.com"))
+
+@Tag(name="Rules")
 public class ScenarioTriggerRESTService implements RestServicePlugin {
 
     @Inject

@@ -27,8 +27,7 @@ public class RuleArgumentService implements ServicePlugin {
     @PluginInfo(version = 1)
     private RuleArgumentRepository repository;
 
-    @Inject
-    private DynamicInvokersService dynamicInvokersService;
+ 
 
 
     public void validate(RuleArgumentFilter ruleArgumentArgumentFilter, SecurityContext securityContext) {

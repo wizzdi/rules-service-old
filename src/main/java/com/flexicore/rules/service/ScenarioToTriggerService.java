@@ -104,6 +104,11 @@ public class ScenarioToTriggerService implements ServicePlugin {
             update=true;
         }
 
+        if(creationContainer.getEnabled()!=null && creationContainer.getEnabled()!=scenarioToTrigger.isEnabled()){
+            scenarioToTrigger.setEnabled(creationContainer.getEnabled());
+            update=true;
+        }
+
 
         return update;
 

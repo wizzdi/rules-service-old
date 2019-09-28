@@ -27,8 +27,6 @@ public class ScenarioToActionService implements ServicePlugin {
     @PluginInfo(version = 1)
     private ScenarioToActionRepository repository;
 
-    @Inject
-    private DynamicInvokersService dynamicInvokersService;
 
 
 
@@ -101,6 +99,11 @@ public class ScenarioToActionService implements ServicePlugin {
 
         if(creationContainer.getScenarioAction()!=null && (scenarioToAction.getScenarioAction()==null||!creationContainer.getScenarioAction().getId().equals(scenarioToAction.getScenarioAction().getId()))){
             scenarioToAction.setScenarioAction(creationContainer.getScenarioAction());
+            update=true;
+        }
+
+        if(creationContainer.getEnabled()!=null && creationContainer.getEnabled()!=scenarioToAction.isEnabled()){
+            scenarioToAction.setEnabled(creationContainer.getEnabled());
             update=true;
         }
 
