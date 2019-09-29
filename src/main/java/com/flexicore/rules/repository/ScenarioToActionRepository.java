@@ -3,16 +3,18 @@ package com.flexicore.rules.repository;
 import com.flexicore.annotations.plugins.PluginInfo;
 import com.flexicore.interfaces.AbstractRepositoryPlugin;
 import com.flexicore.model.QueryInformationHolder;
+import com.flexicore.rules.model.Scenario;
 import com.flexicore.rules.model.ScenarioToAction;
+import com.flexicore.rules.model.ScenarioToAction_;
+import com.flexicore.rules.model.Scenario_;
 import com.flexicore.rules.request.ScenarioToActionFilter;
 import com.flexicore.security.SecurityContext;
 
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
+import javax.persistence.criteria.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @PluginInfo(version = 1)
 public class ScenarioToActionRepository extends AbstractRepositoryPlugin {
@@ -29,6 +31,14 @@ public class ScenarioToActionRepository extends AbstractRepositoryPlugin {
 
     private void addScenarioToActionPredicate(List<Predicate> preds, Root<ScenarioToAction> r, CriteriaBuilder cb, ScenarioToActionFilter filter) {
 
+        if(filter.getScenarios()!=null && !filter.getScenarios().isEmpty()){
+            Set<String> ids=filter.getScenarios().parallelStream().map(f->f.getId()).collect(Collectors.toSet());
+            Join<ScenarioToAction, Scenario> join=r.join(ScenarioToAction_.scenario);
+            preds.add(join.get(Scenario_.id).in(ids));
+        }
+        if(filter.getEnabled()!=null){
+            preds.add(cb.equal(r.get(ScenarioToAction_.enabled),filter.getEnabled()));
+        }
 
     }
 

@@ -113,9 +113,13 @@ public class ScenarioToActionService implements ServicePlugin {
     }
 
     public PaginationResponse<ScenarioToAction> getAllScenarioToActions(ScenarioToActionFilter filter, SecurityContext securityContext) {
-        List<ScenarioToAction> list=repository.listAllScenarioToActions(filter,securityContext);
+        List<ScenarioToAction> list= listAllScenarioToAction(filter, securityContext);
         long count=repository.countAllScenarioToActions(filter,securityContext);
         return new PaginationResponse<>(list,filter,count);
+    }
+
+    public List<ScenarioToAction> listAllScenarioToAction(ScenarioToActionFilter filter, SecurityContext securityContext) {
+        return repository.listAllScenarioToActions(filter,securityContext);
     }
 
 

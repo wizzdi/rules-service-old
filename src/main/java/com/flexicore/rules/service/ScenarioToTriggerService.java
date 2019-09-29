@@ -115,9 +115,13 @@ public class ScenarioToTriggerService implements ServicePlugin {
     }
 
     public PaginationResponse<ScenarioToTrigger> getAllScenarioToTriggers(ScenarioToTriggerFilter filter, SecurityContext securityContext) {
-        List<ScenarioToTrigger> list=repository.listAllScenarioToTriggers(filter,securityContext);
+        List<ScenarioToTrigger> list= listAllScenarioToTrigger(filter, securityContext);
         long count=repository.countAllScenarioToTriggers(filter,securityContext);
         return new PaginationResponse<>(list,filter,count);
+    }
+
+    public List<ScenarioToTrigger> listAllScenarioToTrigger(ScenarioToTriggerFilter filter, SecurityContext securityContext) {
+        return repository.listAllScenarioToTriggers(filter,securityContext);
     }
 
 

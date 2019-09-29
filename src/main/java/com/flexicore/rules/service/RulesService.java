@@ -16,6 +16,7 @@ import com.flexicore.service.DynamicInvokersService;
 import jdk.nashorn.api.scripting.ScriptObjectMirror;
 import org.apache.commons.io.FileUtils;
 
+import javax.enterprise.event.ObservesAsync;
 import javax.inject.Inject;
 import javax.script.*;
 import javax.ws.rs.BadRequestException;
@@ -126,6 +127,8 @@ public class RulesService implements ServicePlugin {
         evaluateRuleRequest.setRule(flexiCoreRule);
 
     }
+
+
 
     public EvaluateRuleResponse evaluateRule(EvaluateRuleRequest evaluateRuleRequest, SecurityContext securityContext) {
         if(evaluateRuleRequest.getRule() instanceof FlexiCoreRuleOp){

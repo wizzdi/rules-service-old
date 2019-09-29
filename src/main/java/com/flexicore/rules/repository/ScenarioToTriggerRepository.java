@@ -4,15 +4,17 @@ import com.flexicore.annotations.plugins.PluginInfo;
 import com.flexicore.interfaces.AbstractRepositoryPlugin;
 import com.flexicore.model.QueryInformationHolder;
 import com.flexicore.rules.model.ScenarioToTrigger;
+import com.flexicore.rules.model.ScenarioToTrigger_;
+import com.flexicore.rules.model.ScenarioTrigger;
+import com.flexicore.rules.model.ScenarioTrigger_;
 import com.flexicore.rules.request.ScenarioToTriggerFilter;
 import com.flexicore.security.SecurityContext;
 
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
+import javax.persistence.criteria.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @PluginInfo(version = 1)
 public class ScenarioToTriggerRepository extends AbstractRepositoryPlugin {
@@ -29,7 +31,15 @@ public class ScenarioToTriggerRepository extends AbstractRepositoryPlugin {
 
     private void addScenarioToTriggerPredicate(List<Predicate> preds, Root<ScenarioToTrigger> r, CriteriaBuilder cb, ScenarioToTriggerFilter filter) {
 
+        if(filter.getScenarioTriggers()!=null && !filter.getScenarioTriggers().isEmpty()){
+            Set<String> ids=filter.getScenarioTriggers().parallelStream().map(f->f.getId()).collect(Collectors.toSet());
+            Join<ScenarioToTrigger, ScenarioTrigger> join=r.join(ScenarioToTrigger_.scenarioTrigger);
+            preds.add(join.get(ScenarioTrigger_.id).in(ids));
+        }
 
+        if(filter.getEnabled()!=null){
+            preds.add(cb.equal(r.get(ScenarioToTrigger_.enabled),filter.getEnabled()));
+        }
     }
 
     public long countAllScenarioToTriggers(ScenarioToTriggerFilter filter, SecurityContext securityContext) {
