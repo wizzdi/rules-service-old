@@ -7,6 +7,7 @@ import com.flexicore.interceptors.DynamicResourceInjector;
 import com.flexicore.interceptors.SecurityImposer;
 import com.flexicore.interfaces.RestServicePlugin;
 import com.flexicore.rules.model.ScenarioTrigger;
+import com.flexicore.rules.request.FireScenarioTrigger;
 import com.flexicore.rules.request.ScenarioTriggerCreate;
 import com.flexicore.rules.request.ScenarioTriggerFilter;
 import com.flexicore.rules.request.ScenarioTriggerUpdate;
@@ -35,6 +36,18 @@ public class ScenarioTriggerRESTService implements RestServicePlugin {
     @Inject
     @PluginInfo(version = 1)
     private ScenarioTriggerService service;
+
+    @POST
+    @Produces("application/json")
+    @Path("/fireTrigger")
+    @Operation(summary = "fireTrigger", description = "Fires a Generic Trigger")
+    public void fireTrigger(
+            @HeaderParam("authenticationKey") String authenticationKey,
+            @Parameter(description = "A valid FireScenarioTrigger or an empty one (new instance, {}") FireScenarioTrigger fireScenarioTrigger,
+            @Context SecurityContext securityContext) {
+        service.validate(fireScenarioTrigger, securityContext);
+        service.fireTrigger(fireScenarioTrigger, securityContext);
+    }
 
     @POST
     @Produces("application/json")

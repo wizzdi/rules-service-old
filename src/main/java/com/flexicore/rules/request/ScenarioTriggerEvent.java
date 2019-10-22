@@ -3,25 +3,25 @@ package com.flexicore.rules.request;
 import com.flexicore.rules.model.ScenarioTrigger;
 import com.flexicore.security.SecurityContext;
 
-public class ScenarioTriggerEvent {
+public class ScenarioTriggerEvent<E extends ScenarioTrigger> {
 
     private SecurityContext securityContext;
-    private ScenarioTrigger scenarioTrigger;
+    private E scenarioTrigger;
 
     public SecurityContext getSecurityContext() {
         return securityContext;
     }
 
-    public <T extends ScenarioTriggerEvent> T setSecurityContext(SecurityContext securityContext) {
+    public <T extends ScenarioTriggerEvent<E>> T setSecurityContext(SecurityContext securityContext) {
         this.securityContext = securityContext;
         return (T) this;
     }
 
-    public ScenarioTrigger getScenarioTrigger() {
+    public E getScenarioTrigger() {
         return scenarioTrigger;
     }
 
-    public <T extends ScenarioTriggerEvent> T setScenarioTrigger(ScenarioTrigger scenarioTrigger) {
+    public <T extends ScenarioTriggerEvent<E>> T setScenarioTrigger(E scenarioTrigger) {
         this.scenarioTrigger = scenarioTrigger;
         return (T) this;
     }
