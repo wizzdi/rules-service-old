@@ -16,7 +16,6 @@ import com.flexicore.security.SecurityContext;
 import io.swagger.v3.oas.annotations.ExternalDocumentation;
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
@@ -37,6 +36,7 @@ import javax.ws.rs.core.Context;
                 description = "instructions for how to use FlexiCore Rules",
                 url = "http:www.wizzdi.com"))
 
+
 public class RulesRESTService implements RestServicePlugin {
 
     @Inject
@@ -49,8 +49,8 @@ public class RulesRESTService implements RestServicePlugin {
     @Operation(summary = "getAllRules", description = "get all rules , these are filtered by the server to include only instances the current user can view")
     public PaginationResponse<FlexiCoreRule> getAllRules(
             @HeaderParam("authenticationKey") String authenticationKey,
-            @Parameter(description = "an empty object {} or legal FilteringInformationHolder constructed to filter the returned dataset.") RulesFilter filter,
-            @Context @Parameter(description = "should not be  provided by client, injected by the server") SecurityContext securityContext) {
+           @RequestBody(description = "Valid RulesFilter, can be empty, avoid using non paginated responses",required = true) RulesFilter filter,
+            @Context  SecurityContext securityContext) {
         service.validate(filter, securityContext);
         return service.getAllRules(filter, securityContext);
     }
@@ -61,7 +61,7 @@ public class RulesRESTService implements RestServicePlugin {
     @Operation(summary = "evaluateRule", description = "Evaluate Rule, use for testing a single rule.")
     public EvaluateRuleResponse evaluateRule(
             @HeaderParam("authenticationKey") String authenticationKey,
-            EvaluateRuleRequest evaluateRuleRequest,
+           @RequestBody(description = "Includes RuleId",required  =true) EvaluateRuleRequest evaluateRuleRequest,
             @Context SecurityContext securityContext) {
         service.validate(evaluateRuleRequest, securityContext);
         return service.evaluateRule(evaluateRuleRequest, securityContext);
@@ -73,7 +73,7 @@ public class RulesRESTService implements RestServicePlugin {
     @Operation(summary = "createRule", description = "create Rule")
     public FlexiCoreRule createRule(
             @HeaderParam("authenticationKey") String authenticationKey,
-            RuleCreate creationContainer,
+           @RequestBody(description = "Valid RuleCreate container",required = true) RuleCreate creationContainer,
             @Context SecurityContext securityContext) {
         service.validate(creationContainer, securityContext);
         return service.createRule(creationContainer, securityContext);
@@ -83,10 +83,10 @@ public class RulesRESTService implements RestServicePlugin {
     @POST
     @Produces("application/json")
     @Path("/getAllRuleLinks")
-    @Operation(summary = "getAllRuleLinks", description = "getAllRuleLinks")
+    @Operation(summary = "getAllRuleLinks", description = "getAllRuleLinks, these are child Rules of this Rule, defines the hierarchic nature of the Rules system")
     public PaginationResponse<FlexiCoreRuleLink> getAllRuleLinks(
             @HeaderParam("authenticationKey") String authenticationKey,
-            RuleLinkFilter ruleLinkFilter,
+            @RequestBody(description = "Valid RuleLinkFilter",required = true) RuleLinkFilter ruleLinkFilter,
             @Context SecurityContext securityContext) {
         service.validate(ruleLinkFilter, securityContext);
         return service.getAllRuleLinks(ruleLinkFilter, securityContext);
@@ -99,7 +99,7 @@ public class RulesRESTService implements RestServicePlugin {
     @Operation(summary = "createRuleLink", description = "create Rule link")
     public FlexiCoreRuleLink createRuleLink(
             @HeaderParam("authenticationKey") String authenticationKey,
-            RuleLinkCreate creationContainer,
+           @RequestBody(description = "Valid RuleLinkCreate container ") RuleLinkCreate creationContainer,
             @Context SecurityContext securityContext) {
         service.validate(creationContainer, securityContext);
         return service.createRuleLink(creationContainer, securityContext);

@@ -3,7 +3,9 @@ package com.flexicore.rules.request;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.flexicore.rules.model.FlexiCoreRule;
 import com.flexicore.rules.model.FlexiCoreRuleOp;
+import io.swagger.v3.oas.annotations.media.Schema;
 
+@Schema(description = "Rule creation container ")
 public class RuleLinkCreate {
     private String ruleOpId;
     @JsonIgnore

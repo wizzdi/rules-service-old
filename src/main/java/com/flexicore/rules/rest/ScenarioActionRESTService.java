@@ -26,12 +26,8 @@ import javax.ws.rs.core.Context;
 @OperationsInside
 @Interceptors({SecurityImposer.class, DynamicResourceInjector.class})
 @Path("plugins/ScenarioAction")
-@OpenAPIDefinition(
-        tags = {@Tag(name = "Rules",description = "Rules Service"),
-                @Tag(name = "ScenarioAction",description = "ScenarioAction API for handling Scenario actions, Scenario actions are invoked when Scenario is evaluated to true and there are ScenarioActions connected to it")},
-        externalDocs = @ExternalDocumentation(
-                description = "instructions for how to use FlexiCore Rules, ScenarioActions",
-                url = "http:www.wizzdi.com"))
+@Tag(name = "Rules")
+
 
 public class ScenarioActionRESTService implements RestServicePlugin {
 

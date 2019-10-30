@@ -28,28 +28,21 @@ import javax.ws.rs.core.Context;
 @OperationsInside
 @Interceptors({SecurityImposer.class, DynamicResourceInjector.class})
 @Path("plugins/ScenarioTrigger")
-@OpenAPIDefinition(
-        tags = {@Tag(name = "Rules",description = "Flexicore Rules Service"),
-                @Tag(name = "ScenarioTrigger",description = "APIs for handling ScenarioTrigger CRUD" +
-                        "Scenario is the top hierarchy object in a the Rules system , ScenarioTrigger" +
-                        "is the object triggering Scenario evaluation and if evaluated to true, fires all connected actions. Without confusion" +
-                        "a ScenarioAction may itself trigger another Scenario")},
-        externalDocs = @ExternalDocumentation(
-                description = "instructions for how to use FlexiCore Rules, ScenarioTrigger",
-                url = "http:www.wizzdi.com"))
+@Tag(name = "Rules")
+
 public class ScenarioTriggerRESTService implements RestServicePlugin {
 
     @Inject
     @PluginInfo(version = 1)
     private ScenarioTriggerService service;
-
+//          @Parameter(description = "A valid ScenarioTriggerFilter or an empty one (new instance, {}")
     @POST
     @Produces("application/json")
     @Path("/getAllScenarioTriggers")
     @Operation(summary = "getAllScenarioTriggers", description = "get all ScenarioTriggers, filtered, paged (optionally)")
     public PaginationResponse<ScenarioTrigger> getAllScenarioTrigger(
             @HeaderParam("authenticationKey") String authenticationKey,
-            @Parameter(description = "A valid ScenarioTriggerFilter or an empty one (new instance, {}") ScenarioTriggerFilter filter,
+   ScenarioTriggerFilter filter,
             @Context SecurityContext securityContext) {
         service.validate(filter, securityContext);
         return service.getAllScenarioTriggers(filter, securityContext);
@@ -68,14 +61,14 @@ public class ScenarioTriggerRESTService implements RestServicePlugin {
         service.validate(creationContainer, securityContext);
         return service.createScenarioTrigger(creationContainer, securityContext);
     }
-
+//@Parameter(description = "A valid ScenarioTriggerUpdate instance with a valid Id of an existing ScenarioTrigger ")
     @PUT
     @Produces("application/json")
     @Path("/updateScenarioTrigger")
     @Operation(summary = "updateScenarioTrigger", description = "Update ScenarioTrigger")
     public ScenarioTrigger updateScenarioTrigger(
             @HeaderParam("authenticationKey") String authenticationKey,
-           @Parameter(description = "A valid ScenarioTriggerUpdate instance with a valid Id of an existing ScenarioTrigger ") ScenarioTriggerUpdate scenarioTriggerUpdate,
+            ScenarioTriggerUpdate scenarioTriggerUpdate,
             @Context SecurityContext securityContext) {
         ScenarioTrigger scenarioTrigger=scenarioTriggerUpdate.getId()!=null?service.getByIdOrNull(scenarioTriggerUpdate.getId(),ScenarioTrigger.class,null,securityContext):null;
         if(scenarioTrigger==null ){
