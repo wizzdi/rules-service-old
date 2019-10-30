@@ -24,10 +24,18 @@ public class ScenarioTriggerService implements ServicePlugin {
     private ScenarioTriggerRepository repository;
 
     @Inject
+    @PluginInfo(version = 1)
+    private ScenarioService scenarioService;
+
+    @Inject
     private Event<ScenarioTriggerEvent<?>> scenarioTriggerEvent;
 
 
     public void validate(ScenarioTriggerFilter scenarioTriggerArgumentFilter, SecurityContext securityContext) {
+        if(scenarioTriggerArgumentFilter.getScenarioFilter()!=null){
+            scenarioService.validate(scenarioTriggerArgumentFilter.getScenarioFilter(),securityContext);
+        }
+
 
 
     }

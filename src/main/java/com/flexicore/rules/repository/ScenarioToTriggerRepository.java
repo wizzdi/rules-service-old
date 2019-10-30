@@ -3,10 +3,7 @@ package com.flexicore.rules.repository;
 import com.flexicore.annotations.plugins.PluginInfo;
 import com.flexicore.interfaces.AbstractRepositoryPlugin;
 import com.flexicore.model.QueryInformationHolder;
-import com.flexicore.rules.model.ScenarioToTrigger;
-import com.flexicore.rules.model.ScenarioToTrigger_;
-import com.flexicore.rules.model.ScenarioTrigger;
-import com.flexicore.rules.model.ScenarioTrigger_;
+import com.flexicore.rules.model.*;
 import com.flexicore.rules.request.ScenarioToTriggerFilter;
 import com.flexicore.security.SecurityContext;
 
@@ -35,6 +32,12 @@ public class ScenarioToTriggerRepository extends AbstractRepositoryPlugin {
             Set<String> ids=filter.getScenarioTriggers().parallelStream().map(f->f.getId()).collect(Collectors.toSet());
             Join<ScenarioToTrigger, ScenarioTrigger> join=r.join(ScenarioToTrigger_.scenarioTrigger);
             preds.add(join.get(ScenarioTrigger_.id).in(ids));
+        }
+
+        if(filter.getScenarios()!=null && !filter.getScenarios().isEmpty()){
+            Set<String> ids=filter.getScenarios().parallelStream().map(f->f.getId()).collect(Collectors.toSet());
+            Join<ScenarioToTrigger, Scenario> join=r.join(ScenarioToTrigger_.scenario);
+            preds.add(join.get(Scenario_.id).in(ids));
         }
 
         if(filter.getEnabled()!=null){

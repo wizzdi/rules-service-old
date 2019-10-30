@@ -3,10 +3,7 @@ package com.flexicore.rules.repository;
 import com.flexicore.annotations.plugins.PluginInfo;
 import com.flexicore.interfaces.AbstractRepositoryPlugin;
 import com.flexicore.model.QueryInformationHolder;
-import com.flexicore.rules.model.Scenario;
-import com.flexicore.rules.model.ScenarioToAction;
-import com.flexicore.rules.model.ScenarioToAction_;
-import com.flexicore.rules.model.Scenario_;
+import com.flexicore.rules.model.*;
 import com.flexicore.rules.request.ScenarioToActionFilter;
 import com.flexicore.security.SecurityContext;
 
@@ -35,6 +32,12 @@ public class ScenarioToActionRepository extends AbstractRepositoryPlugin {
             Set<String> ids=filter.getScenarios().parallelStream().map(f->f.getId()).collect(Collectors.toSet());
             Join<ScenarioToAction, Scenario> join=r.join(ScenarioToAction_.scenario);
             preds.add(join.get(Scenario_.id).in(ids));
+        }
+
+        if(filter.getScenarioActions()!=null && !filter.getScenarioActions().isEmpty()){
+            Set<String> ids=filter.getScenarioActions().parallelStream().map(f->f.getId()).collect(Collectors.toSet());
+            Join<ScenarioToAction, ScenarioAction> join=r.join(ScenarioToAction_.scenarioAction);
+            preds.add(join.get(ScenarioToAction_.id).in(ids));
         }
         if(filter.getEnabled()!=null){
             preds.add(cb.equal(r.get(ScenarioToAction_.enabled),filter.getEnabled()));
