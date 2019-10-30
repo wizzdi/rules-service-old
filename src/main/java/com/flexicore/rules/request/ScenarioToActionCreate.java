@@ -16,6 +16,7 @@ public class ScenarioToActionCreate {
     private Scenario scenario;
     @JsonIgnore
     private ScenarioAction scenarioAction;
+    private Boolean enabled;
 
     public String getName() {
         return name;
@@ -71,6 +72,15 @@ public class ScenarioToActionCreate {
 
     public <T extends ScenarioToActionCreate> T setScenarioAction(ScenarioAction scenarioAction) {
         this.scenarioAction = scenarioAction;
+        return (T) this;
+    }
+
+    public Boolean getEnabled() {
+        return enabled;
+    }
+
+    public <T extends ScenarioToActionCreate> T setEnabled(Boolean enabled) {
+        this.enabled = enabled;
         return (T) this;
     }
 }

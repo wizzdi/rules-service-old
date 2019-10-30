@@ -4,10 +4,7 @@ import com.flexicore.annotations.plugins.PluginInfo;
 import com.flexicore.data.jsoncontainers.PaginationResponse;
 import com.flexicore.interfaces.ServicePlugin;
 import com.flexicore.model.Baseclass;
-import com.flexicore.rules.model.FlexiCoreRule;
-import com.flexicore.rules.model.Scenario;
-import com.flexicore.rules.model.ScenarioAction;
-import com.flexicore.rules.model.ScenarioToAction;
+import com.flexicore.rules.model.*;
 import com.flexicore.rules.repository.ScenarioToActionRepository;
 import com.flexicore.rules.request.ScenarioToActionCreate;
 import com.flexicore.rules.request.ScenarioToActionFilter;
@@ -17,7 +14,8 @@ import com.flexicore.service.DynamicInvokersService;
 
 import javax.inject.Inject;
 import javax.ws.rs.BadRequestException;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @PluginInfo(version = 1)
 public class ScenarioToActionService implements ServicePlugin {
@@ -27,14 +25,29 @@ public class ScenarioToActionService implements ServicePlugin {
     @PluginInfo(version = 1)
     private ScenarioToActionRepository repository;
 
-    @Inject
-    private DynamicInvokersService dynamicInvokersService;
+
+    public <T extends Baseclass> List<T> listByIds(Class<T> c, Set<String> ids, SecurityContext securityContext) {
+        return repository.listByIds(c, ids, securityContext);
+    }
+
+    public void validate(ScenarioToActionFilter scenarioToActionFilter, SecurityContext securityContext) {
+
+        Set<String> actionsIds = scenarioToActionFilter.getActionsIds();
+        Map<String, ScenarioAction> actionMap = actionsIds.isEmpty() ? new HashMap<>() : listByIds(ScenarioAction.class, actionsIds, securityContext).parallelStream().collect(Collectors.toMap(f -> f.getId(), f -> f));
+        actionsIds.removeAll(actionMap.keySet());
+        if(!actionsIds.isEmpty()){
+            throw new BadRequestException("No Scenario Action with ids "+actionsIds);
+        }
+        scenarioToActionFilter.setScenarioActions(new ArrayList<>(actionMap.values()));
 
 
-
-    public void validate(ScenarioToActionFilter scenarioToActionArgumentFilter, SecurityContext securityContext) {
-
-
+        Set<String> scenarioIds = scenarioToActionFilter.getScenarioIds();
+        Map<String, Scenario> scenarioMap = scenarioIds.isEmpty() ? new HashMap<>() : listByIds(Scenario.class, scenarioIds, securityContext).parallelStream().collect(Collectors.toMap(f -> f.getId(), f -> f));
+        scenarioIds.removeAll(scenarioMap.keySet());
+        if(!scenarioIds.isEmpty()){
+            throw new BadRequestException("No Scenarios with ids "+scenarioIds);
+        }
+        scenarioToActionFilter.setScenarios(new ArrayList<>(scenarioMap.values()));
     }
 
     public void validate(ScenarioToActionCreate creationContainer, SecurityContext securityContext) {
@@ -104,15 +117,24 @@ public class ScenarioToActionService implements ServicePlugin {
             update=true;
         }
 
+        if(creationContainer.getEnabled()!=null && creationContainer.getEnabled()!=scenarioToAction.isEnabled()){
+            scenarioToAction.setEnabled(creationContainer.getEnabled());
+            update=true;
+        }
+
 
         return update;
 
     }
 
     public PaginationResponse<ScenarioToAction> getAllScenarioToActions(ScenarioToActionFilter filter, SecurityContext securityContext) {
-        List<ScenarioToAction> list=repository.listAllScenarioToActions(filter,securityContext);
+        List<ScenarioToAction> list= listAllScenarioToAction(filter, securityContext);
         long count=repository.countAllScenarioToActions(filter,securityContext);
         return new PaginationResponse<>(list,filter,count);
+    }
+
+    public List<ScenarioToAction> listAllScenarioToAction(ScenarioToActionFilter filter, SecurityContext securityContext) {
+        return repository.listAllScenarioToActions(filter,securityContext);
     }
 
 

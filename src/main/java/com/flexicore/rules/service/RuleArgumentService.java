@@ -4,6 +4,7 @@ import com.flexicore.annotations.plugins.PluginInfo;
 import com.flexicore.data.jsoncontainers.PaginationResponse;
 import com.flexicore.interfaces.ServicePlugin;
 import com.flexicore.model.Baseclass;
+import com.flexicore.model.dynamic.DynamicExecution;
 import com.flexicore.model.dynamic.ExecutionParametersHolder;
 
 import com.flexicore.rules.model.FlexiCoreRuleArgument;
@@ -26,8 +27,7 @@ public class RuleArgumentService implements ServicePlugin {
     @PluginInfo(version = 1)
     private RuleArgumentRepository repository;
 
-    @Inject
-    private DynamicInvokersService dynamicInvokersService;
+ 
 
 
     public void validate(RuleArgumentFilter ruleArgumentArgumentFilter, SecurityContext securityContext) {
@@ -36,9 +36,16 @@ public class RuleArgumentService implements ServicePlugin {
     }
 
     public void validate(RuleArgumentCreate creationContainer, SecurityContext securityContext) {
-        if(creationContainer.getServiceCanonicalNames()==null || creationContainer.getServiceCanonicalNames().size()!=1){
-            throw new BadRequestException("rule argument must contain exactly one service canonical name");
+        String dynamicExecutionId=creationContainer.getDynamicExecutionId();
+        DynamicExecution dynamicExecution=dynamicExecutionId!=null?getByIdOrNull(dynamicExecutionId,DynamicExecution.class,null,securityContext):null;
+        if(dynamicExecution==null && dynamicExecutionId!=null){
+            throw new BadRequestException("No Dynamic Execution With id "+dynamicExecutionId);
         }
+        if(dynamicExecution!=null && dynamicExecution.getServiceCanonicalNames().size()!=1){
+            throw new BadRequestException("dynamic execution for rule argument must contain exactly one service canonical name");
+        }
+        creationContainer.setDynamicExecution(dynamicExecution);
+
     }
 
     public <T extends Baseclass> T getByIdOrNull(String id, Class<T> c, List<String> batchString, SecurityContext securityContext) {
@@ -69,8 +76,20 @@ public class RuleArgumentService implements ServicePlugin {
         return flexiCoreRuleArgument;
     }
 
-    private boolean updateRuleArgumentNoMerge(FlexiCoreRuleArgument flexiCoreRuleArgument, RuleArgumentCreate creationContainer) {
-        boolean update = dynamicInvokersService.updateDynamicExecutionNoMerge(creationContainer, flexiCoreRuleArgument);
+    private boolean updateRuleArgumentNoMerge(FlexiCoreRuleArgument flexiCoreRuleArgument, RuleArgumentCreate ruleArgumentCreate) {
+        boolean update = false;
+        if(ruleArgumentCreate.getName()!=null && !ruleArgumentCreate.getName().equals(flexiCoreRuleArgument.getName())){
+            flexiCoreRuleArgument.setName(ruleArgumentCreate.getName());
+            update=true;
+        }
+        if(ruleArgumentCreate.getDescription()!=null && !ruleArgumentCreate.getDescription().equals(flexiCoreRuleArgument.getDescription())){
+            flexiCoreRuleArgument.setDescription(ruleArgumentCreate.getDescription());
+            update=true;
+        }
+        if(ruleArgumentCreate.getDynamicExecution()!=null &&(flexiCoreRuleArgument.getDynamicExecution()==null|| !ruleArgumentCreate.getDynamicExecution().getId().equals(flexiCoreRuleArgument.getDynamicExecution().getId()))){
+            flexiCoreRuleArgument.setDynamicExecution(ruleArgumentCreate.getDynamicExecution());
+            update=true;
+        }
         return update;
 
     }

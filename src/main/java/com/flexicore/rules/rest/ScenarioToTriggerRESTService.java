@@ -28,48 +28,47 @@ import javax.ws.rs.core.Context;
 @OperationsInside
 @Interceptors({SecurityImposer.class, DynamicResourceInjector.class})
 @Path("plugins/ScenarioToTrigger")
-@Tag(name = "Rules")
 
-
+@Tag(name="Rules")
 public class ScenarioToTriggerRESTService implements RestServicePlugin {
 
     @Inject
     @PluginInfo(version = 1)
     private ScenarioToTriggerService service;
-//@Parameter(description = "Valid ScenarioToTriggerFilter or empty {} ")
+
     @POST
     @Produces("application/json")
     @Path("/getAllScenarioToTriggers")
     @Operation(summary = "getAllScenarioToTriggers", description = "get all ScenarioToTriggers, filtered, paged (optionally")
     public PaginationResponse<ScenarioToTrigger> getAllScenarioToTrigger(
             @HeaderParam("authenticationKey") String authenticationKey,
-             ScenarioToTriggerFilter filter,
+            @Parameter(description = "Valid ScenarioToTriggerFilter or empty {} ") ScenarioToTriggerFilter filter,
             @Context SecurityContext securityContext) {
         service.validate(filter, securityContext);
         return service.getAllScenarioToTriggers(filter, securityContext);
     }
 
 
-// @Parameter(description = "A valid ScenarioToTriggerCreate instance ")
+
     @POST
     @Produces("application/json")
     @Path("/createScenarioToTrigger")
     @Operation(summary = "createScenarioToTrigger", description = "create ScenarioToTrigger, practically linking a ScenarioTrigger with a Scenario")
     public ScenarioToTrigger createScenarioToTrigger(
             @HeaderParam("authenticationKey") String authenticationKey,
-          ScenarioToTriggerCreate creationContainer,
+           @Parameter(description = "A valid ScenarioToTriggerCreate instance ") ScenarioToTriggerCreate creationContainer,
             @Context SecurityContext securityContext) {
         service.validate(creationContainer, securityContext);
         return service.createScenarioToTrigger(creationContainer, securityContext);
     }
-//@Parameter(description = "A valid ScenarioToTriggerUpdate update container")
+
     @PUT
     @Produces("application/json")
     @Path("/updateScenarioToTrigger")
     @Operation(summary = "updateScenarioToTrigger", description = "Update ScenarioToTrigger, update an exciting link")
     public ScenarioToTrigger updateScenarioToTrigger(
             @HeaderParam("authenticationKey") String authenticationKey,
-             ScenarioToTriggerUpdate scenarioToTriggerUpdate,
+            @Parameter(description = "A valid ScenarioToTriggerUpdate update container") ScenarioToTriggerUpdate scenarioToTriggerUpdate,
             @Context SecurityContext securityContext) {
         ScenarioToTrigger scenarioToTrigger=scenarioToTriggerUpdate.getId()!=null?service.getByIdOrNull(scenarioToTriggerUpdate.getId(),ScenarioToTrigger.class,null,securityContext):null;
         if(scenarioToTrigger==null ){

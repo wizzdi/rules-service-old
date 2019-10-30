@@ -16,7 +16,6 @@ import io.swagger.v3.oas.annotations.ExternalDocumentation;
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 import javax.inject.Inject;
@@ -28,8 +27,7 @@ import javax.ws.rs.core.Context;
 @OperationsInside
 @Interceptors({SecurityImposer.class, DynamicResourceInjector.class})
 @Path("plugins/Scenario")
-@Tag(name = "Rules")
-
+@Tag(name="Rules")
 public class ScenarioRESTService implements RestServicePlugin {
 
     @Inject
@@ -48,7 +46,7 @@ public class ScenarioRESTService implements RestServicePlugin {
         return service.getAllScenarios(filter, securityContext);
     }
 
-//@Parameter(description = "A ScenarioCreate Container ")
+
 
     @POST
     @Produces("application/json")
@@ -56,19 +54,19 @@ public class ScenarioRESTService implements RestServicePlugin {
     @Operation(summary = "createScenario", description = "create a new Scenario")
     public Scenario createScenario(
             @HeaderParam("authenticationKey") String authenticationKey,
-            ScenarioCreate creationContainer,
+            @Parameter(description = "A ScenarioCreate Container ") ScenarioCreate creationContainer,
             @Context SecurityContext securityContext) {
         service.validate(creationContainer, securityContext);
         return service.createScenario(creationContainer, securityContext);
     }
-//@Parameter(description = "A Scenario Update container",required = true)
+
     @PUT
     @Produces("application/json")
     @Path("/updateScenario")
     @Operation(summary = "updateScenario", description = "Update Scenario, in a normal workflow, updated once the first top rule is created")
     public Scenario updateScenario(
             @HeaderParam("authenticationKey") String authenticationKey,
-             ScenarioUpdate scenarioUpdate,
+            @Parameter(description = "A Scenario Update container",required = true) ScenarioUpdate scenarioUpdate,
             @Context SecurityContext securityContext) {
         Scenario scenario=scenarioUpdate.getId()!=null?service.getByIdOrNull(scenarioUpdate.getId(),Scenario.class,null,securityContext):null;
         if(scenario==null ){

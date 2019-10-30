@@ -27,10 +27,11 @@ public class ScenarioRepository extends AbstractRepositoryPlugin {
         return getAllFiltered(queryInformationHolder,preds,cb,q,r);
     }
 
-    private void addScenarioPredicate(List<Predicate> preds, Root<Scenario> r, CriteriaBuilder cb, ScenarioFilter filter) {
+    public static void addScenarioPredicate(List<Predicate> preds, Root<Scenario> r, CriteriaBuilder cb, ScenarioFilter filter) {
 
 
     }
+
 
     public long countAllScenarios(ScenarioFilter filter, SecurityContext securityContext) {
         CriteriaBuilder cb=em.getCriteriaBuilder();

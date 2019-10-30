@@ -15,7 +15,6 @@ import com.flexicore.rules.service.RuleToArgumentService;
 import com.flexicore.security.SecurityContext;
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 import javax.inject.Inject;
@@ -27,9 +26,8 @@ import javax.ws.rs.core.Context;
 @OperationsInside
 @Interceptors({SecurityImposer.class, DynamicResourceInjector.class})
 @Path("plugins/RuleToArgument")
-@Tag(name = "Rules")
-@Tag(name="RulesToArgument",description = "RuleToArgument is a M2M link class, it connects A RuleArgument with A Rule." +
-        "This allows RuleArguments to be reused with different Rules, see the RuleArgument service and class. ")
+@Tag(name="Rules")
+
 public class RuleToArgumentServiceRESTService implements RestServicePlugin {
 
     @Inject
@@ -42,7 +40,7 @@ public class RuleToArgumentServiceRESTService implements RestServicePlugin {
     @Operation(summary = "getAllRulesToExecutionParameter", description = "Get all the ExecutionParameters , note that RuleArguments can be reused in different Rules   ")
     public PaginationResponse<RuleToArgument> getAllRulesToExecutionParameter(
             @HeaderParam("authenticationKey") String authenticationKey,
-           @RequestBody(description = "filter RuleToArgument, allows filtering by RuleId(s) , find all connections with a certain Rule or Rules") RuleToArgumentHolderFilter filter,
+            RuleToArgumentHolderFilter filter,
             @Context SecurityContext securityContext) {
         service.validate(filter, securityContext);
         return service.getAllRulesToExecutionParameters(filter, securityContext);
@@ -54,7 +52,7 @@ public class RuleToArgumentServiceRESTService implements RestServicePlugin {
     @Operation(summary = "createRuleToArgument", description = "Links a Rule to RuleArgument, ")
     public RuleToArgument createRuleToArgument(
             @HeaderParam("authenticationKey") String authenticationKey,
-           @RequestBody(description = "A valid RuleToArgumentCreate container") RuleToArgumentCreate creationContainer,
+            RuleToArgumentCreate creationContainer,
             @Context SecurityContext securityContext) {
         service.validate(creationContainer, securityContext);
         return service.createRulesToExecutionParameter(creationContainer, securityContext);
@@ -66,7 +64,7 @@ public class RuleToArgumentServiceRESTService implements RestServicePlugin {
     @Operation(summary = "updateRuleToArgument", description = "Update RuleToArgument")
     public RuleToArgument updateRuleToArgument(
             @HeaderParam("authenticationKey") String authenticationKey,
-            @RequestBody(description = "A valid RuleToArgumentUpdate container") RuleToArgumentUpdate ruleUpdate,
+            RuleToArgumentUpdate ruleUpdate,
             @Context SecurityContext securityContext) {
         RuleToArgument flexiCoreRule=ruleUpdate.getId()!=null?service.getByIdOrNull(ruleUpdate.getId(),RuleToArgument.class,null,securityContext):null;
         if(flexiCoreRule==null ){

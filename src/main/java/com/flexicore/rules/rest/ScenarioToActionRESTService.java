@@ -28,53 +28,50 @@ import javax.ws.rs.core.Context;
 @OperationsInside
 @Interceptors({SecurityImposer.class, DynamicResourceInjector.class})
 @Path("plugins/ScenarioToAction")
-@Tag(name = "Rules")
-
-
-
+@Tag(name="Rules")
 public class ScenarioToActionRESTService implements RestServicePlugin {
 
     @Inject
     @PluginInfo(version = 1)
     private ScenarioToActionService service;
-//  @Parameter(description = "Valid ScenarioToActionFilter, " +
-//                    "can be {} (empty body for all instances," +
-//                    " using pagination in filters is highly recommended")
+
     @POST
     @Produces("application/json")
     @Path("/getAllScenarioToActions")
     @Operation(summary = "getAllScenarioToActions", description = "get all ScenarioToActions")
     public PaginationResponse<ScenarioToAction> getAllScenarioToAction(
             @HeaderParam("authenticationKey") String authenticationKey,
-           ScenarioToActionFilter filter,
+            @Parameter(description = "Valid ScenarioToActionFilter, " +
+                    "can be {} (empty body for all instances," +
+                    " using pagination in filters is highly recommended") ScenarioToActionFilter filter,
             @Context SecurityContext securityContext) {
         service.validate(filter, securityContext);
         return service.getAllScenarioToActions(filter, securityContext);
     }
 
 
-//@Parameter(description = "A valid ScenarioToActionCreate including " +
-//                    "required fields for a new ScenarioToAction")
+
     @POST
     @Produces("application/json")
     @Path("/createScenarioToAction")
     @Operation(summary = "createScenarioToAction", description = "create a new ScenarioToAction")
     public ScenarioToAction createScenarioToAction(
             @HeaderParam("authenticationKey") String authenticationKey,
-             ScenarioToActionCreate creationContainer,
+            @Parameter(description = "A valid ScenarioToActionCreate including " +
+                    "required fields for a new ScenarioToAction") ScenarioToActionCreate creationContainer,
             @Context SecurityContext securityContext) {
         service.validate(creationContainer, securityContext);
         return service.createScenarioToAction(creationContainer, securityContext);
     }
-//  @Parameter(description = "A valid ScenarioToActionUpdate including required" +
-//                    " fields for a updating ScenarioToAction")
+
     @PUT
     @Produces("application/json")
     @Path("/updateScenarioToAction")
     @Operation(summary = "updateScenarioToAction", description = "Update ScenarioToAction")
     public ScenarioToAction updateScenarioToAction(
             @HeaderParam("authenticationKey") String authenticationKey,
-          ScenarioToActionUpdate scenarioToActionUpdate,
+            @Parameter(description = "A valid ScenarioToActionUpdate including required" +
+                    " fields for a updating ScenarioToAction") ScenarioToActionUpdate scenarioToActionUpdate,
             @Context SecurityContext securityContext) {
         ScenarioToAction scenarioToAction=scenarioToActionUpdate.getId()!=null?service.getByIdOrNull(scenarioToActionUpdate.getId(),ScenarioToAction.class,null,securityContext):null;
         if(scenarioToAction==null ){
