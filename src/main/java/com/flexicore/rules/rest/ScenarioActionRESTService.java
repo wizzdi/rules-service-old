@@ -26,9 +26,9 @@ import javax.ws.rs.core.Context;
 @OperationsInside
 @Interceptors({SecurityImposer.class, DynamicResourceInjector.class})
 @Path("plugins/ScenarioAction")
-
 @Tag(name="Rules")
-
+@Tag(name="Scenarios")
+@Tag(name="Actions")
 public class ScenarioActionRESTService implements RestServicePlugin {
 
     @Inject

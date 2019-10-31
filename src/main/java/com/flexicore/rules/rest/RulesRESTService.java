@@ -13,8 +13,6 @@ import com.flexicore.rules.request.*;
 import com.flexicore.rules.response.EvaluateRuleResponse;
 import com.flexicore.rules.service.RulesService;
 import com.flexicore.security.SecurityContext;
-import io.swagger.v3.oas.annotations.ExternalDocumentation;
-import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -28,12 +26,12 @@ import javax.ws.rs.core.Context;
 @OperationsInside
 @Interceptors({SecurityImposer.class, DynamicResourceInjector.class})
 @Path("plugins/Rules")
-@Tag(name = "Rules",description = "Rules Service, the rules service provides required API to " +
-                "create scenarios containing hierarchical rules, the rules in a scenario describe an expression " +
-                "the expression consists of OR,AND,NOT and JavaScript snippet " +
-                "The Javascript is provided with arguments evaluated by the server in run time. " +
-                "a Scenario evaluates to true or false, when true, it may fire ScenarioAction(s) " +
-                "Scenarios are triggered by ScenarioTrigger(s), for example a timer or a TCP incoming message.  "
+@Tag(name = "Rules", description = "Rules Service, the rules service provides required API to " +
+        "create scenarios containing hierarchical rules, the rules in a scenario describe an expression " +
+        "the expression consists of OR,AND,NOT and JavaScript snippet " +
+        "The Javascript is provided with arguments evaluated by the server in run time. " +
+        "a Scenario evaluates to true or false, when true, it may fire ScenarioAction(s) " +
+        "Scenarios are triggered by ScenarioTrigger(s), for example a timer or a TCP incoming message.  "
 )
 
 
@@ -49,8 +47,8 @@ public class RulesRESTService implements RestServicePlugin {
     @Operation(summary = "getAllRules", description = "get all rules , these are filtered by the server to include only instances the current user can view")
     public PaginationResponse<FlexiCoreRule> getAllRules(
             @HeaderParam("authenticationKey") String authenticationKey,
-           @RequestBody(description = "Valid RulesFilter, can be empty, avoid using non paginated responses",required = true) RulesFilter filter,
-            @Context  SecurityContext securityContext) {
+            @RequestBody(description = "Valid RulesFilter, can be empty, avoid using non paginated responses", required = true) RulesFilter filter,
+            @Context SecurityContext securityContext) {
         service.validate(filter, securityContext);
         return service.getAllRules(filter, securityContext);
     }
@@ -61,7 +59,7 @@ public class RulesRESTService implements RestServicePlugin {
     @Operation(summary = "evaluateRule", description = "Evaluate Rule, use for testing a single rule.")
     public EvaluateRuleResponse evaluateRule(
             @HeaderParam("authenticationKey") String authenticationKey,
-           @RequestBody(description = "Includes RuleId",required  =true) EvaluateRuleRequest evaluateRuleRequest,
+            @RequestBody(description = "Includes RuleId", required = true) EvaluateRuleRequest evaluateRuleRequest,
             @Context SecurityContext securityContext) {
         service.validate(evaluateRuleRequest, securityContext);
         return service.evaluateRule(evaluateRuleRequest, securityContext);
@@ -73,7 +71,7 @@ public class RulesRESTService implements RestServicePlugin {
     @Operation(summary = "createRule", description = "create Rule")
     public FlexiCoreRule createRule(
             @HeaderParam("authenticationKey") String authenticationKey,
-           @RequestBody(description = "Valid RuleCreate container",required = true) RuleCreate creationContainer,
+            @RequestBody(description = "Valid RuleCreate container", required = true) RuleCreate creationContainer,
             @Context SecurityContext securityContext) {
         service.validate(creationContainer, securityContext);
         return service.createRule(creationContainer, securityContext);
@@ -86,7 +84,7 @@ public class RulesRESTService implements RestServicePlugin {
     @Operation(summary = "getAllRuleLinks", description = "getAllRuleLinks, these are child Rules of this Rule, defines the hierarchic nature of the Rules system")
     public PaginationResponse<FlexiCoreRuleLink> getAllRuleLinks(
             @HeaderParam("authenticationKey") String authenticationKey,
-            @RequestBody(description = "Valid RuleLinkFilter",required = true) RuleLinkFilter ruleLinkFilter,
+            @RequestBody(description = "Valid RuleLinkFilter", required = true) RuleLinkFilter ruleLinkFilter,
             @Context SecurityContext securityContext) {
         service.validate(ruleLinkFilter, securityContext);
         return service.getAllRuleLinks(ruleLinkFilter, securityContext);
@@ -99,7 +97,7 @@ public class RulesRESTService implements RestServicePlugin {
     @Operation(summary = "createRuleLink", description = "create Rule link")
     public FlexiCoreRuleLink createRuleLink(
             @HeaderParam("authenticationKey") String authenticationKey,
-           @RequestBody(description = "Valid RuleLinkCreate container ") RuleLinkCreate creationContainer,
+            @RequestBody(description = "Valid RuleLinkCreate container ") RuleLinkCreate creationContainer,
             @Context SecurityContext securityContext) {
         service.validate(creationContainer, securityContext);
         return service.createRuleLink(creationContainer, securityContext);
@@ -113,9 +111,9 @@ public class RulesRESTService implements RestServicePlugin {
             @HeaderParam("authenticationKey") String authenticationKey,
             RuleLinkUpdate ruleLinkUpdate,
             @Context SecurityContext securityContext) {
-        FlexiCoreRuleLink flexiCoreRuleLink=ruleLinkUpdate.getId()!=null?service.getByIdOrNull(ruleLinkUpdate.getId(),FlexiCoreRuleLink.class,null,securityContext):null;
-        if(flexiCoreRuleLink==null ){
-            throw new BadRequestException("No FlexiCoreRuleLink with id "+ruleLinkUpdate.getId());
+        FlexiCoreRuleLink flexiCoreRuleLink = ruleLinkUpdate.getId() != null ? service.getByIdOrNull(ruleLinkUpdate.getId(), FlexiCoreRuleLink.class, null, securityContext) : null;
+        if (flexiCoreRuleLink == null) {
+            throw new BadRequestException("No FlexiCoreRuleLink with id " + ruleLinkUpdate.getId());
         }
         ruleLinkUpdate.setFlexiCoreRuleLink(flexiCoreRuleLink);
         service.validate(ruleLinkUpdate, securityContext);
@@ -143,9 +141,9 @@ public class RulesRESTService implements RestServicePlugin {
             @HeaderParam("authenticationKey") String authenticationKey,
             RuleUpdateOp ruleUpdate,
             @Context SecurityContext securityContext) {
-        FlexiCoreRuleOp flexiCoreRuleOp=ruleUpdate.getId()!=null?service.getByIdOrNull(ruleUpdate.getId(),FlexiCoreRuleOp.class,null,securityContext):null;
-        if(flexiCoreRuleOp==null ){
-            throw new BadRequestException("No FlexiCoreRuleOp with id "+ruleUpdate.getId());
+        FlexiCoreRuleOp flexiCoreRuleOp = ruleUpdate.getId() != null ? service.getByIdOrNull(ruleUpdate.getId(), FlexiCoreRuleOp.class, null, securityContext) : null;
+        if (flexiCoreRuleOp == null) {
+            throw new BadRequestException("No FlexiCoreRuleOp with id " + ruleUpdate.getId());
         }
         ruleUpdate.setFlexiCoreRuleOp(flexiCoreRuleOp);
         return service.updateRuleOp(ruleUpdate, securityContext);
@@ -159,9 +157,9 @@ public class RulesRESTService implements RestServicePlugin {
             @HeaderParam("authenticationKey") String authenticationKey,
             RuleUpdate ruleUpdate,
             @Context SecurityContext securityContext) {
-        FlexiCoreRule flexiCoreRule=ruleUpdate.getId()!=null?service.getByIdOrNull(ruleUpdate.getId(),FlexiCoreRule.class,null,securityContext):null;
-        if(flexiCoreRule==null ){
-            throw new BadRequestException("No Rule with id "+ruleUpdate.getId());
+        FlexiCoreRule flexiCoreRule = ruleUpdate.getId() != null ? service.getByIdOrNull(ruleUpdate.getId(), FlexiCoreRule.class, null, securityContext) : null;
+        if (flexiCoreRule == null) {
+            throw new BadRequestException("No Rule with id " + ruleUpdate.getId());
         }
         ruleUpdate.setFlexiCoreRule(flexiCoreRule);
         service.validate(ruleUpdate, securityContext);
