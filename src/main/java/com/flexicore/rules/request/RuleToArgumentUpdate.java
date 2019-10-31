@@ -11,7 +11,7 @@ public class RuleToArgumentUpdate extends RuleToArgumentCreate{
     private String id;
     @JsonIgnore
     private RuleToArgument RuleToArgument;
-    @Schema(description = "The id of a previously created RuleToArgument obejct")
+    @Schema(description = "The id of a previously created RuleToArgument instance",required = true)
     public String getId() {
         return id;
     }

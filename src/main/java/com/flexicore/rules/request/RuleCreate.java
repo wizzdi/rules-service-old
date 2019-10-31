@@ -2,7 +2,9 @@ package com.flexicore.rules.request;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.flexicore.model.FileResource;
+import io.swagger.v3.oas.annotations.media.Schema;
 
+@Schema(description = "RuleCreate container")
 public class RuleCreate {
     private String name;
     private String description;
@@ -13,7 +15,7 @@ public class RuleCreate {
     public String getName() {
         return name;
     }
-
+    @Schema(description = "Name of the Rule")
     public <T extends RuleCreate> T setName(String name) {
         this.name = name;
         return (T) this;
@@ -22,7 +24,7 @@ public class RuleCreate {
     public String getDescription() {
         return description;
     }
-
+    @Schema(description = "Description of the Rule")
     public <T extends RuleCreate> T setDescription(String description) {
         this.description = description;
         return (T) this;
@@ -31,7 +33,7 @@ public class RuleCreate {
     public String getEvaluationScriptId() {
         return evaluationScriptId;
     }
-
+    @Schema(description = "Id of the FileResource of the Script if eny",required = false)
     public <T extends RuleCreate> T setEvaluationScriptId(String evaluationScriptId) {
         this.evaluationScriptId = evaluationScriptId;
         return (T) this;

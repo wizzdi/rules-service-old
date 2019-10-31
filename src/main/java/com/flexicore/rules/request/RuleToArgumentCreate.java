@@ -35,7 +35,7 @@ public class RuleToArgumentCreate {
         this.description = description;
         return (T) this;
     }
-    @Schema(description = "The RuleId to link with")
+    @Schema(description = "The RuleId to link with",required = true)
     public String getFlexiCoreRuleId() {
         return flexiCoreRuleId;
     }
@@ -54,7 +54,7 @@ public class RuleToArgumentCreate {
         this.flexiCoreRule = flexiCoreRule;
         return (T) this;
     }
-    @Schema(description = "The RuleArgument ID to link with")
+    @Schema(description = "The RuleArgument Id to link with",required = true)
     public String getFlexicoreRuleArgumentId() {
         return flexicoreRuleArgumentId;
     }

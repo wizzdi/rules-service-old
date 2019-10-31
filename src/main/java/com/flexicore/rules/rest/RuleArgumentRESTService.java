@@ -30,6 +30,7 @@ import javax.ws.rs.core.Context;
 @Interceptors({SecurityImposer.class, DynamicResourceInjector.class})
 @Path("plugins/RuleArgument")
 @Tag(name="Rules")
+@Tag(name="Rules Arguments")
 
 public class RuleArgumentRESTService implements RestServicePlugin {
 
@@ -59,7 +60,7 @@ public class RuleArgumentRESTService implements RestServicePlugin {
             "The argument defines a list of SubParameters providing a filter for returning the desired collection")
     public FlexiCoreRuleArgument createRuleArgument(
             @HeaderParam("authenticationKey") String authenticationKey,
-            @Parameter(description = "Properly created RuleArgumentCreate") RuleArgumentCreate creationContainer,
+            @Parameter(description = "Properly created RuleArgumentCreate container") RuleArgumentCreate creationContainer,
             @Context SecurityContext securityContext) {
         service.validate(creationContainer, securityContext);
         return service.createRuleArgument(creationContainer, securityContext);
