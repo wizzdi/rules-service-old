@@ -1,9 +1,10 @@
 package com.flexicore.rules.request;
 
+import com.flexicore.model.dynamic.ExecutionContext;
 import com.flexicore.rules.model.ScenarioTrigger;
 import com.flexicore.security.SecurityContext;
 
-public class ScenarioTriggerEvent<E extends ScenarioTrigger> {
+public class ScenarioTriggerEvent<E extends ScenarioTrigger> implements ExecutionContext {
 
     private SecurityContext securityContext;
     private E scenarioTrigger;

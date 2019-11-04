@@ -167,19 +167,23 @@ public class RulesService implements ServicePlugin {
     private EvaluateRuleResponse evaluateRuleNode(EvaluateRuleRequest evaluateRuleRequest, SecurityContext securityContext) {
         EvaluateRuleResponse evaluateRuleResponse = new EvaluateRuleResponse();
         FlexiCoreRule flexiCoreRule = evaluateRuleRequest.getRule();
+        ScenarioTriggerEvent<?> scenarioTriggerEvent = evaluateRuleRequest.getScenarioTriggerEvent();
+
         List<RuleToArgument> arguments = ruleToArgumentHolderService.listRuleToArgument(new RuleToArgumentHolderFilter().setRules(Collections.singletonList(flexiCoreRule)), securityContext);
         List<ExecuteInvokerResponse> results = arguments.stream()
                 .sorted(Comparator.comparing(f -> f.getOrdinal()))
                 .map(f -> f.getFlexiCoreRuleArgument())
-                .map(f -> f.getDynamicExecution()!=null?dynamicInvokersService.executeInvoker(f.getDynamicExecution(), securityContext):new ExecuteInvokersResponse(new ArrayList<>()))
+                .map(f -> f.getDynamicExecution()!=null?dynamicInvokersService.executeInvoker(f.getDynamicExecution(),scenarioTriggerEvent, securityContext):new ExecuteInvokersResponse(new ArrayList<>()))
                 .filter(f -> f.getResponses() != null && !f.getResponses().isEmpty()).map(f -> f.getResponses().get(0))
                 .collect(Collectors.toList());
         FileResource script = flexiCoreRule.getEvaluationScript();
         try {
             File file = new File(script.getFullPath());
             ScriptObjectMirror loaded = loadScript(file, buildFunctionTableFunction(FunctionTypes.EVALUATE));
-            Object[] resultsArr = new ExecuteInvokerResponse[results.size()];
+            Object[] resultsArr = new Object[results.size()+2];
             results.toArray(resultsArr);
+            resultsArr[results.size()]=scenarioTriggerEvent;
+            resultsArr[results.size()+1]=securityContext;
             boolean res = (boolean) loaded.callMember(FunctionTypes.EVALUATE.getFunctionName(), resultsArr);
             evaluateRuleResponse.setResult(res);
 

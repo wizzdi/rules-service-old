@@ -9,6 +9,8 @@ public class EvaluateRuleRequest {
     private String ruleId;
     @JsonIgnore
     private FlexiCoreRule rule;
+    @JsonIgnore
+    private ScenarioTriggerEvent<?> scenarioTriggerEvent;
 
     public String getRuleId() {
         return ruleId;
@@ -26,6 +28,16 @@ public class EvaluateRuleRequest {
 
     public <T extends EvaluateRuleRequest> T setRule(FlexiCoreRule rule) {
         this.rule = rule;
+        return (T) this;
+    }
+
+    @JsonIgnore
+    public ScenarioTriggerEvent<?> getScenarioTriggerEvent() {
+        return scenarioTriggerEvent;
+    }
+
+    public <T extends EvaluateRuleRequest> T setScenarioTriggerEvent(ScenarioTriggerEvent<?> scenarioTriggerEvent) {
+        this.scenarioTriggerEvent = scenarioTriggerEvent;
         return (T) this;
     }
 }

@@ -52,12 +52,12 @@ public class ScenarioManager implements ServicePlugin {
         logger.info("Scenario Trigger Event " + scenarioTriggerEvent + "captured by Scenario Manager");
         SecurityContext securityContext = scenarioTriggerEvent.getSecurityContext();
         ScenarioTrigger scenarioTrigger = scenarioTriggerEvent.getScenarioTrigger();
-        List<Scenario> activeScenarios = scenarioToTriggerService.listAllScenarioToTrigger(new ScenarioToTriggerFilter().setEnabled(true).setScenarioTriggers(Collections.singletonList(scenarioTrigger)), securityContext).stream().map(ScenarioToTrigger::getScenario).filter(distinctByKey(Baseclass::getId)).filter(f -> f.getFlexiCoreRule() != null && rulesService.evaluateRule(new EvaluateRuleRequest().setRule(f.getFlexiCoreRule()), securityContext).isResult()).collect(Collectors.toList());
+        List<Scenario> activeScenarios = scenarioToTriggerService.listAllScenarioToTrigger(new ScenarioToTriggerFilter().setEnabled(true).setScenarioTriggers(Collections.singletonList(scenarioTrigger)), securityContext).stream().map(ScenarioToTrigger::getScenario).filter(distinctByKey(Baseclass::getId)).filter(f -> f.getFlexiCoreRule() != null && rulesService.evaluateRule(new EvaluateRuleRequest().setScenarioTriggerEvent(scenarioTriggerEvent).setRule(f.getFlexiCoreRule()), securityContext).isResult()).collect(Collectors.toList());
         if (!activeScenarios.isEmpty()) {
             logger.info("Trigger had caused activated scenarios: "+activeScenarios.parallelStream().map(Baseclass::getId).collect(Collectors.joining(",")));
             List<ScenarioAction> scenarioActions = scenarioToActionService.listAllScenarioToAction(new ScenarioToActionFilter().setEnabled(true).setScenarios(activeScenarios), securityContext).parallelStream().map(ScenarioToAction::getScenarioAction).filter(f -> f.getDynamicExecution() != null).collect(Collectors.toList());
             for (ScenarioAction scenarioAction : scenarioActions) {
-                ExecuteInvokersResponse response=dynamicInvokersService.executeInvoker(scenarioAction.getDynamicExecution(), securityContext);
+                ExecuteInvokersResponse response=dynamicInvokersService.executeInvoker(scenarioAction.getDynamicExecution(),scenarioTriggerEvent, securityContext);
                 logger.info("invocation of scenario action "+scenarioAction.getId()+"resulted in "+response);
             }
         }
