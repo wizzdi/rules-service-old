@@ -4,7 +4,9 @@ import com.flexicore.annotations.plugins.PluginInfo;
 import com.flexicore.data.jsoncontainers.PaginationResponse;
 import com.flexicore.interfaces.ServicePlugin;
 import com.flexicore.model.Baseclass;
-import com.flexicore.rules.model.FlexiCoreRule;
+import com.flexicore.rules.events.ManualFireEvent;
+import com.flexicore.rules.events.ScenarioEvent;
+import com.flexicore.rules.interfaces.IScenarioTriggerService;
 import com.flexicore.rules.model.ScenarioTrigger;
 import com.flexicore.rules.repository.ScenarioTriggerRepository;
 import com.flexicore.rules.request.*;
@@ -13,10 +15,12 @@ import com.flexicore.security.SecurityContext;
 import javax.enterprise.event.Event;
 import javax.inject.Inject;
 import javax.ws.rs.BadRequestException;
+import java.sql.Date;
+import java.time.Instant;
 import java.util.List;
 
 @PluginInfo(version = 1)
-public class ScenarioTriggerService implements ServicePlugin {
+public class ScenarioTriggerService implements IScenarioTriggerService {
 
 
     @Inject
@@ -40,6 +44,7 @@ public class ScenarioTriggerService implements ServicePlugin {
 
     }
 
+    @Override
     public void validate(ScenarioTriggerCreate creationContainer, SecurityContext securityContext) {
 
 
@@ -66,14 +71,16 @@ public class ScenarioTriggerService implements ServicePlugin {
 
     }
 
-    private ScenarioTrigger createScenarioTriggerNoMerge(ScenarioTriggerCreate creationContainer, SecurityContext securityContext) {
+    @Override
+    public ScenarioTrigger createScenarioTriggerNoMerge(ScenarioTriggerCreate creationContainer, SecurityContext securityContext) {
         ScenarioTrigger scenarioTrigger = ScenarioTrigger.s().CreateUnchecked(creationContainer.getName(), securityContext);
         scenarioTrigger.Init();
         updateScenarioTriggerNoMerge(scenarioTrigger, creationContainer);
         return scenarioTrigger;
     }
 
-    private boolean updateScenarioTriggerNoMerge(ScenarioTrigger scenarioTrigger, ScenarioTriggerCreate creationContainer) {
+    @Override
+    public boolean updateScenarioTriggerNoMerge(ScenarioTrigger scenarioTrigger, ScenarioTriggerCreate creationContainer) {
         boolean update = false;
         if (creationContainer.getName() != null && !creationContainer.getName().equals(scenarioTrigger.getName())) {
             scenarioTrigger.setName(creationContainer.getName());
@@ -116,9 +123,20 @@ public class ScenarioTriggerService implements ServicePlugin {
     }
 
     public void fireTrigger(FireScenarioTrigger fireScenarioTrigger, SecurityContext securityContext) {
-        ScenarioTriggerEvent<?> scenarioTriggerEvent=new ScenarioTriggerEvent<>()
-                .setScenarioTrigger(fireScenarioTrigger.getScenarioTrigger())
-                .setSecurityContext(securityContext);
+        ScenarioTrigger scenarioTrigger = fireScenarioTrigger.getScenarioTrigger();
+        ManualFireEvent manualFireEvent = getManualFireEvent(fireScenarioTrigger.getScenarioTrigger(), securityContext);
+        ScenarioTriggerEvent<ScenarioTrigger> scenarioTriggerEvent=new ScenarioTriggerEvent<>()
+                .setScenarioTrigger(scenarioTrigger)
+                .setSecurityContext(securityContext)
+                .setScenarioEvent(manualFireEvent);
         this.scenarioTriggerEvent.fireAsync(scenarioTriggerEvent);
+    }
+
+    private ManualFireEvent getManualFireEvent(ScenarioTrigger scenarioTrigger, SecurityContext securityContext){
+        return new ManualFireEvent()
+                .setFiringUserId(securityContext.getUser().getId())
+                .setTriggerId(scenarioTrigger.getId())
+                .setEventDate(Date.from(Instant.now()))
+                .setHumanReadableText("Manual Firing of trigger "+scenarioTrigger.getName()+"("+scenarioTrigger.getId()+")");
     }
 }

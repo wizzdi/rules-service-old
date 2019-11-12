@@ -12,13 +12,9 @@ import com.flexicore.rules.request.RuleArgumentFilter;
 import com.flexicore.rules.request.RuleArgumentUpdate;
 import com.flexicore.rules.service.RuleArgumentService;
 import com.flexicore.security.SecurityContext;
-import io.swagger.v3.oas.annotations.ExternalDocumentation;
-import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import io.swagger.v3.oas.annotations.tags.Tags;
 
 import javax.inject.Inject;
 import javax.interceptor.Interceptors;
@@ -29,15 +25,16 @@ import javax.ws.rs.core.Context;
 @OperationsInside
 @Interceptors({SecurityImposer.class, DynamicResourceInjector.class})
 @Path("plugins/RuleArgument")
-@Tag(name="Rules")
-@Tag(name="Rules Arguments")
+@Tag(name = "Rules")
+@Tag(name = "Rules Arguments")
 
 public class RuleArgumentRESTService implements RestServicePlugin {
 
     @Inject
     @PluginInfo(version = 1)
     private RuleArgumentService service;
-//        @Parameter(description = " an empty object {} or fully/partially filled filter")
+
+    //        @Parameter(description = " an empty object {} or fully/partially filled filter")
     @POST
     @Produces("application/json")
     @Path("/getAllRuleArgument")
@@ -45,8 +42,8 @@ public class RuleArgumentRESTService implements RestServicePlugin {
 
     public PaginationResponse<FlexiCoreRuleArgument> getAllRuleArgument(
             @HeaderParam("authenticationKey") String authenticationKey,
-    RuleArgumentFilter filter,
-           @Parameter(name = "SecurityContext",description = "Must be last in parameters and injected by the system") @Context SecurityContext securityContext) {
+            RuleArgumentFilter filter,
+            @Parameter(name = "SecurityContext", description = "Must be last in parameters and injected by the system") @Context SecurityContext securityContext) {
         service.validate(filter, securityContext);
         return service.getAllRuleArguments(filter, securityContext);
     }

@@ -7,6 +7,7 @@ import com.flexicore.rules.model.*;
 import com.flexicore.rules.request.RuleLinkFilter;
 import com.flexicore.rules.request.RulesFilter;
 import com.flexicore.security.SecurityContext;
+import com.flexicore.utils.FlexiCore;
 
 import javax.persistence.criteria.*;
 import java.util.ArrayList;
@@ -27,7 +28,7 @@ public class RulesRepository extends AbstractRepositoryPlugin {
         return getAllFiltered(queryInformationHolder,preds,cb,q,r);
     }
 
-    private void addRulesPredicate(List<Predicate> preds, Root<FlexiCoreRule> r, CriteriaBuilder cb, RulesFilter filter) {
+    public static void addRulesPredicate(List<Predicate> preds, Root<FlexiCoreRule> r, CriteriaBuilder cb, RulesFilter filter) {
 
 
     }
@@ -62,11 +63,17 @@ public class RulesRepository extends AbstractRepositoryPlugin {
         return countAllFiltered(queryInformationHolder,preds,cb,q,r);
     }
 
-    private void addRulesLinkPredicate(List<Predicate> preds, Root<FlexiCoreRuleLink> r, CriteriaBuilder cb, RuleLinkFilter ruleLinkFilter) {
+    public static void addRulesLinkPredicate(List<Predicate> preds, Root<FlexiCoreRuleLink> r, CriteriaBuilder cb, RuleLinkFilter ruleLinkFilter) {
         if(ruleLinkFilter.getFlexiCoreRuleOps()!=null && !ruleLinkFilter.getFlexiCoreRuleOps().isEmpty()){
             Set<String> ids=ruleLinkFilter.getFlexiCoreRuleOps().parallelStream().map(f->f.getId()).collect(Collectors.toSet());
             Join<FlexiCoreRuleLink, FlexiCoreRuleOp> join=r.join(FlexiCoreRuleLink_.ruleOp);
             preds.add(join.get(FlexiCoreRuleOp_.id).in(ids));
+        }
+
+        if(ruleLinkFilter.getFlexiCoreRules()!=null && !ruleLinkFilter.getFlexiCoreRules().isEmpty()){
+            Set<String> ids=ruleLinkFilter.getFlexiCoreRules().parallelStream().map(f->f.getId()).collect(Collectors.toSet());
+            Join<FlexiCoreRuleLink, FlexiCoreRule> join=r.join(FlexiCoreRuleLink_.ruleToEval);
+            preds.add(join.get(FlexiCoreRule_.id).in(ids));
         }
 
     }

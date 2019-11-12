@@ -73,6 +73,7 @@ public class ScenarioActionRESTService implements RestServicePlugin {
         if(scenarioAction==null ){
             throw new BadRequestException("No ScenarioAction with id "+scenarioActionUpdate.getId());
         }
+        scenarioActionUpdate.setScenarioAction(scenarioAction);
         service.validate(scenarioActionUpdate, securityContext);
         return service.updateScenarioAction(scenarioActionUpdate, securityContext);
     }

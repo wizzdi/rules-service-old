@@ -146,10 +146,13 @@ public class RulesService implements ServicePlugin {
         boolean res=false;
         switch (flexiCoreRuleOp.getRuleOpType()){
             case OR:
-                res=flexiCoreRules.stream().anyMatch(f->evaluateRule(new EvaluateRuleRequest().setRule(f),securityContext).isResult());
+                res=flexiCoreRules.stream().anyMatch(f->evaluateRule(new EvaluateRuleRequest().setScenarioTriggerEvent(evaluateRuleRequest.getScenarioTriggerEvent()).setRule(f),securityContext).isResult());
                 break;
             case AND:
-                res= flexiCoreRules.stream().allMatch(f->evaluateRule(new EvaluateRuleRequest().setRule(f),securityContext).isResult());
+                res= flexiCoreRules.stream().allMatch(f->evaluateRule(new EvaluateRuleRequest().setScenarioTriggerEvent(evaluateRuleRequest.getScenarioTriggerEvent()).setRule(f),securityContext).isResult());
+                break;
+            case NOT:
+                res= flexiCoreRules.stream().noneMatch(f->evaluateRule(new EvaluateRuleRequest().setScenarioTriggerEvent(evaluateRuleRequest.getScenarioTriggerEvent()).setRule(f),securityContext).isResult());
                 break;
 
 
@@ -322,6 +325,14 @@ public class RulesService implements ServicePlugin {
             throw new BadRequestException("No Rule Ops with ids "+opIds);
         }
         ruleLinkFilter.setFlexiCoreRuleOps(new ArrayList<>(opMap.values()));
+
+        Set<String> rulesIds=ruleLinkFilter.getRulesIds();
+        Map<String,FlexiCoreRule> ruleMap=rulesIds.isEmpty()?new HashMap<>():repository.listByIds(FlexiCoreRule.class,rulesIds,securityContext).parallelStream().collect(Collectors.toMap(f->f.getId(),f->f));
+        rulesIds.removeAll(ruleMap.keySet());
+        if(!rulesIds.isEmpty()){
+            throw new BadRequestException("No Rules with ids "+rulesIds);
+        }
+        ruleLinkFilter.setFlexiCoreRules(new ArrayList<>(ruleMap.values()));
     }
 
     public PaginationResponse<FlexiCoreRuleLink> getAllRuleLinks(RuleLinkFilter ruleLinkFilter, SecurityContext securityContext) {
