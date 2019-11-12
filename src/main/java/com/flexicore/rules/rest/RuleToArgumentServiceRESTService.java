@@ -66,10 +66,11 @@ public class RuleToArgumentServiceRESTService implements RestServicePlugin {
             @HeaderParam("authenticationKey") String authenticationKey,
             RuleToArgumentUpdate ruleUpdate,
             @Context SecurityContext securityContext) {
-        RuleToArgument flexiCoreRule=ruleUpdate.getId()!=null?service.getByIdOrNull(ruleUpdate.getId(),RuleToArgument.class,null,securityContext):null;
-        if(flexiCoreRule==null ){
+        RuleToArgument ruleToArgument=ruleUpdate.getId()!=null?service.getByIdOrNull(ruleUpdate.getId(),RuleToArgument.class,null,securityContext):null;
+        if(ruleToArgument==null ){
             throw new BadRequestException("No RuleToArgument with id "+ruleUpdate.getId());
         }
+        ruleUpdate.setRuleToArgument(ruleToArgument);
         service.validate(ruleUpdate, securityContext);
         return service.updateRulesToExecutionParameter(ruleUpdate, securityContext);
     }

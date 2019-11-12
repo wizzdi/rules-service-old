@@ -75,6 +75,7 @@ public class RuleArgumentRESTService implements RestServicePlugin {
         if (flexiCoreRuleArgument == null) {
             throw new BadRequestException("No Rule with id " + ruleUpdate.getId());
         }
+        ruleUpdate.setFlexiCoreRuleArgument(flexiCoreRuleArgument);
         service.validate(ruleUpdate, securityContext);
         return service.updateRuleArgument(ruleUpdate, securityContext);
     }

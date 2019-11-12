@@ -75,6 +75,7 @@ public class ScenarioToTriggerRESTService implements RestServicePlugin {
         if(scenarioToTrigger==null ){
             throw new BadRequestException("No ScenarioToTrigger with id "+scenarioToTriggerUpdate.getId());
         }
+        scenarioToTriggerUpdate.setScenarioToTrigger(scenarioToTrigger);
         service.validate(scenarioToTriggerUpdate, securityContext);
         return service.updateScenarioToTrigger(scenarioToTriggerUpdate, securityContext);
     }
