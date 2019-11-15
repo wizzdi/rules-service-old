@@ -20,4 +20,11 @@ public class ManualFireEvent extends ScenarioEvent {
         this.firingUserId = firingUserId;
         return (T) this;
     }
+
+    @Override
+    public String toString() {
+        return "ManualFireEvent{" +
+                "firingUserId='" + firingUserId + '\'' +
+                "} " + super.toString();
+    }
 }

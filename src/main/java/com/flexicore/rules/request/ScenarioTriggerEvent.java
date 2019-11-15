@@ -41,7 +41,9 @@ public class ScenarioTriggerEvent<E extends ScenarioTrigger> implements Executio
     @Override
     public String toString() {
         return "ScenarioTriggerEvent{" +
-                "scenarioTrigger=" + scenarioTrigger +
+                "securityContext=" + securityContext +
+                ", scenarioTrigger=" + scenarioTrigger +
+                ", scenarioEvent=" + scenarioEvent +
                 '}';
     }
 }

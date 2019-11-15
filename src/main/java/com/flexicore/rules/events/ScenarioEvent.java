@@ -42,4 +42,12 @@ public class ScenarioEvent extends Event {
         String existing = getHumanReadableText();
         setHumanReadableText(existing !=null?(existing+","+s):s);
     }
+
+    @Override
+    public String toString() {
+        return "ScenarioEvent{" +
+                "triggerId='" + triggerId + '\'' +
+                ", executedActions=" + executedActions +
+                "} " + super.toString();
+    }
 }
