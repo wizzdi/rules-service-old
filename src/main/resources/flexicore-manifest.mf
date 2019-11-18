@@ -1,4 +1,4 @@
 uuid=${project.groupId}.${project.artifactId}
 version=${project.version}
-provides=com.flexicore.rules.request.ScenarioTriggerEvent,com.flexicore.rules.request.ScenarioTriggerCreate,com.flexicore.rules.interfaces.IScenarioTriggerService
+provides=com.flexicore.rules.request.ScenarioTriggerEvent,com.flexicore.rules.request.ScenarioTriggerCreate,com.flexicore.rules.interfaces.IScenarioTriggerService,com.flexicore.rules.events.ScenarioEvent
 requires=com.flexicore.product.interfaces.IEventService,com.flexicore.product.model.Event
