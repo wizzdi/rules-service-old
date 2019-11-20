@@ -77,6 +77,18 @@ public class RulesRESTService implements RestServicePlugin {
         return service.createRule(creationContainer, securityContext);
     }
 
+    @POST
+    @Produces("application/json")
+    @Path("/clearLog")
+    @Operation(summary = "clearLog", description = "Clear Log")
+    public void clearLog(
+            @HeaderParam("authenticationKey") String authenticationKey,
+            @RequestBody(description = "Valid ClearLogRequest container", required = true) ClearLogRequest creationContainer,
+            @Context SecurityContext securityContext) {
+        service.validate(creationContainer, securityContext);
+        service.clearLog(creationContainer, securityContext);
+    }
+
 
     @POST
     @Produces("application/json")

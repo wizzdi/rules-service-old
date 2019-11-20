@@ -13,19 +13,20 @@ import com.flexicore.rules.request.*;
 import com.flexicore.rules.response.EvaluateRuleResponse;
 import com.flexicore.security.SecurityContext;
 import com.flexicore.service.DynamicInvokersService;
+import com.flexicore.service.FileResourceService;
 import jdk.nashorn.api.scripting.ScriptObjectMirror;
 import org.apache.commons.io.FileUtils;
 
-import javax.enterprise.event.ObservesAsync;
 import javax.inject.Inject;
 import javax.script.*;
 import javax.ws.rs.BadRequestException;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.channels.FileChannel;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.logging.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -45,6 +46,8 @@ public class RulesService implements ServicePlugin {
     @PluginInfo(version = 1)
     private RuleToArgumentService ruleToArgumentHolderService;
 
+    @Inject
+    private FileResourceService fileResourceService;
     @Inject
     private Logger logger;
 
@@ -68,8 +71,15 @@ public class RulesService implements ServicePlugin {
     }
 
     public FlexiCoreRule createRule(RuleCreate creationContainer, SecurityContext securityContext) {
+        List<Object> toMerge=new ArrayList<>();
+        File log = new File(FileResourceService.generateNewPathForFileResource(creationContainer.getName(), securityContext.getUser()) + ".log");
+        FileResource fileResource=fileResourceService.createDontPersist(log.getAbsolutePath(),securityContext);
+        creationContainer.setLogFileResource(fileResource);
         FlexiCoreRule flexiCoreRule = createRuleNoMerge(creationContainer, securityContext);
-        repository.merge(flexiCoreRule);
+        toMerge.add(flexiCoreRule);
+
+        toMerge.add(fileResource);
+        repository.massMerge(toMerge);
         return flexiCoreRule;
 
     }
@@ -105,6 +115,11 @@ public class RulesService implements ServicePlugin {
 
         if (creationContainer.getEvaluationScript() != null && (flexiCoreRule.getEvaluationScript() == null || !creationContainer.getEvaluationScript().equals(flexiCoreRule.getEvaluationScript()))) {
             flexiCoreRule.setEvaluationScript(creationContainer.getEvaluationScript());
+            update = true;
+        }
+
+        if (creationContainer.getLogFileResource() != null && (flexiCoreRule.getLogFileResource() == null || !creationContainer.getLogFileResource().equals(flexiCoreRule.getLogFileResource()))) {
+            flexiCoreRule.setLogFileResource(creationContainer.getLogFileResource());
             update = true;
         }
         return update;
@@ -180,21 +195,70 @@ public class RulesService implements ServicePlugin {
                 .filter(f -> f.getResponses() != null && !f.getResponses().isEmpty()).map(f -> f.getResponses().get(0))
                 .collect(Collectors.toList());
         FileResource script = flexiCoreRule.getEvaluationScript();
+        Logger scriptLogger = getLogger(flexiCoreRule);
         try {
             File file = new File(script.getFullPath());
             ScriptObjectMirror loaded = loadScript(file, buildFunctionTableFunction(FunctionTypes.EVALUATE));
-            Object[] resultsArr = new Object[results.size()+2];
+            Object[] resultsArr = new Object[results.size()+3];
             results.toArray(resultsArr);
             resultsArr[results.size()]=scenarioTriggerEvent;
             resultsArr[results.size()+1]=securityContext;
+            resultsArr[results.size()+2]=scriptLogger;
             boolean res = (boolean) loaded.callMember(FunctionTypes.EVALUATE.getFunctionName(), resultsArr);
             evaluateRuleResponse.setResult(res);
 
         } catch (Exception e) {
             logger.log(Level.SEVERE, "failed executing script", e);
+            scriptLogger.log(Level.SEVERE,"failed executing script",e);
         }
+        closeLogger(scriptLogger);
+
         return evaluateRuleResponse;
 
+    }
+
+    private void closeLogger(Logger scriptLogger) {
+        for (Handler handler : scriptLogger.getHandlers()) {
+            handler.close();
+        }
+    }
+
+    public static class CustomFormatter extends SimpleFormatter{
+        private static final String format="[%1$tF %1$tT] [%2$-7s] %3$s %n";
+        @Override
+        public synchronized String format(LogRecord logRecord) {
+            return String.format(format,
+                    new Date(logRecord.getMillis()),
+                    logRecord.getLevel().getLocalizedName(),
+                    logRecord.getMessage()
+            );
+        }
+    }
+
+    private Logger getLogger(FlexiCoreRule flexiCoreRule) {
+        Logger scriptLogger=Logger.getLogger(flexiCoreRule.getId());
+        try {
+            if (flexiCoreRule.getLogFileResource() != null) {
+                boolean hasFileHandler=false;
+                for (Handler handler : logger.getHandlers()) {
+                    if(handler instanceof FileHandler){
+                        hasFileHandler=true;
+                        break;
+                    }
+                }
+                if(!hasFileHandler){
+                    FileHandler handler = new FileHandler(flexiCoreRule.getLogFileResource().getFullPath(),0,1, true);
+                    handler.setFormatter(new CustomFormatter());
+                    scriptLogger.addHandler(handler);
+                    scriptLogger.setUseParentHandlers(false);
+
+                }
+            }
+        }
+        catch (Exception e){
+            this.logger.log(Level.SEVERE,"failed getting script logger",e);
+        }
+        return scriptLogger;
     }
 
 
@@ -339,5 +403,28 @@ public class RulesService implements ServicePlugin {
         List<FlexiCoreRuleLink> list=listAllRuleLinks(ruleLinkFilter,securityContext);
         long count=repository.countAllRuleLinks(ruleLinkFilter, securityContext);
         return new PaginationResponse<>(list,ruleLinkFilter,count);
+    }
+
+    public void validate(ClearLogRequest clearLogRequest, SecurityContext securityContext) {
+        FlexiCoreRule flexiCoreRule = clearLogRequest.getRuleId() != null ? getByIdOrNull(clearLogRequest.getRuleId(), FlexiCoreRule.class, null, securityContext) : null;
+        if (flexiCoreRule == null) {
+            throw new BadRequestException("No Rule with id " + clearLogRequest.getRuleId());
+        }
+        clearLogRequest.setFlexiCoreRule(flexiCoreRule);
+    }
+
+    public void clearLog(ClearLogRequest creationContainer, SecurityContext securityContext) {
+        FlexiCoreRule flexiCoreRule = creationContainer.getFlexiCoreRule();
+        if(flexiCoreRule.getLogFileResource()!=null){
+            File file=new File(flexiCoreRule.getLogFileResource().getFullPath());
+            try (FileChannel outChan = new FileOutputStream(file, true).getChannel()) {
+                outChan.truncate(0);
+            }
+            catch (Exception e){
+                logger.log(Level.SEVERE,"failed clearing log file",e);
+            }
+        }
+
+
     }
 }

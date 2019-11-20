@@ -10,6 +10,7 @@ import com.flexicore.security.SecurityContext;
 import com.flexicore.utils.FlexiCore;
 
 import javax.persistence.criteria.*;
+import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -26,6 +27,12 @@ public class RulesRepository extends AbstractRepositoryPlugin {
         addRulesPredicate(preds,r,cb,filter);
         QueryInformationHolder<FlexiCoreRule> queryInformationHolder=new QueryInformationHolder<>(filter,FlexiCoreRule.class,securityContext);
         return getAllFiltered(queryInformationHolder,preds,cb,q,r);
+    }
+
+    @Override
+    @Transactional(Transactional.TxType.REQUIRED)
+    public void massMerge(List<?> toMerge) {
+        super.massMerge(toMerge);
     }
 
     public static void addRulesPredicate(List<Predicate> preds, Root<FlexiCoreRule> r, CriteriaBuilder cb, RulesFilter filter) {

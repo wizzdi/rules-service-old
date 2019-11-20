@@ -11,6 +11,8 @@ public class RuleCreate {
     private String evaluationScriptId;
     @JsonIgnore
     private FileResource evaluationScript;
+    @JsonIgnore
+    private FileResource logFileResource;
 
     public String getName() {
         return name;
@@ -46,6 +48,16 @@ public class RuleCreate {
 
     public <T extends RuleCreate> T setEvaluationScript(FileResource evaluationScript) {
         this.evaluationScript = evaluationScript;
+        return (T) this;
+    }
+
+    @JsonIgnore
+    public FileResource getLogFileResource() {
+        return logFileResource;
+    }
+
+    public <T extends RuleCreate> T setLogFileResource(FileResource logFileResource) {
+        this.logFileResource = logFileResource;
         return (T) this;
     }
 }
