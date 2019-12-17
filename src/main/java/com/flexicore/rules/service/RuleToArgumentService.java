@@ -42,7 +42,7 @@ public class RuleToArgumentService implements ServicePlugin {
         String flexicoreRuleArgumentId = creationContainer.getFlexicoreRuleArgumentId();
         FlexiCoreRuleArgument flexiCoreRuleArgument = flexicoreRuleArgumentId != null ? getByIdOrNull(flexicoreRuleArgumentId,FlexiCoreRuleArgument.class,null,securityContext) : null;
         if (flexiCoreRuleArgument == null && flexicoreRuleArgumentId != null) {
-            throw new BadRequestException("No ExecutionParametersHolder with id " + flexicoreRuleArgumentId);
+            throw new BadRequestException("No FlexiCoreRuleArgument with id " + flexicoreRuleArgumentId);
         }
         creationContainer.setFlexiCoreRuleArgument(flexiCoreRuleArgument);
 

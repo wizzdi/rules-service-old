@@ -5,7 +5,7 @@ import com.flexicore.interfaces.InitPlugin;
 import com.flexicore.product.interfaces.IEventService;
 import com.flexicore.rules.events.ManualFireEvent;
 import com.flexicore.rules.events.ScenarioEvent;
-import com.flexicore.service.BaseclassService;
+import com.flexicore.utils.InheritanceUtils;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -18,9 +18,9 @@ public class Config implements InitPlugin {
     public void init() {
         if(init.compareAndSet(false,true)){
             IEventService.addClassForMongoCodec(ScenarioEvent.class);
-            BaseclassService.registerClass(ScenarioEvent.class,true);
+            InheritanceUtils.registerClass(ScenarioEvent.class,true);
             IEventService.addClassForMongoCodec(ManualFireEvent.class);
-            BaseclassService.registerClass(ManualFireEvent.class,true);
+            InheritanceUtils.registerClass(ManualFireEvent.class,true);
 
 
         }

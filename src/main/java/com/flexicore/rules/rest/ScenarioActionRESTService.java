@@ -3,8 +3,8 @@ package com.flexicore.rules.rest;
 import com.flexicore.annotations.OperationsInside;
 import com.flexicore.annotations.plugins.PluginInfo;
 import com.flexicore.data.jsoncontainers.PaginationResponse;
-import com.flexicore.interceptors.DynamicResourceInjector;
-import com.flexicore.interceptors.SecurityImposer;
+
+import com.flexicore.annotations.ProtectedREST;
 import com.flexicore.interfaces.RestServicePlugin;
 import com.flexicore.rules.model.ScenarioAction;
 import com.flexicore.rules.request.ScenarioActionCreate;
@@ -24,7 +24,7 @@ import javax.ws.rs.core.Context;
 
 @PluginInfo(version = 1)
 @OperationsInside
-@Interceptors({SecurityImposer.class, DynamicResourceInjector.class})
+@ProtectedREST
 @Path("plugins/ScenarioAction")
 @Tag(name="Rules")
 @Tag(name="Scenarios")

@@ -1,10 +1,9 @@
 package com.flexicore.rules.rest;
 
 import com.flexicore.annotations.OperationsInside;
+import com.flexicore.annotations.ProtectedREST;
 import com.flexicore.annotations.plugins.PluginInfo;
 import com.flexicore.data.jsoncontainers.PaginationResponse;
-import com.flexicore.interceptors.DynamicResourceInjector;
-import com.flexicore.interceptors.SecurityImposer;
 import com.flexicore.interfaces.RestServicePlugin;
 import com.flexicore.rules.model.FlexiCoreRuleArgument;
 import com.flexicore.rules.request.RuleArgumentCreate;
@@ -17,13 +16,12 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 import javax.inject.Inject;
-import javax.interceptor.Interceptors;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 
 @PluginInfo(version = 1)
 @OperationsInside
-@Interceptors({SecurityImposer.class, DynamicResourceInjector.class})
+@ProtectedREST
 @Path("plugins/RuleArgument")
 @Tag(name = "Rules")
 @Tag(name = "Rules Arguments")

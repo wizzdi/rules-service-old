@@ -7,7 +7,6 @@ import com.flexicore.rules.model.*;
 import com.flexicore.rules.request.RuleLinkFilter;
 import com.flexicore.rules.request.RulesFilter;
 import com.flexicore.security.SecurityContext;
-import com.flexicore.utils.FlexiCore;
 
 import javax.persistence.criteria.*;
 import javax.transaction.Transactional;
