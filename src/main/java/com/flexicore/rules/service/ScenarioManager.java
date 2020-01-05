@@ -4,6 +4,7 @@ import com.flexicore.annotations.plugins.PluginInfo;
 import com.flexicore.interfaces.ServicePlugin;
 import com.flexicore.model.Baseclass;
 import com.flexicore.product.interfaces.IEventService;
+import com.flexicore.request.ExecuteDynamicExecution;
 import com.flexicore.response.ExecuteInvokersResponse;
 import com.flexicore.rules.events.ScenarioEvent;
 import com.flexicore.rules.model.*;
@@ -66,7 +67,7 @@ public class ScenarioManager implements ServicePlugin {
             List<ScenarioAction> scenarioActions = scenarioToActionService.listAllScenarioToAction(new ScenarioToActionFilter().setEnabled(true).setScenarios(activeScenarios), securityContext).parallelStream().map(ScenarioToAction::getScenarioAction).filter(f -> f.getDynamicExecution() != null).collect(Collectors.toList());
             Set<String> executedActions=new HashSet<>();
             for (ScenarioAction scenarioAction : scenarioActions) {
-                ExecuteInvokersResponse response=dynamicInvokersService.executeInvoker(scenarioAction.getDynamicExecution(),scenarioTriggerEvent, securityContext);
+                ExecuteInvokersResponse response=dynamicInvokersService.executeInvoker(dynamicInvokersService.getExecuteInvokerRequest(scenarioAction.getDynamicExecution(),scenarioTriggerEvent, securityContext),securityContext);
                 logger.info("invocation of scenario action "+scenarioAction.getId()+"resulted in "+response);
                 executedActions.add(scenarioAction.getId());
             }
@@ -74,6 +75,7 @@ public class ScenarioManager implements ServicePlugin {
             if(scenarioEvent !=null){
                 scenarioEvent.setExecutedActions(executedActions);
                 scenarioEvent.addToHumanReadableString("Executed Actions were: "+executedActions);
+                scenarioEvent.setScenarioHints(activeScenarios.parallelStream().map(Scenario::getScenarioHint).filter(Objects::nonNull).collect(Collectors.toSet()));
                 eventService.merge(scenarioEvent);
                 scenarioEventEvent.fireAsync(scenarioEvent);
             }

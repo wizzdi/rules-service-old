@@ -191,7 +191,7 @@ public class RulesService implements ServicePlugin {
         List<ExecuteInvokerResponse> results = arguments.stream()
                 .sorted(Comparator.comparing(f -> f.getOrdinal()))
                 .map(f -> f.getFlexiCoreRuleArgument())
-                .map(f -> f.getDynamicExecution()!=null?dynamicInvokersService.executeInvoker(f.getDynamicExecution(),scenarioTriggerEvent, securityContext):new ExecuteInvokersResponse(new ArrayList<>()))
+                .map(f -> f.getDynamicExecution()!=null?dynamicInvokersService.executeInvoker(dynamicInvokersService.getExecuteInvokerRequest(f.getDynamicExecution(),scenarioTriggerEvent, securityContext),securityContext):new ExecuteInvokersResponse(new ArrayList<>()))
                 .filter(f -> f.getResponses() != null && !f.getResponses().isEmpty()).map(f -> f.getResponses().get(0))
                 .collect(Collectors.toList());
         FileResource script = flexiCoreRule.getEvaluationScript();

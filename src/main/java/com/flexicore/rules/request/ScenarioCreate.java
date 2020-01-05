@@ -10,6 +10,7 @@ public class ScenarioCreate {
     private String name;
     private String description;
     private String ruleId;
+    private String scenarioHint;
     @JsonIgnore
     private FlexiCoreRule flexiCoreRule;
     @Schema(description = "The name of the Scenario")
@@ -47,6 +48,15 @@ public class ScenarioCreate {
 
     public <T extends ScenarioCreate> T setFlexiCoreRule(FlexiCoreRule flexiCoreRule) {
         this.flexiCoreRule = flexiCoreRule;
+        return (T) this;
+    }
+
+    public String getScenarioHint() {
+        return scenarioHint;
+    }
+
+    public <T extends ScenarioCreate> T setScenarioHint(String scenarioHint) {
+        this.scenarioHint = scenarioHint;
         return (T) this;
     }
 }

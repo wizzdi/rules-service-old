@@ -8,6 +8,9 @@ import java.util.Set;
 public class ScenarioEvent extends Event {
 
     private String triggerId;
+    private Set<String> scenarioHints;
+    private Set<String> executedActions;
+
 
     public ScenarioEvent() {
         super();
@@ -17,7 +20,6 @@ public class ScenarioEvent extends Event {
         super(equipment);
     }
 
-    private Set<String> executedActions;
 
 
     public Set<String> getExecutedActions() {
@@ -43,10 +45,20 @@ public class ScenarioEvent extends Event {
         setHumanReadableText(existing !=null?(existing+","+s):s);
     }
 
+    public Set<String> getScenarioHints() {
+        return scenarioHints;
+    }
+
+    public <T extends ScenarioEvent> T setScenarioHints(Set<String> scenarioHints) {
+        this.scenarioHints = scenarioHints;
+        return (T) this;
+    }
+
     @Override
     public String toString() {
         return "ScenarioEvent{" +
                 "triggerId='" + triggerId + '\'' +
+                ", scenarioHints=" + scenarioHints +
                 ", executedActions=" + executedActions +
                 "} " + super.toString();
     }

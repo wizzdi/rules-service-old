@@ -82,6 +82,11 @@ public class ScenarioService implements ServicePlugin {
             scenario.setDescription(creationContainer.getDescription());
             update=true;
         }
+        if(creationContainer.getScenarioHint()!=null && !creationContainer.getScenarioHint().equals(scenario.getScenarioHint())){
+            scenario.setScenarioHint(creationContainer.getScenarioHint());
+            update=true;
+        }
+
 
         if(creationContainer.getFlexiCoreRule()!=null && (scenario.getFlexiCoreRule()==null||!creationContainer.getFlexiCoreRule().getId().equals(scenario.getFlexiCoreRule().getId()))){
             scenario.setFlexiCoreRule(creationContainer.getFlexiCoreRule());
