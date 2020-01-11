@@ -1,6 +1,7 @@
 package com.flexicore.rules.request;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.flexicore.model.FileResource;
 import com.flexicore.rules.model.FlexiCoreRule;
 import io.swagger.v3.oas.annotations.media.Schema;
 
@@ -13,6 +14,9 @@ public class ScenarioCreate {
     private String scenarioHint;
     @JsonIgnore
     private FlexiCoreRule flexiCoreRule;
+    private String actionManagerScriptId;
+    @JsonIgnore
+    private FileResource actionManagerScript;
     @Schema(description = "The name of the Scenario")
     public String getName() {
         return name;
@@ -57,6 +61,25 @@ public class ScenarioCreate {
 
     public <T extends ScenarioCreate> T setScenarioHint(String scenarioHint) {
         this.scenarioHint = scenarioHint;
+        return (T) this;
+    }
+
+    public String getActionManagerScriptId() {
+        return actionManagerScriptId;
+    }
+
+    public <T extends ScenarioCreate> T setActionManagerScriptId(String actionManagerScriptId) {
+        this.actionManagerScriptId = actionManagerScriptId;
+        return (T) this;
+    }
+
+    @JsonIgnore
+    public FileResource getActionManagerScript() {
+        return actionManagerScript;
+    }
+
+    public <T extends ScenarioCreate> T setActionManagerScript(FileResource actionManagerScript) {
+        this.actionManagerScript = actionManagerScript;
         return (T) this;
     }
 }

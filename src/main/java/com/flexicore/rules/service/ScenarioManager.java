@@ -5,6 +5,7 @@ import com.flexicore.interfaces.ServicePlugin;
 import com.flexicore.model.Baseclass;
 import com.flexicore.product.interfaces.IEventService;
 import com.flexicore.request.ExecuteDynamicExecution;
+import com.flexicore.request.ExecuteInvokerRequest;
 import com.flexicore.response.ExecuteInvokersResponse;
 import com.flexicore.rules.events.ScenarioEvent;
 import com.flexicore.rules.model.*;
@@ -61,21 +62,38 @@ public class ScenarioManager implements ServicePlugin {
         logger.info("Scenario Trigger Event " + scenarioTriggerEvent + "captured by Scenario Manager");
         SecurityContext securityContext = scenarioTriggerEvent.getSecurityContext();
         ScenarioTrigger scenarioTrigger = scenarioTriggerEvent.getScenarioTrigger();
-        List<Scenario> activeScenarios = scenarioToTriggerService.listAllScenarioToTrigger(new ScenarioToTriggerFilter().setEnabled(true).setScenarioTriggers(Collections.singletonList(scenarioTrigger)), securityContext).stream().map(ScenarioToTrigger::getScenario).filter(distinctByKey(Baseclass::getId)).filter(f -> f.getFlexiCoreRule() != null && rulesService.evaluateRule(new EvaluateRuleRequest().setScenarioTriggerEvent(scenarioTriggerEvent).setRule(f.getFlexiCoreRule()), securityContext).isResult()).collect(Collectors.toList());
+        Map<String,Scenario> activeScenarios = scenarioToTriggerService.listAllScenarioToTrigger(new ScenarioToTriggerFilter().setEnabled(true).setScenarioTriggers(Collections.singletonList(scenarioTrigger)), securityContext).stream().map(ScenarioToTrigger::getScenario).filter(distinctByKey(Baseclass::getId)).filter(f -> f.getFlexiCoreRule() != null && rulesService.evaluateRule(new EvaluateRuleRequest().setScenarioTriggerEvent(scenarioTriggerEvent).setRule(f.getFlexiCoreRule()), securityContext).isResult()).collect(Collectors.toMap(f->f.getId(),f->f,(a,b)->a));
         if (!activeScenarios.isEmpty()) {
-            logger.info("Trigger had caused activated scenarios: "+activeScenarios.parallelStream().map(Baseclass::getId).collect(Collectors.joining(",")));
-            List<ScenarioAction> scenarioActions = scenarioToActionService.listAllScenarioToAction(new ScenarioToActionFilter().setEnabled(true).setScenarios(activeScenarios), securityContext).parallelStream().map(ScenarioToAction::getScenarioAction).filter(f -> f.getDynamicExecution() != null).collect(Collectors.toList());
+            logger.info("Trigger had caused activated scenarios: "+activeScenarios.values().parallelStream().map(Baseclass::getId).collect(Collectors.joining(",")));
+            Map<String,List<ScenarioAction>> scenarioActions = scenarioToActionService.listAllScenarioToAction(new ScenarioToActionFilter().setEnabled(true).setScenarios(new ArrayList<>(activeScenarios.values())), securityContext).parallelStream().filter(f -> f.getScenarioAction().getDynamicExecution() != null).collect(Collectors.groupingBy(f->f.getScenario().getId(),Collectors.mapping(f->f.getScenarioAction(),Collectors.toList())));
             Set<String> executedActions=new HashSet<>();
-            for (ScenarioAction scenarioAction : scenarioActions) {
-                ExecuteInvokersResponse response=dynamicInvokersService.executeInvoker(dynamicInvokersService.getExecuteInvokerRequest(scenarioAction.getDynamicExecution(),scenarioTriggerEvent, securityContext),securityContext);
-                logger.info("invocation of scenario action "+scenarioAction.getId()+"resulted in "+response);
-                executedActions.add(scenarioAction.getId());
+            for (Map.Entry<String,List<ScenarioAction>> entry : scenarioActions.entrySet()) {
+                Map<String,ScenarioAction> actionsToExecute=entry.getValue().parallelStream().collect(Collectors.toMap(f->f.getId(),f->f,(a,b)->a));
+                Map<String,ExecuteInvokerRequest> executeInvokerRequests=actionsToExecute.values().parallelStream().collect(Collectors.toMap(f->f.getId(),f->dynamicInvokersService.getExecuteInvokerRequest(f.getDynamicExecution(), scenarioTriggerEvent, securityContext)));
+                Scenario scenario=activeScenarios.get(entry.getKey());
+                Map<String,ExecuteInvokerRequest> filtered=executeInvokerRequests;
+                if(scenario.getActionManagerScript()!=null){
+                    logger.info("scenario "+scenario.getName()+"("+scenario.getId() +") has action manager");
+                    filtered=rulesService.evaluateActionManager(scenario,filtered,securityContext);
+                }
+                if(filtered==null){
+                    logger.warning("Action manager failed");
+                    return;
+                }
+                for (Map.Entry<String,ExecuteInvokerRequest> executeInvokerRequestEntry : filtered.entrySet()) {
+                    ExecuteInvokerRequest executeInvokerRequest=executeInvokerRequestEntry.getValue();
+                    ExecuteInvokersResponse response=dynamicInvokersService.executeInvoker(executeInvokerRequest,securityContext);
+                    ScenarioAction scenarioAction=actionsToExecute.get(executeInvokerRequestEntry.getKey());
+                    logger.info("invocation of scenario action "+scenarioAction.getId()+"resulted in "+response);
+                    executedActions.add(scenarioAction.getId());
+                }
+
             }
             ScenarioEvent scenarioEvent = scenarioTriggerEvent.getScenarioEvent();
             if(scenarioEvent !=null){
                 scenarioEvent.setExecutedActions(executedActions);
                 scenarioEvent.addToHumanReadableString("Executed Actions were: "+executedActions);
-                scenarioEvent.setScenarioHints(activeScenarios.parallelStream().map(Scenario::getScenarioHint).filter(Objects::nonNull).collect(Collectors.toSet()));
+                scenarioEvent.setScenarioHints(activeScenarios.values().parallelStream().map(Scenario::getScenarioHint).filter(Objects::nonNull).collect(Collectors.toSet()));
                 eventService.merge(scenarioEvent);
                 scenarioEventEvent.fireAsync(scenarioEvent);
             }
@@ -84,6 +102,7 @@ public class ScenarioManager implements ServicePlugin {
             logger.info("Trigger had caused no activated scenarios");
         }
     }
+
 
 
     public static <T> Predicate<T> distinctByKey(Function<? super T, Object> keyExtractor) {

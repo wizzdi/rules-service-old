@@ -5,6 +5,7 @@ import com.flexicore.data.jsoncontainers.PaginationResponse;
 import com.flexicore.interfaces.ServicePlugin;
 import com.flexicore.model.Baseclass;
 import com.flexicore.model.FileResource;
+import com.flexicore.request.ExecuteInvokerRequest;
 import com.flexicore.response.ExecuteInvokerResponse;
 import com.flexicore.response.ExecuteInvokersResponse;
 import com.flexicore.rules.model.*;
@@ -144,6 +145,26 @@ public class RulesService implements ServicePlugin {
     }
 
 
+    public Map<String, ExecuteInvokerRequest> evaluateActionManager(Scenario scenario,Map<String,ExecuteInvokerRequest> map,SecurityContext securityContext){
+        FileResource script = scenario.getActionManagerScript();
+        try {
+            File file = new File(script.getFullPath());
+            ScriptObjectMirror loaded = loadScript(file, buildFunctionTableFunction(FunctionTypes.EVALUATE));
+            Object[] parameters = new Object[3];
+            parameters[0]=scenario;
+            parameters[1]=map;
+            parameters[2]=securityContext;
+
+            String[] res = (String[]) loaded.callMember(FunctionTypes.EVALUATE.getFunctionName(), parameters);
+            Set<String> idsToRun=Stream.of(res).collect(Collectors.toSet());
+            return map.entrySet().parallelStream().filter(f->idsToRun.contains(f.getKey())).collect(Collectors.toMap(f->f.getKey(),f->f.getValue()));
+
+
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, "failed executing script", e);
+        }
+        return null;
+    }
 
     public EvaluateRuleResponse evaluateRule(EvaluateRuleRequest evaluateRuleRequest, SecurityContext securityContext) {
         if(evaluateRuleRequest.getRule() instanceof FlexiCoreRuleOp){
@@ -199,12 +220,12 @@ public class RulesService implements ServicePlugin {
         try {
             File file = new File(script.getFullPath());
             ScriptObjectMirror loaded = loadScript(file, buildFunctionTableFunction(FunctionTypes.EVALUATE));
-            Object[] resultsArr = new Object[results.size()+3];
-            results.toArray(resultsArr);
-            resultsArr[results.size()]=scenarioTriggerEvent;
-            resultsArr[results.size()+1]=securityContext;
-            resultsArr[results.size()+2]=scriptLogger;
-            boolean res = (boolean) loaded.callMember(FunctionTypes.EVALUATE.getFunctionName(), resultsArr);
+            Object[] parameters = new Object[results.size()+3];
+            results.toArray(parameters);
+            parameters[results.size()]=scenarioTriggerEvent;
+            parameters[results.size()+1]=securityContext;
+            parameters[results.size()+2]=scriptLogger;
+            boolean res = (boolean) loaded.callMember(FunctionTypes.EVALUATE.getFunctionName(), parameters);
             evaluateRuleResponse.setResult(res);
 
         } catch (Exception e) {

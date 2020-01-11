@@ -4,6 +4,7 @@ import com.flexicore.annotations.plugins.PluginInfo;
 import com.flexicore.data.jsoncontainers.PaginationResponse;
 import com.flexicore.interfaces.ServicePlugin;
 import com.flexicore.model.Baseclass;
+import com.flexicore.model.FileResource;
 import com.flexicore.model.dynamic.ExecutionParametersHolder;
 import com.flexicore.rules.model.FlexiCoreRule;
 import com.flexicore.rules.model.Scenario;
@@ -40,6 +41,13 @@ public class ScenarioService implements ServicePlugin {
             throw new BadRequestException("No FlexiCoreRule with id " + ruleId);
         }
         creationContainer.setFlexiCoreRule(executionParametersHolder);
+
+        String actionManagerScriptId = creationContainer.getActionManagerScriptId();
+        FileResource actionManagerScript = actionManagerScriptId != null ? getByIdOrNull(actionManagerScriptId, FileResource.class,null,securityContext) : null;
+        if (actionManagerScript == null && actionManagerScriptId != null) {
+            throw new BadRequestException("No FileResource with id " + actionManagerScriptId);
+        }
+        creationContainer.setActionManagerScript(actionManagerScript);
 
     }
 
@@ -90,6 +98,11 @@ public class ScenarioService implements ServicePlugin {
 
         if(creationContainer.getFlexiCoreRule()!=null && (scenario.getFlexiCoreRule()==null||!creationContainer.getFlexiCoreRule().getId().equals(scenario.getFlexiCoreRule().getId()))){
             scenario.setFlexiCoreRule(creationContainer.getFlexiCoreRule());
+            update=true;
+        }
+
+        if(creationContainer.getActionManagerScript()!=null && (scenario.getActionManagerScript()==null||!creationContainer.getActionManagerScript().getId().equals(scenario.getActionManagerScript().getId()))){
+            scenario.setActionManagerScript(creationContainer.getActionManagerScript());
             update=true;
         }
         return update;
