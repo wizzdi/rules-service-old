@@ -244,6 +244,28 @@ public class RulesService implements ServicePlugin {
         }
     }
 
+
+
+    public boolean evaluateTriggerManager(ScenarioToTrigger scenarioToTrigger, ScenarioTriggerEvent scenarioTriggerEvent){
+        FileResource script = scenarioToTrigger.getTriggerManagerScript();
+        try {
+            File file = new File(script.getFullPath());
+            ScriptObjectMirror loaded = loadScript(file, buildFunctionTableFunction(FunctionTypes.EVALUATE));
+            Object[] parameters = new Object[3];
+            parameters[0]=scenarioTriggerEvent;
+            parameters[1]=scenarioToTrigger.getScenario();
+            parameters[2]=scenarioToTrigger.getScenarioTrigger();
+
+            return (boolean) loaded.callMember(FunctionTypes.EVALUATE.getFunctionName(), parameters);
+
+
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, "failed executing script", e);
+        }
+        return false;
+    }
+
+
     public static class CustomFormatter extends SimpleFormatter{
         private static final String format="[%1$tF %1$tT] [%2$-7s] %3$s %n";
         @Override

@@ -1,6 +1,7 @@
 package com.flexicore.rules.request;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.flexicore.model.FileResource;
 import com.flexicore.rules.model.Scenario;
 import com.flexicore.rules.model.ScenarioTrigger;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -16,6 +17,9 @@ public class ScenarioToTriggerCreate {
     @JsonIgnore
     private ScenarioTrigger scenarioTrigger;
     private Boolean enabled;
+    private String triggerManagerScriptId;
+    @JsonIgnore
+    private FileResource triggerManagerScript;
 
     public String getName() {
         return name;
@@ -80,6 +84,25 @@ public class ScenarioToTriggerCreate {
 
     public <T extends ScenarioToTriggerCreate> T setEnabled(Boolean enabled) {
         this.enabled = enabled;
+        return (T) this;
+    }
+
+    public String getTriggerManagerScriptId() {
+        return triggerManagerScriptId;
+    }
+
+    public <T extends ScenarioToTriggerCreate> T setTriggerManagerScriptId(String triggerManagerScriptId) {
+        this.triggerManagerScriptId = triggerManagerScriptId;
+        return (T) this;
+    }
+
+    @JsonIgnore
+    public FileResource getTriggerManagerScript() {
+        return triggerManagerScript;
+    }
+
+    public <T extends ScenarioToTriggerCreate> T setTriggerManagerScript(FileResource triggerManagerScript) {
+        this.triggerManagerScript = triggerManagerScript;
         return (T) this;
     }
 }

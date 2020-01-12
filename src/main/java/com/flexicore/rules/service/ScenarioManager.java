@@ -4,7 +4,6 @@ import com.flexicore.annotations.plugins.PluginInfo;
 import com.flexicore.interfaces.ServicePlugin;
 import com.flexicore.model.Baseclass;
 import com.flexicore.product.interfaces.IEventService;
-import com.flexicore.request.ExecuteDynamicExecution;
 import com.flexicore.request.ExecuteInvokerRequest;
 import com.flexicore.response.ExecuteInvokersResponse;
 import com.flexicore.rules.events.ScenarioEvent;
@@ -62,7 +61,7 @@ public class ScenarioManager implements ServicePlugin {
         logger.info("Scenario Trigger Event " + scenarioTriggerEvent + "captured by Scenario Manager");
         SecurityContext securityContext = scenarioTriggerEvent.getSecurityContext();
         ScenarioTrigger scenarioTrigger = scenarioTriggerEvent.getScenarioTrigger();
-        Map<String,Scenario> activeScenarios = scenarioToTriggerService.listAllScenarioToTrigger(new ScenarioToTriggerFilter().setEnabled(true).setScenarioTriggers(Collections.singletonList(scenarioTrigger)), securityContext).stream().map(ScenarioToTrigger::getScenario).filter(distinctByKey(Baseclass::getId)).filter(f -> f.getFlexiCoreRule() != null && rulesService.evaluateRule(new EvaluateRuleRequest().setScenarioTriggerEvent(scenarioTriggerEvent).setRule(f.getFlexiCoreRule()), securityContext).isResult()).collect(Collectors.toMap(f->f.getId(),f->f,(a,b)->a));
+        Map<String,Scenario> activeScenarios = scenarioToTriggerService.listAllScenarioToTrigger(new ScenarioToTriggerFilter().setEnabled(true).setScenarioTriggers(Collections.singletonList(scenarioTrigger)), securityContext).stream().filter(f->f.getTriggerManagerScript()==null||rulesService.evaluateTriggerManager(f,scenarioTriggerEvent)).map(ScenarioToTrigger::getScenario).filter(distinctByKey(Baseclass::getId)).filter(f -> f.getFlexiCoreRule() != null && rulesService.evaluateRule(new EvaluateRuleRequest().setScenarioTriggerEvent(scenarioTriggerEvent).setRule(f.getFlexiCoreRule()), securityContext).isResult()).collect(Collectors.toMap(f->f.getId(), f->f,(a, b)->a));
         if (!activeScenarios.isEmpty()) {
             logger.info("Trigger had caused activated scenarios: "+activeScenarios.values().parallelStream().map(Baseclass::getId).collect(Collectors.joining(",")));
             Map<String,List<ScenarioAction>> scenarioActions = scenarioToActionService.listAllScenarioToAction(new ScenarioToActionFilter().setEnabled(true).setScenarios(new ArrayList<>(activeScenarios.values())), securityContext).parallelStream().filter(f -> f.getScenarioAction().getDynamicExecution() != null).collect(Collectors.groupingBy(f->f.getScenario().getId(),Collectors.mapping(f->f.getScenarioAction(),Collectors.toList())));
