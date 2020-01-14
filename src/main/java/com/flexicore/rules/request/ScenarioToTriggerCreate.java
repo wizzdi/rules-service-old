@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.flexicore.model.FileResource;
 import com.flexicore.rules.model.Scenario;
 import com.flexicore.rules.model.ScenarioTrigger;
+import com.flexicore.rules.model.TriggerManager;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 @Schema(description = "A container for the creation of ScenarioToTrigger object, note that this is not the link itself" )
@@ -17,9 +18,10 @@ public class ScenarioToTriggerCreate {
     @JsonIgnore
     private ScenarioTrigger scenarioTrigger;
     private Boolean enabled;
-    private String triggerManagerScriptId;
+    private String triggerManagerId;
     @JsonIgnore
-    private FileResource triggerManagerScript;
+    private TriggerManager triggerManager;
+
 
     public String getName() {
         return name;
@@ -87,22 +89,22 @@ public class ScenarioToTriggerCreate {
         return (T) this;
     }
 
-    public String getTriggerManagerScriptId() {
-        return triggerManagerScriptId;
+    public String getTriggerManagerId() {
+        return triggerManagerId;
     }
 
-    public <T extends ScenarioToTriggerCreate> T setTriggerManagerScriptId(String triggerManagerScriptId) {
-        this.triggerManagerScriptId = triggerManagerScriptId;
+    public <T extends ScenarioToTriggerCreate> T setTriggerManagerId(String triggerManagerId) {
+        this.triggerManagerId = triggerManagerId;
         return (T) this;
     }
 
     @JsonIgnore
-    public FileResource getTriggerManagerScript() {
-        return triggerManagerScript;
+    public TriggerManager getTriggerManager() {
+        return triggerManager;
     }
 
-    public <T extends ScenarioToTriggerCreate> T setTriggerManagerScript(FileResource triggerManagerScript) {
-        this.triggerManagerScript = triggerManagerScript;
+    public <T extends ScenarioToTriggerCreate> T setTriggerManager(TriggerManager triggerManager) {
+        this.triggerManager = triggerManager;
         return (T) this;
     }
 }

@@ -230,7 +230,7 @@ public class RulesService implements ServicePlugin {
 
         } catch (Exception e) {
             logger.log(Level.SEVERE, "failed executing script", e);
-            scriptLogger.log(Level.SEVERE,"failed executing script",e);
+            scriptLogger.log(Level.SEVERE,"failed executing script: "+e.toString(),e);
         }
         closeLogger(scriptLogger);
 
@@ -247,7 +247,7 @@ public class RulesService implements ServicePlugin {
 
 
     public boolean evaluateTriggerManager(ScenarioToTrigger scenarioToTrigger, ScenarioTriggerEvent scenarioTriggerEvent){
-        FileResource script = scenarioToTrigger.getTriggerManagerScript();
+        FileResource script = scenarioToTrigger.getTriggerManager().getTriggerManagerScript();
         try {
             File file = new File(script.getFullPath());
             ScriptObjectMirror loaded = loadScript(file, buildFunctionTableFunction(FunctionTypes.EVALUATE));

@@ -4,10 +4,7 @@ import com.flexicore.annotations.plugins.PluginInfo;
 import com.flexicore.data.jsoncontainers.PaginationResponse;
 import com.flexicore.interfaces.ServicePlugin;
 import com.flexicore.model.Baseclass;
-import com.flexicore.rules.model.Scenario;
-import com.flexicore.rules.model.ScenarioAction;
-import com.flexicore.rules.model.ScenarioToTrigger;
-import com.flexicore.rules.model.ScenarioTrigger;
+import com.flexicore.rules.model.*;
 import com.flexicore.rules.repository.ScenarioToTriggerRepository;
 import com.flexicore.rules.request.ScenarioToTriggerCreate;
 import com.flexicore.rules.request.ScenarioToTriggerFilter;
@@ -70,6 +67,13 @@ public class ScenarioToTriggerService implements ServicePlugin {
         }
         creationContainer.setScenarioTrigger(trigger);
 
+        String triggerManagerId = creationContainer.getTriggerManagerId();
+        TriggerManager triggerManager = triggerManagerId != null ? getByIdOrNull(triggerManagerId, TriggerManager.class, null, securityContext) : null;
+        if (triggerManager == null && triggerManagerId != null) {
+            throw new BadRequestException("No TriggerManager with id " + triggerManagerId);
+        }
+        creationContainer.setTriggerManager(triggerManager);
+
 
     }
 
@@ -126,8 +130,8 @@ public class ScenarioToTriggerService implements ServicePlugin {
             scenarioToTrigger.setEnabled(creationContainer.getEnabled());
             update = true;
         }
-        if (creationContainer.getTriggerManagerScript() != null && (scenarioToTrigger.getTriggerManagerScript() == null || !creationContainer.getTriggerManagerScript().getId().equals(scenarioToTrigger.getTriggerManagerScript().getId()))) {
-            scenarioToTrigger.setTriggerManagerScript(creationContainer.getTriggerManagerScript());
+        if (creationContainer.getTriggerManager() != null && (scenarioToTrigger.getTriggerManager() == null || !creationContainer.getTriggerManager().getId().equals(scenarioToTrigger.getTriggerManager().getId()))) {
+            scenarioToTrigger.setTriggerManager(creationContainer.getTriggerManager());
             update = true;
         }
 
