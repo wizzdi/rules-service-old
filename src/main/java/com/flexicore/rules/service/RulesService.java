@@ -220,11 +220,13 @@ public class RulesService implements ServicePlugin {
         try {
             File file = new File(script.getFullPath());
             ScriptObjectMirror loaded = loadScript(file, buildFunctionTableFunction(FunctionTypes.EVALUATE));
-            Object[] parameters = new Object[results.size()+3];
+            RuleScriptContext ruleScriptContext=new RuleScriptContext()
+                    .setSecurityContext(securityContext)
+                    .setLogger(scriptLogger)
+                    .setScenarioTriggerEvent(scenarioTriggerEvent);
+            Object[] parameters = new Object[results.size()+1];
             results.toArray(parameters);
-            parameters[results.size()]=scenarioTriggerEvent;
-            parameters[results.size()+1]=securityContext;
-            parameters[results.size()+2]=scriptLogger;
+            parameters[results.size()]=ruleScriptContext;
             boolean res = (boolean) loaded.callMember(FunctionTypes.EVALUATE.getFunctionName(), parameters);
             evaluateRuleResponse.setResult(res);
 
