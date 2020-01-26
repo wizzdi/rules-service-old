@@ -7,6 +7,7 @@ import com.flexicore.data.jsoncontainers.PaginationResponse;
 import com.flexicore.annotations.ProtectedREST;
 import com.flexicore.interfaces.RestServicePlugin;
 import com.flexicore.rules.model.Scenario;
+import com.flexicore.rules.request.ClearLogRequest;
 import com.flexicore.rules.request.ScenarioCreate;
 import com.flexicore.rules.request.ScenarioFilter;
 import com.flexicore.rules.request.ScenarioUpdate;
@@ -16,6 +17,7 @@ import io.swagger.v3.oas.annotations.ExternalDocumentation;
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 import javax.inject.Inject;
@@ -45,6 +47,18 @@ public class ScenarioRESTService implements RestServicePlugin {
             @Context SecurityContext securityContext) {
         service.validate(filter, securityContext);
         return service.getAllScenarios(filter, securityContext);
+    }
+
+    @POST
+    @Produces("application/json")
+    @Path("/clearLog")
+    @Operation(summary = "clearLog", description = "Clear Log")
+    public void clearLog(
+            @HeaderParam("authenticationKey") String authenticationKey,
+            @RequestBody(description = "Valid ClearLogRequest container", required = true) ClearLogRequest creationContainer,
+            @Context SecurityContext securityContext) {
+        service.validate(creationContainer, securityContext);
+        service.clearLog(creationContainer, securityContext);
     }
 
 

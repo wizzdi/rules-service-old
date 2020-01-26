@@ -1,30 +1,30 @@
 package com.flexicore.rules.request;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.flexicore.rules.model.FlexiCoreRule;
+import com.flexicore.rules.model.Scenario;
 
 public class ClearLogRequest {
 
-    private String ruleId;
+    private String scenarioId;
     @JsonIgnore
-    private FlexiCoreRule flexiCoreRule;
+    private Scenario scenario;
 
-    public String getRuleId() {
-        return ruleId;
+    public String getScenarioId() {
+        return scenarioId;
     }
 
-    public <T extends ClearLogRequest> T setRuleId(String ruleId) {
-        this.ruleId = ruleId;
+    public <T extends ClearLogRequest> T setScenarioId(String scenarioId) {
+        this.scenarioId = scenarioId;
         return (T) this;
     }
 
     @JsonIgnore
-    public FlexiCoreRule getFlexiCoreRule() {
-        return flexiCoreRule;
+    public Scenario getScenario() {
+        return scenario;
     }
 
-    public <T extends ClearLogRequest> T setFlexiCoreRule(FlexiCoreRule flexiCoreRule) {
-        this.flexiCoreRule = flexiCoreRule;
+    public <T extends ClearLogRequest> T setScenario(Scenario scenario) {
+        this.scenario = scenario;
         return (T) this;
     }
 }

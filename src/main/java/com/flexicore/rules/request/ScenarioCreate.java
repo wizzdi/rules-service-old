@@ -21,6 +21,8 @@ public class ScenarioCreate {
     public String getName() {
         return name;
     }
+    @JsonIgnore
+    private FileResource logFileResource;
 
     public <T extends ScenarioCreate> T setName(String name) {
         this.name = name;
@@ -80,6 +82,16 @@ public class ScenarioCreate {
 
     public <T extends ScenarioCreate> T setActionManagerScript(FileResource actionManagerScript) {
         this.actionManagerScript = actionManagerScript;
+        return (T) this;
+    }
+
+    @JsonIgnore
+    public FileResource getLogFileResource() {
+        return logFileResource;
+    }
+
+    public <T extends ScenarioCreate> T setLogFileResource(FileResource logFileResource) {
+        this.logFileResource = logFileResource;
         return (T) this;
     }
 }

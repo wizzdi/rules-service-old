@@ -10,14 +10,22 @@ import com.flexicore.rules.model.FlexiCoreRule;
 import com.flexicore.rules.model.Scenario;
 import com.flexicore.rules.model.Scenario;
 import com.flexicore.rules.repository.ScenarioRepository;
+import com.flexicore.rules.request.ClearLogRequest;
 import com.flexicore.rules.request.ScenarioCreate;
 import com.flexicore.rules.request.ScenarioFilter;
 import com.flexicore.rules.request.ScenarioUpdate;
 import com.flexicore.security.SecurityContext;
+import com.flexicore.service.FileResourceService;
 
 import javax.inject.Inject;
 import javax.ws.rs.BadRequestException;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.nio.channels.FileChannel;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 @PluginInfo(version = 1)
 public class ScenarioService implements ServicePlugin {
@@ -26,6 +34,12 @@ public class ScenarioService implements ServicePlugin {
     @Inject
     @PluginInfo(version = 1)
     private ScenarioRepository repository;
+
+    @Inject
+    private FileResourceService fileResourceService;
+
+    @Inject
+    private Logger logger;
 
 
 
@@ -42,6 +56,7 @@ public class ScenarioService implements ServicePlugin {
         }
         creationContainer.setFlexiCoreRule(executionParametersHolder);
 
+
         String actionManagerScriptId = creationContainer.getActionManagerScriptId();
         FileResource actionManagerScript = actionManagerScriptId != null ? getByIdOrNull(actionManagerScriptId, FileResource.class,null,securityContext) : null;
         if (actionManagerScript == null && actionManagerScriptId != null) {
@@ -56,8 +71,15 @@ public class ScenarioService implements ServicePlugin {
     }
 
     public Scenario createScenario(ScenarioCreate creationContainer, SecurityContext securityContext) {
+        List<Object> toMerge=new ArrayList<>();
+        File log = new File(FileResourceService.generateNewPathForFileResource(creationContainer.getName(), securityContext.getUser()) + ".log");
+        FileResource fileResource=fileResourceService.createDontPersist(log.getAbsolutePath(),securityContext);
+        toMerge.add(fileResource);
+        creationContainer.setLogFileResource(fileResource);
         Scenario scenario = createScenarioNoMerge(creationContainer, securityContext);
-        repository.merge(scenario);
+        toMerge.add(scenario);
+
+        repository.massMerge(toMerge);
         return scenario;
 
     }
@@ -73,8 +95,7 @@ public class ScenarioService implements ServicePlugin {
     }
 
     private Scenario createScenarioNoMerge(ScenarioCreate creationContainer, SecurityContext securityContext) {
-        Scenario scenario=Scenario.s().CreateUnchecked(creationContainer.getName(),securityContext);
-        scenario.Init();
+        Scenario scenario=new Scenario(creationContainer.getName(),securityContext);
         updateScenarioNoMerge(scenario,creationContainer);
         return scenario;
     }
@@ -105,6 +126,10 @@ public class ScenarioService implements ServicePlugin {
             scenario.setActionManagerScript(creationContainer.getActionManagerScript());
             update=true;
         }
+        if (creationContainer.getLogFileResource() != null && (scenario.getLogFileResource() == null || !creationContainer.getLogFileResource().equals(scenario.getLogFileResource()))) {
+            scenario.setLogFileResource(creationContainer.getLogFileResource());
+            update = true;
+        }
         return update;
 
     }
@@ -118,5 +143,28 @@ public class ScenarioService implements ServicePlugin {
 
     public <T> T findByIdOrNull(Class<T> type, String id) {
         return repository.findByIdOrNull(type, id);
+    }
+
+    public void validate(ClearLogRequest clearLogRequest, SecurityContext securityContext) {
+        Scenario scenario = clearLogRequest.getScenarioId() != null ? getByIdOrNull(clearLogRequest.getScenarioId(), Scenario.class, null, securityContext) : null;
+        if (scenario == null) {
+            throw new BadRequestException("No Scenario with id " + clearLogRequest.getScenarioId());
+        }
+        clearLogRequest.setScenario(scenario);
+    }
+
+    public void clearLog(ClearLogRequest creationContainer, SecurityContext securityContext) {
+        Scenario scenario = creationContainer.getScenario();
+        if(scenario.getLogFileResource()!=null){
+            File file=new File(scenario.getLogFileResource().getFullPath());
+            try (FileChannel outChan = new FileOutputStream(file, true).getChannel()) {
+                outChan.truncate(0);
+            }
+            catch (Exception e){
+                logger.log(Level.SEVERE,"failed clearing log file",e);
+            }
+        }
+
+
     }
 }
