@@ -22,9 +22,7 @@ import javax.inject.Inject;
 import javax.script.*;
 import javax.ws.rs.BadRequestException;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.channels.FileChannel;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.logging.*;
@@ -153,12 +151,13 @@ public class RulesService implements ServicePlugin {
         try {
             File file = new File(script.getFullPath());
             ScriptObjectMirror loaded = loadScript(file, buildFunctionTableFunction(FunctionTypes.EVALUATE));
-            Object[] parameters = new Object[4];
-            parameters[0]=scenario;
-            parameters[1]=map;
-            parameters[2]=securityContext;
-            parameters[3]=scriptLogger;
-
+            ActionManagerContext actionManagerContext=new ActionManagerContext()
+                    .setSecurityContext(securityContext)
+                    .setLogger(scriptLogger)
+                    .setActionMap(map)
+                    .setScenario(scenario);
+            Object[] parameters = new Object[1];
+            parameters[0]=actionManagerContext;
             String[] res = (String[]) loaded.callMember(FunctionTypes.EVALUATE.getFunctionName(), parameters);
             Set<String> idsToRun=Stream.of(res).collect(Collectors.toSet());
             return map.entrySet().parallelStream().filter(f->idsToRun.contains(f.getKey())).collect(Collectors.toMap(f->f.getKey(),f->f.getValue()));
@@ -169,7 +168,9 @@ public class RulesService implements ServicePlugin {
             scriptLogger.log(Level.SEVERE,"failed executing script: "+e.toString(),e);
 
         }
-        closeLogger(scriptLogger);
+        finally {
+            closeLogger(scriptLogger);
+        }
         return null;
     }
 
@@ -241,7 +242,9 @@ public class RulesService implements ServicePlugin {
             logger.log(Level.SEVERE, "failed executing script", e);
             scriptLogger.log(Level.SEVERE,"failed executing script: "+e.toString(),e);
         }
-        closeLogger(scriptLogger);
+        finally {
+            closeLogger(scriptLogger);
+        }
 
         return evaluateRuleResponse;
 
@@ -261,12 +264,15 @@ public class RulesService implements ServicePlugin {
 
         try {
             File file = new File(script.getFullPath());
+            TriggerManagerContext triggerManagerContext=new TriggerManagerContext()
+                    .setScenarioTriggerEvent(scenarioTriggerEvent)
+                    .setScenarioTrigger(scenarioToTrigger.getScenarioTrigger())
+                    .setScenario(scenarioToTrigger.getScenario())
+                    .setLogger(scriptLogger);
             ScriptObjectMirror loaded = loadScript(file, buildFunctionTableFunction(FunctionTypes.EVALUATE));
-            Object[] parameters = new Object[4];
-            parameters[0]=scenarioTriggerEvent;
-            parameters[1]=scenarioToTrigger.getScenario();
-            parameters[2]=scenarioToTrigger.getScenarioTrigger();
-            parameters[3]=scriptLogger;
+            Object[] parameters = new Object[1];
+            parameters[0]=triggerManagerContext;
+
 
 
             return (boolean) loaded.callMember(FunctionTypes.EVALUATE.getFunctionName(), parameters);
@@ -276,7 +282,9 @@ public class RulesService implements ServicePlugin {
             logger.log(Level.SEVERE, "failed executing script", e);
             scriptLogger.log(Level.SEVERE,"failed executing script: "+e.toString(),e);
         }
-        closeLogger(scriptLogger);
+        finally {
+            closeLogger(scriptLogger);
+        }
 
         return false;
     }
@@ -299,7 +307,7 @@ public class RulesService implements ServicePlugin {
         try {
             if (scenario.getLogFileResource() != null) {
                 boolean hasFileHandler=false;
-                for (Handler handler : logger.getHandlers()) {
+                for (Handler handler : scriptLogger.getHandlers()) {
                     if(handler instanceof FileHandler){
                         hasFileHandler=true;
                         break;
