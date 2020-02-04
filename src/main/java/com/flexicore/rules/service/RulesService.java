@@ -16,6 +16,7 @@ import com.flexicore.security.SecurityContext;
 import com.flexicore.service.DynamicInvokersService;
 import com.flexicore.service.FileResourceService;
 import jdk.nashorn.api.scripting.ScriptObjectMirror;
+import jdk.nashorn.api.scripting.ScriptUtils;
 import org.apache.commons.io.FileUtils;
 
 import javax.inject.Inject;
@@ -28,6 +29,9 @@ import java.util.*;
 import java.util.logging.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static com.flexicore.rules.service.LogHolder.flush;
+import static com.flexicore.rules.service.LogHolder.getLogger;
 
 @PluginInfo(version = 1)
 public class RulesService implements ServicePlugin {
@@ -70,7 +74,7 @@ public class RulesService implements ServicePlugin {
     }
 
     public FlexiCoreRule createRule(RuleCreate creationContainer, SecurityContext securityContext) {
-        List<Object> toMerge=new ArrayList<>();
+        List<Object> toMerge = new ArrayList<>();
 
         FlexiCoreRule flexiCoreRule = createRuleNoMerge(creationContainer, securityContext);
         toMerge.add(flexiCoreRule);
@@ -144,59 +148,57 @@ public class RulesService implements ServicePlugin {
     }
 
 
-    public Map<String, ExecuteInvokerRequest> evaluateActionManager(Scenario scenario,Map<String,ExecuteInvokerRequest> map,SecurityContext securityContext){
+    public Map<String, ExecuteInvokerRequest> evaluateActionManager(Scenario scenario, Map<String, ExecuteInvokerRequest> map, SecurityContext securityContext) {
         FileResource script = scenario.getActionManagerScript();
         Logger scriptLogger = getLogger(scenario);
 
         try {
             File file = new File(script.getFullPath());
             ScriptObjectMirror loaded = loadScript(file, buildFunctionTableFunction(FunctionTypes.EVALUATE));
-            ActionManagerContext actionManagerContext=new ActionManagerContext()
+            ActionManagerContext actionManagerContext = new ActionManagerContext()
                     .setSecurityContext(securityContext)
                     .setLogger(scriptLogger)
                     .setActionMap(map)
                     .setScenario(scenario);
             Object[] parameters = new Object[1];
-            parameters[0]=actionManagerContext;
+            parameters[0] = actionManagerContext;
             String[] res = (String[]) loaded.callMember(FunctionTypes.EVALUATE.getFunctionName(), parameters);
-            Set<String> idsToRun=Stream.of(res).collect(Collectors.toSet());
-            return map.entrySet().parallelStream().filter(f->idsToRun.contains(f.getKey())).collect(Collectors.toMap(f->f.getKey(),f->f.getValue()));
+            Set<String> idsToRun = Stream.of(res).collect(Collectors.toSet());
+            return map.entrySet().parallelStream().filter(f -> idsToRun.contains(f.getKey())).collect(Collectors.toMap(f -> f.getKey(), f -> f.getValue()));
 
 
         } catch (Exception e) {
             logger.log(Level.SEVERE, "failed executing script", e);
-            scriptLogger.log(Level.SEVERE,"failed executing script: "+e.toString(),e);
+            scriptLogger.log(Level.SEVERE, "failed executing script: " + e.toString(), e);
 
-        }
-        finally {
-            closeLogger(scriptLogger);
+        } finally {
+            flush(scriptLogger);
         }
         return null;
     }
 
     public EvaluateRuleResponse evaluateRule(EvaluateRuleRequest evaluateRuleRequest, SecurityContext securityContext) {
-        if(evaluateRuleRequest.getRule() instanceof FlexiCoreRuleOp){
-            return evaluateRuleOp(evaluateRuleRequest,securityContext);
-        }
-        else{
-            return evaluateRuleNode(evaluateRuleRequest,securityContext);
+        if (evaluateRuleRequest.getRule() instanceof FlexiCoreRuleOp) {
+            return evaluateRuleOp(evaluateRuleRequest, securityContext);
+        } else {
+            return evaluateRuleNode(evaluateRuleRequest, securityContext);
         }
     }
 
     private EvaluateRuleResponse evaluateRuleOp(EvaluateRuleRequest evaluateRuleRequest, SecurityContext securityContext) {
-        EvaluateRuleResponse evaluateRuleResponse=new EvaluateRuleResponse();
-        FlexiCoreRuleOp flexiCoreRuleOp= (FlexiCoreRuleOp) evaluateRuleRequest.getRule();
-        List<FlexiCoreRule> flexiCoreRules=listAllRuleLinks(new RuleLinkFilter().setFlexiCoreRuleOps(Collections.singletonList(flexiCoreRuleOp)),securityContext).parallelStream().map(f->f.getRuleToEval()).collect(Collectors.toList());
-        boolean res=false;
-        switch (flexiCoreRuleOp.getRuleOpType()){
+        EvaluateRuleResponse evaluateRuleResponse = new EvaluateRuleResponse();
+        FlexiCoreRuleOp flexiCoreRuleOp = (FlexiCoreRuleOp) evaluateRuleRequest.getRule();
+        List<FlexiCoreRule> flexiCoreRules = listAllRuleLinks(new RuleLinkFilter().setFlexiCoreRuleOps(Collections.singletonList(flexiCoreRuleOp)), securityContext).parallelStream().map(f -> f.getRuleToEval()).collect(Collectors.toList());
+        boolean res = false;
+        switch (flexiCoreRuleOp.getRuleOpType()) {
             case OR:
-                res=flexiCoreRules.stream().anyMatch(f->evaluateRule(new EvaluateRuleRequest().setScenario(evaluateRuleRequest.getScenario()).setScenarioTriggerEvent(evaluateRuleRequest.getScenarioTriggerEvent()).setRule(f),securityContext).isResult());
+                res = flexiCoreRules.stream().anyMatch(f -> evaluateRule(new EvaluateRuleRequest().setScenario(evaluateRuleRequest.getScenario()).setScenarioTriggerEvent(evaluateRuleRequest.getScenarioTriggerEvent()).setRule(f), securityContext).isResult());
                 break;
             case AND:
-                res= flexiCoreRules.stream().allMatch(f->evaluateRule(new EvaluateRuleRequest().setScenario(evaluateRuleRequest.getScenario()).setScenarioTriggerEvent(evaluateRuleRequest.getScenarioTriggerEvent()).setRule(f),securityContext).isResult());
+                res = flexiCoreRules.stream().allMatch(f -> evaluateRule(new EvaluateRuleRequest().setScenario(evaluateRuleRequest.getScenario()).setScenarioTriggerEvent(evaluateRuleRequest.getScenarioTriggerEvent()).setRule(f), securityContext).isResult());
                 break;
             case NOT:
-                res= flexiCoreRules.stream().noneMatch(f->evaluateRule(new EvaluateRuleRequest().setScenario(evaluateRuleRequest.getScenario()).setScenarioTriggerEvent(evaluateRuleRequest.getScenarioTriggerEvent()).setRule(f),securityContext).isResult());
+                res = flexiCoreRules.stream().noneMatch(f -> evaluateRule(new EvaluateRuleRequest().setScenario(evaluateRuleRequest.getScenario()).setScenarioTriggerEvent(evaluateRuleRequest.getScenarioTriggerEvent()).setRule(f), securityContext).isResult());
                 break;
 
 
@@ -207,7 +209,7 @@ public class RulesService implements ServicePlugin {
     }
 
     private List<FlexiCoreRuleLink> listAllRuleLinks(RuleLinkFilter ruleLinkFilter, SecurityContext securityContext) {
-        return repository.listAllRuleLinks(ruleLinkFilter,securityContext);
+        return repository.listAllRuleLinks(ruleLinkFilter, securityContext);
     }
 
 
@@ -220,7 +222,7 @@ public class RulesService implements ServicePlugin {
         List<ExecuteInvokerResponse> results = arguments.stream()
                 .sorted(Comparator.comparing(f -> f.getOrdinal()))
                 .map(f -> f.getFlexiCoreRuleArgument())
-                .map(f -> f.getDynamicExecution()!=null?dynamicInvokersService.executeInvoker(dynamicInvokersService.getExecuteInvokerRequest(f.getDynamicExecution(),scenarioTriggerEvent, securityContext),securityContext):new ExecuteInvokersResponse(new ArrayList<>()))
+                .map(f -> f.getDynamicExecution() != null ? dynamicInvokersService.executeInvoker(dynamicInvokersService.getExecuteInvokerRequest(f.getDynamicExecution(), scenarioTriggerEvent, securityContext), securityContext) : new ExecuteInvokersResponse(new ArrayList<>()))
                 .filter(f -> f.getResponses() != null && !f.getResponses().isEmpty()).map(f -> f.getResponses().get(0))
                 .collect(Collectors.toList());
         FileResource script = flexiCoreRule.getEvaluationScript();
@@ -228,51 +230,42 @@ public class RulesService implements ServicePlugin {
         try {
             File file = new File(script.getFullPath());
             ScriptObjectMirror loaded = loadScript(file, buildFunctionTableFunction(FunctionTypes.EVALUATE));
-            RuleScriptContext ruleScriptContext=new RuleScriptContext()
+            RuleScriptContext ruleScriptContext = new RuleScriptContext()
                     .setSecurityContext(securityContext)
                     .setLogger(scriptLogger)
                     .setScenarioTriggerEvent(scenarioTriggerEvent);
-            Object[] parameters = new Object[results.size()+1];
+            Object[] parameters = new Object[results.size() + 1];
             results.toArray(parameters);
-            parameters[results.size()]=ruleScriptContext;
+            parameters[results.size()] = ruleScriptContext;
             boolean res = (boolean) loaded.callMember(FunctionTypes.EVALUATE.getFunctionName(), parameters);
             evaluateRuleResponse.setResult(res);
 
         } catch (Exception e) {
             logger.log(Level.SEVERE, "failed executing script", e);
-            scriptLogger.log(Level.SEVERE,"failed executing script: "+e.toString(),e);
-        }
-        finally {
-            closeLogger(scriptLogger);
+            scriptLogger.log(Level.SEVERE, "failed executing script: " + e.toString(), e);
+        } finally {
+            flush(scriptLogger);
         }
 
         return evaluateRuleResponse;
 
     }
 
-    private void closeLogger(Logger scriptLogger) {
-        for (Handler handler : scriptLogger.getHandlers()) {
-            handler.close();
-        }
-    }
 
-
-
-    public boolean evaluateTriggerManager(ScenarioToTrigger scenarioToTrigger, ScenarioTriggerEvent scenarioTriggerEvent){
+    public boolean evaluateTriggerManager(ScenarioToTrigger scenarioToTrigger, ScenarioTriggerEvent scenarioTriggerEvent) {
         FileResource script = scenarioToTrigger.getTriggerManager().getTriggerManagerScript();
         Logger scriptLogger = getLogger(scenarioToTrigger.getScenario());
 
         try {
             File file = new File(script.getFullPath());
-            TriggerManagerContext triggerManagerContext=new TriggerManagerContext()
+            TriggerManagerContext triggerManagerContext = new TriggerManagerContext()
                     .setScenarioTriggerEvent(scenarioTriggerEvent)
                     .setScenarioTrigger(scenarioToTrigger.getScenarioTrigger())
                     .setScenario(scenarioToTrigger.getScenario())
                     .setLogger(scriptLogger);
             ScriptObjectMirror loaded = loadScript(file, buildFunctionTableFunction(FunctionTypes.EVALUATE));
             Object[] parameters = new Object[1];
-            parameters[0]=triggerManagerContext;
-
+            parameters[0] = triggerManagerContext;
 
 
             return (boolean) loaded.callMember(FunctionTypes.EVALUATE.getFunctionName(), parameters);
@@ -280,53 +273,18 @@ public class RulesService implements ServicePlugin {
 
         } catch (Exception e) {
             logger.log(Level.SEVERE, "failed executing script", e);
-            scriptLogger.log(Level.SEVERE,"failed executing script: "+e.toString(),e);
-        }
-        finally {
-            closeLogger(scriptLogger);
+            scriptLogger.log(Level.SEVERE, "failed executing script: " + e.toString(), e);
+        } finally {
+            flush(scriptLogger);
         }
 
         return false;
     }
 
 
-    public static class CustomFormatter extends SimpleFormatter{
-        private static final String format="[%1$tF %1$tT] [%2$-7s] %3$s %n";
-        @Override
-        public synchronized String format(LogRecord logRecord) {
-            return String.format(format,
-                    new Date(logRecord.getMillis()),
-                    logRecord.getLevel().getLocalizedName(),
-                    logRecord.getMessage()
-            );
-        }
-    }
 
-    private Logger getLogger(Scenario scenario) {
-        Logger scriptLogger=Logger.getLogger(scenario.getId());
-        try {
-            if (scenario.getLogFileResource() != null) {
-                boolean hasFileHandler=false;
-                for (Handler handler : scriptLogger.getHandlers()) {
-                    if(handler instanceof FileHandler){
-                        hasFileHandler=true;
-                        break;
-                    }
-                }
-                if(!hasFileHandler){
-                    FileHandler handler = new FileHandler(scenario.getLogFileResource().getFullPath(),0,1, true);
-                    handler.setFormatter(new CustomFormatter());
-                    scriptLogger.addHandler(handler);
-                    scriptLogger.setUseParentHandlers(false);
 
-                }
-            }
-        }
-        catch (Exception e){
-            this.logger.log(Level.SEVERE,"failed getting script logger",e);
-        }
-        return scriptLogger;
-    }
+
 
 
     private ScriptObjectMirror loadScript(File file, String functionTable) throws IOException, ScriptException {
@@ -449,27 +407,27 @@ public class RulesService implements ServicePlugin {
     }
 
     public void validate(RuleLinkFilter ruleLinkFilter, SecurityContext securityContext) {
-        Set<String> opIds=ruleLinkFilter.getRuleOpsIds();
-        Map<String,FlexiCoreRuleOp> opMap=opIds.isEmpty()?new HashMap<>():repository.listByIds(FlexiCoreRuleOp.class,opIds,securityContext).parallelStream().collect(Collectors.toMap(f->f.getId(),f->f));
+        Set<String> opIds = ruleLinkFilter.getRuleOpsIds();
+        Map<String, FlexiCoreRuleOp> opMap = opIds.isEmpty() ? new HashMap<>() : repository.listByIds(FlexiCoreRuleOp.class, opIds, securityContext).parallelStream().collect(Collectors.toMap(f -> f.getId(), f -> f));
         opIds.removeAll(opMap.keySet());
-        if(!opIds.isEmpty()){
-            throw new BadRequestException("No Rule Ops with ids "+opIds);
+        if (!opIds.isEmpty()) {
+            throw new BadRequestException("No Rule Ops with ids " + opIds);
         }
         ruleLinkFilter.setFlexiCoreRuleOps(new ArrayList<>(opMap.values()));
 
-        Set<String> rulesIds=ruleLinkFilter.getRulesIds();
-        Map<String,FlexiCoreRule> ruleMap=rulesIds.isEmpty()?new HashMap<>():repository.listByIds(FlexiCoreRule.class,rulesIds,securityContext).parallelStream().collect(Collectors.toMap(f->f.getId(),f->f));
+        Set<String> rulesIds = ruleLinkFilter.getRulesIds();
+        Map<String, FlexiCoreRule> ruleMap = rulesIds.isEmpty() ? new HashMap<>() : repository.listByIds(FlexiCoreRule.class, rulesIds, securityContext).parallelStream().collect(Collectors.toMap(f -> f.getId(), f -> f));
         rulesIds.removeAll(ruleMap.keySet());
-        if(!rulesIds.isEmpty()){
-            throw new BadRequestException("No Rules with ids "+rulesIds);
+        if (!rulesIds.isEmpty()) {
+            throw new BadRequestException("No Rules with ids " + rulesIds);
         }
         ruleLinkFilter.setFlexiCoreRules(new ArrayList<>(ruleMap.values()));
     }
 
     public PaginationResponse<FlexiCoreRuleLink> getAllRuleLinks(RuleLinkFilter ruleLinkFilter, SecurityContext securityContext) {
-        List<FlexiCoreRuleLink> list=listAllRuleLinks(ruleLinkFilter,securityContext);
-        long count=repository.countAllRuleLinks(ruleLinkFilter, securityContext);
-        return new PaginationResponse<>(list,ruleLinkFilter,count);
+        List<FlexiCoreRuleLink> list = listAllRuleLinks(ruleLinkFilter, securityContext);
+        long count = repository.countAllRuleLinks(ruleLinkFilter, securityContext);
+        return new PaginationResponse<>(list, ruleLinkFilter, count);
     }
 
 
