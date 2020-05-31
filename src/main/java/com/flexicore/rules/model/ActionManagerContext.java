@@ -2,8 +2,11 @@ package com.flexicore.rules.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.flexicore.request.ExecuteInvokerRequest;
+import com.flexicore.rules.request.ScenarioTriggerEvent;
 import com.flexicore.security.SecurityContext;
 
 import java.util.Map;
@@ -15,7 +18,10 @@ public class ActionManagerContext {
     private SecurityContext securityContext;
     private Scenario scenario;
     private Map<String, ExecuteInvokerRequest> actionMap;
-    private static final ObjectMapper objectMapper=new ObjectMapper();
+    private ScenarioTriggerEvent scenarioTriggerEvent;
+    private static final ObjectMapper objectMapper=new ObjectMapper()
+            .registerModule(new JavaTimeModule())
+            .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES,false);
 
     @JsonIgnore
     public Logger getLogger() {
@@ -51,6 +57,15 @@ public class ActionManagerContext {
 
     public <T extends ActionManagerContext> T setActionMap(Map<String, ExecuteInvokerRequest> actionMap) {
         this.actionMap = actionMap;
+        return (T) this;
+    }
+
+    public ScenarioTriggerEvent getScenarioTriggerEvent() {
+        return scenarioTriggerEvent;
+    }
+
+    public <T extends ActionManagerContext> T setScenarioTriggerEvent(ScenarioTriggerEvent scenarioTriggerEvent) {
+        this.scenarioTriggerEvent = scenarioTriggerEvent;
         return (T) this;
     }
 

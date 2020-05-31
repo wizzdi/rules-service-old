@@ -27,7 +27,7 @@ public class ScenarioToTriggerRepository extends AbstractRepositoryPlugin {
     }
 
     private void addScenarioToTriggerPredicate(List<Predicate> preds, Root<ScenarioToTrigger> r, CriteriaBuilder cb, ScenarioToTriggerFilter filter) {
-
+        Join<ScenarioToTrigger, Scenario> scenarioJoin=null;
         if(filter.getScenarioTriggers()!=null && !filter.getScenarioTriggers().isEmpty()){
             Set<String> ids=filter.getScenarioTriggers().parallelStream().map(f->f.getId()).collect(Collectors.toSet());
             Join<ScenarioToTrigger, ScenarioTrigger> join=r.join(ScenarioToTrigger_.scenarioTrigger);
@@ -36,12 +36,16 @@ public class ScenarioToTriggerRepository extends AbstractRepositoryPlugin {
 
         if(filter.getScenarios()!=null && !filter.getScenarios().isEmpty()){
             Set<String> ids=filter.getScenarios().parallelStream().map(f->f.getId()).collect(Collectors.toSet());
-            Join<ScenarioToTrigger, Scenario> join=r.join(ScenarioToTrigger_.scenario);
-            preds.add(join.get(Scenario_.id).in(ids));
+             scenarioJoin=scenarioJoin==null?r.join(ScenarioToTrigger_.scenario):scenarioJoin;
+            preds.add(scenarioJoin.get(Scenario_.id).in(ids));
         }
 
         if(filter.getEnabled()!=null){
             preds.add(cb.equal(r.get(ScenarioToTrigger_.enabled),filter.getEnabled()));
+        }
+        if(filter.getNonDeletedScenarios()!=null &&filter.getNonDeletedScenarios()){
+            scenarioJoin=scenarioJoin==null?r.join(ScenarioToTrigger_.scenario):scenarioJoin;
+            preds.add(cb.isFalse(scenarioJoin.get(Scenario_.softDelete)));
         }
     }
 

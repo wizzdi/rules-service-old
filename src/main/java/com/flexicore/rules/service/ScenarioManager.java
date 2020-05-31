@@ -59,9 +59,13 @@ public class ScenarioManager implements ServicePlugin {
 
     public void handleTrigger(@ObservesAsync ScenarioTriggerEvent scenarioTriggerEvent) {
         logger.info("Scenario Trigger Event " + scenarioTriggerEvent + "captured by Scenario Manager");
+        if(scenarioTriggerEvent.getScenarioTrigger()==null){
+            logger.warning("Scenario Trigger Event " + scenarioTriggerEvent +" had null trigger , ignoring");
+            return;
+        }
         SecurityContext securityContext = scenarioTriggerEvent.getSecurityContext();
         ScenarioTrigger scenarioTrigger = scenarioTriggerEvent.getScenarioTrigger();
-        Map<String,Scenario> activeScenarios = scenarioToTriggerService.listAllScenarioToTrigger(new ScenarioToTriggerFilter().setEnabled(true).setScenarioTriggers(Collections.singletonList(scenarioTrigger)), securityContext).stream().filter(f->f.getTriggerManager()==null||rulesService.evaluateTriggerManager(f,scenarioTriggerEvent)).map(ScenarioToTrigger::getScenario).filter(distinctByKey(Baseclass::getId)).filter(f -> f.getFlexiCoreRule() != null && rulesService.evaluateRule(new EvaluateRuleRequest().setScenario(f).setScenarioTriggerEvent(scenarioTriggerEvent).setRule(f.getFlexiCoreRule()), securityContext).isResult()).collect(Collectors.toMap(f->f.getId(), f->f,(a, b)->a));
+        Map<String,Scenario> activeScenarios = scenarioToTriggerService.listAllScenarioToTrigger(new ScenarioToTriggerFilter().setNonDeletedScenarios(true).setEnabled(true).setScenarioTriggers(Collections.singletonList(scenarioTrigger)), securityContext).stream().filter(f->f.getTriggerManager()==null||rulesService.evaluateTriggerManager(f,scenarioTriggerEvent)).map(ScenarioToTrigger::getScenario).filter(distinctByKey(Baseclass::getId)).filter(f -> f.getFlexiCoreRule() != null && rulesService.evaluateRule(new EvaluateRuleRequest().setScenario(f).setScenarioTriggerEvent(scenarioTriggerEvent).setRule(f.getFlexiCoreRule()), securityContext).isResult()).collect(Collectors.toMap(f->f.getId(), f->f,(a, b)->a));
         if (!activeScenarios.isEmpty()) {
             logger.info("Trigger had caused activated scenarios: "+activeScenarios.values().parallelStream().map(Baseclass::getId).collect(Collectors.joining(",")));
             Map<String,List<ScenarioAction>> scenarioActions = scenarioToActionService.listAllScenarioToAction(new ScenarioToActionFilter().setEnabled(true).setScenarios(new ArrayList<>(activeScenarios.values())), securityContext).parallelStream().filter(f -> f.getScenarioAction().getDynamicExecution() != null).collect(Collectors.groupingBy(f->f.getScenario().getId(),Collectors.mapping(f->f.getScenarioAction(),Collectors.toList())));
@@ -73,7 +77,7 @@ public class ScenarioManager implements ServicePlugin {
                 Map<String,ExecuteInvokerRequest> filtered=executeInvokerRequests;
                 if(scenario.getActionManagerScript()!=null){
                     logger.info("scenario "+scenario.getName()+"("+scenario.getId() +") has action manager");
-                    filtered=rulesService.evaluateActionManager(scenario,filtered,securityContext);
+                    filtered=rulesService.evaluateActionManager(scenarioTriggerEvent,scenario,filtered,securityContext);
                 }
                 if(filtered==null){
                     logger.warning("Action manager failed");

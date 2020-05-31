@@ -148,7 +148,7 @@ public class RulesService implements ServicePlugin {
     }
 
 
-    public Map<String, ExecuteInvokerRequest> evaluateActionManager(Scenario scenario, Map<String, ExecuteInvokerRequest> map, SecurityContext securityContext) {
+    public Map<String, ExecuteInvokerRequest> evaluateActionManager(ScenarioTriggerEvent scenarioTriggerEvent, Scenario scenario, Map<String, ExecuteInvokerRequest> map, SecurityContext securityContext) {
         FileResource script = scenario.getActionManagerScript();
         Logger scriptLogger = getLogger(scenario);
 
@@ -156,6 +156,7 @@ public class RulesService implements ServicePlugin {
             File file = new File(script.getFullPath());
             ScriptObjectMirror loaded = loadScript(file, buildFunctionTableFunction(FunctionTypes.EVALUATE));
             ActionManagerContext actionManagerContext = new ActionManagerContext()
+                    .setScenarioTriggerEvent(scenarioTriggerEvent)
                     .setSecurityContext(securityContext)
                     .setLogger(scriptLogger)
                     .setActionMap(map)

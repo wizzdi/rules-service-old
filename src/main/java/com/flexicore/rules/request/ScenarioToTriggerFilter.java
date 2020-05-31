@@ -21,6 +21,7 @@ public class ScenarioToTriggerFilter extends FilteringInformationHolder {
     private List<Scenario> scenarios;
 
     private Boolean enabled;
+    private Boolean nonDeletedScenarios;
 
     @JsonIgnore
     public List<ScenarioTrigger> getScenarioTriggers() {
@@ -67,6 +68,16 @@ public class ScenarioToTriggerFilter extends FilteringInformationHolder {
 
     public <T extends ScenarioToTriggerFilter> T setScenarios(List<Scenario> scenarios) {
         this.scenarios = scenarios;
+        return (T) this;
+    }
+
+    @JsonIgnore
+    public Boolean getNonDeletedScenarios() {
+        return nonDeletedScenarios;
+    }
+
+    public <T extends ScenarioToTriggerFilter> T setNonDeletedScenarios(Boolean nonDeletedScenarios) {
+        this.nonDeletedScenarios = nonDeletedScenarios;
         return (T) this;
     }
 }
