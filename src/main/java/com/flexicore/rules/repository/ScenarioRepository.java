@@ -13,33 +13,40 @@ import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import java.util.ArrayList;
 import java.util.List;
+import org.pf4j.Extension;
+import org.springframework.stereotype.Component;
 
 @PluginInfo(version = 1)
+@Extension
+@Component
 public class ScenarioRepository extends AbstractRepositoryPlugin {
 
-    public List<Scenario> listAllScenarios(ScenarioFilter filter, SecurityContext securityContext) {
-        CriteriaBuilder cb=em.getCriteriaBuilder();
-        CriteriaQuery<Scenario> q=cb.createQuery(Scenario.class);
-        Root<Scenario> r=q.from(Scenario.class);
-        List<Predicate> preds=new ArrayList<>();
-        addScenarioPredicate(preds,r,cb,filter);
-        QueryInformationHolder<Scenario> queryInformationHolder=new QueryInformationHolder<>(filter,Scenario.class,securityContext);
-        return getAllFiltered(queryInformationHolder,preds,cb,q,r);
-    }
+	public List<Scenario> listAllScenarios(ScenarioFilter filter,
+			SecurityContext securityContext) {
+		CriteriaBuilder cb = em.getCriteriaBuilder();
+		CriteriaQuery<Scenario> q = cb.createQuery(Scenario.class);
+		Root<Scenario> r = q.from(Scenario.class);
+		List<Predicate> preds = new ArrayList<>();
+		addScenarioPredicate(preds, r, cb, filter);
+		QueryInformationHolder<Scenario> queryInformationHolder = new QueryInformationHolder<>(
+				filter, Scenario.class, securityContext);
+		return getAllFiltered(queryInformationHolder, preds, cb, q, r);
+	}
 
-    public static void addScenarioPredicate(List<Predicate> preds, Root<Scenario> r, CriteriaBuilder cb, ScenarioFilter filter) {
+	public static void addScenarioPredicate(List<Predicate> preds,
+			Root<Scenario> r, CriteriaBuilder cb, ScenarioFilter filter) {
 
+	}
 
-    }
-
-
-    public long countAllScenarios(ScenarioFilter filter, SecurityContext securityContext) {
-        CriteriaBuilder cb=em.getCriteriaBuilder();
-        CriteriaQuery<Long> q=cb.createQuery(Long.class);
-        Root<Scenario> r=q.from(Scenario.class);
-        List<Predicate> preds=new ArrayList<>();
-        addScenarioPredicate(preds,r,cb,filter);
-        QueryInformationHolder<Scenario> queryInformationHolder=new QueryInformationHolder<>(filter,Scenario.class,securityContext);
-        return countAllFiltered(queryInformationHolder,preds,cb,q,r);
-    }
+	public long countAllScenarios(ScenarioFilter filter,
+			SecurityContext securityContext) {
+		CriteriaBuilder cb = em.getCriteriaBuilder();
+		CriteriaQuery<Long> q = cb.createQuery(Long.class);
+		Root<Scenario> r = q.from(Scenario.class);
+		List<Predicate> preds = new ArrayList<>();
+		addScenarioPredicate(preds, r, cb, filter);
+		QueryInformationHolder<Scenario> queryInformationHolder = new QueryInformationHolder<>(
+				filter, Scenario.class, securityContext);
+		return countAllFiltered(queryInformationHolder, preds, cb, q, r);
+	}
 }

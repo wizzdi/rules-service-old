@@ -4,34 +4,35 @@ import io.swagger.v3.oas.annotations.media.Schema;
 
 @Schema(description = "A container for the creation of ScenarioTrigger")
 public class ScenarioTriggerCreate {
-    private String name;
-    private String description;
-    private String eventCanonicalClassName;
+	private String name;
+	private String description;
+	private String eventCanonicalClassName;
 
-    public String getName() {
-        return name;
-    }
-    @Schema(description = "The name of the new trigger")
-    public <T extends ScenarioTriggerCreate> T setName(String name) {
-        this.name = name;
-        return (T) this;
-    }
+	public String getName() {
+		return name;
+	}
+	@Schema(description = "The name of the new trigger")
+	public <T extends ScenarioTriggerCreate> T setName(String name) {
+		this.name = name;
+		return (T) this;
+	}
 
-    public String getDescription() {
-        return description;
-    }
-@Schema(description = "The description of the new instance")
-    public <T extends ScenarioTriggerCreate> T setDescription(String description) {
-        this.description = description;
-        return (T) this;
-    }
+	public String getDescription() {
+		return description;
+	}
+	@Schema(description = "The description of the new instance")
+	public <T extends ScenarioTriggerCreate> T setDescription(String description) {
+		this.description = description;
+		return (T) this;
+	}
 
-    public String getEventCanonicalClassName() {
-        return eventCanonicalClassName;
-    }
-    @Schema(description = ".unique identifier for the trigger - when this will be a system generated event this field will contain the canonical class of the event " )
-    public <T extends ScenarioTriggerCreate> T setEventCanonicalClassName(String eventCanonicalClassName) {
-        this.eventCanonicalClassName = eventCanonicalClassName;
-        return (T) this;
-    }
+	public String getEventCanonicalClassName() {
+		return eventCanonicalClassName;
+	}
+	@Schema(description = ".unique identifier for the trigger - when this will be a system generated event this field will contain the canonical class of the event ")
+	public <T extends ScenarioTriggerCreate> T setEventCanonicalClassName(
+			String eventCanonicalClassName) {
+		this.eventCanonicalClassName = eventCanonicalClassName;
+		return (T) this;
+	}
 }

@@ -10,27 +10,28 @@ import java.util.Set;
 
 public class RuleToArgumentHolderFilter extends FilteringInformationHolder {
 
-    private Set<String> rulesIds=new HashSet<>();
-    @JsonIgnore
-    private List<FlexiCoreRule> rules;
+	private Set<String> rulesIds = new HashSet<>();
+	@JsonIgnore
+	private List<FlexiCoreRule> rules;
 
+	public Set<String> getRulesIds() {
+		return rulesIds;
+	}
 
-    public Set<String> getRulesIds() {
-        return rulesIds;
-    }
+	public <T extends RuleToArgumentHolderFilter> T setRulesIds(
+			Set<String> rulesIds) {
+		this.rulesIds = rulesIds;
+		return (T) this;
+	}
 
-    public <T extends RuleToArgumentHolderFilter> T setRulesIds(Set<String> rulesIds) {
-        this.rulesIds = rulesIds;
-        return (T) this;
-    }
+	@JsonIgnore
+	public List<FlexiCoreRule> getRules() {
+		return rules;
+	}
 
-    @JsonIgnore
-    public List<FlexiCoreRule> getRules() {
-        return rules;
-    }
-
-    public <T extends RuleToArgumentHolderFilter> T setRules(List<FlexiCoreRule> rules) {
-        this.rules = rules;
-        return (T) this;
-    }
+	public <T extends RuleToArgumentHolderFilter> T setRules(
+			List<FlexiCoreRule> rules) {
+		this.rules = rules;
+		return (T) this;
+	}
 }
