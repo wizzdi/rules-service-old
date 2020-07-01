@@ -13,86 +13,106 @@ import com.flexicore.rules.request.TriggerManagerUpdate;
 import com.flexicore.security.SecurityContext;
 import com.flexicore.service.BaseclassNewService;
 
-import javax.inject.Inject;
 import javax.ws.rs.BadRequestException;
 import java.util.List;
+import org.pf4j.Extension;
+import org.springframework.stereotype.Component;
+import org.springframework.beans.factory.annotation.Autowired;
 
 @PluginInfo(version = 1)
+@Extension
+@Component
 public class TriggerManagerService implements ServicePlugin {
 
+	@PluginInfo(version = 1)
+	@Autowired
+	private TriggerManagerRepository repository;
 
-    @Inject
-    @PluginInfo(version = 1)
-    private TriggerManagerRepository repository;
+	@Autowired
+	private BaseclassNewService baseclassNewService;
 
-    @Inject
-    private BaseclassNewService baseclassNewService;
+	public void validate(TriggerManagerFilter triggerManagerArgumentFilter,
+			SecurityContext securityContext) {
 
+	}
 
+	public void validate(TriggerManagerCreate creationContainer,
+			SecurityContext securityContext) {
+		String scriptId = creationContainer.getScriptId();
+		FileResource fileResource = scriptId != null ? getByIdOrNull(scriptId,
+				FileResource.class, null, securityContext) : null;
+		if (fileResource == null) {
+			throw new BadRequestException("No fileResource with id " + scriptId);
+		}
+		creationContainer.setTriggerManagerScript(fileResource);
 
-    public void validate(TriggerManagerFilter triggerManagerArgumentFilter, SecurityContext securityContext) {
+	}
 
+	public <T extends Baseclass> T getByIdOrNull(String id, Class<T> c,
+			List<String> batchString, SecurityContext securityContext) {
+		return repository.getByIdOrNull(id, c, batchString, securityContext);
+	}
 
-    }
+	public TriggerManager createTriggerManager(
+			TriggerManagerCreate creationContainer,
+			SecurityContext securityContext) {
+		TriggerManager triggerManager = createTriggerManagerNoMerge(
+				creationContainer, securityContext);
+		repository.merge(triggerManager);
+		return triggerManager;
 
-    public void validate(TriggerManagerCreate creationContainer, SecurityContext securityContext) {
-        String scriptId = creationContainer.getScriptId();
-        FileResource fileResource = scriptId != null ? getByIdOrNull(scriptId,FileResource.class,null,securityContext) : null;
-        if (fileResource == null ) {
-            throw new BadRequestException("No fileResource with id " + scriptId);
-        }
-        creationContainer.setTriggerManagerScript(fileResource);
+	}
 
-    }
+	public TriggerManager updateTriggerManager(
+			TriggerManagerUpdate creationContainer,
+			SecurityContext securityContext) {
+		TriggerManager triggerManager = creationContainer.getTriggerManager();
+		if (updateTriggerManagerNoMerge(triggerManager, creationContainer)) {
+			repository.merge(triggerManager);
 
-    public <T extends Baseclass> T getByIdOrNull(String id, Class<T> c, List<String> batchString, SecurityContext securityContext) {
-        return repository.getByIdOrNull(id, c, batchString, securityContext);
-    }
+		}
+		return triggerManager;
 
-    public TriggerManager createTriggerManager(TriggerManagerCreate creationContainer, SecurityContext securityContext) {
-        TriggerManager triggerManager = createTriggerManagerNoMerge(creationContainer, securityContext);
-        repository.merge(triggerManager);
-        return triggerManager;
+	}
 
-    }
+	private TriggerManager createTriggerManagerNoMerge(
+			TriggerManagerCreate creationContainer,
+			SecurityContext securityContext) {
+		TriggerManager triggerManager = new TriggerManager(
+				creationContainer.getName(), securityContext);
+		updateTriggerManagerNoMerge(triggerManager, creationContainer);
+		return triggerManager;
+	}
 
-    public TriggerManager updateTriggerManager(TriggerManagerUpdate creationContainer, SecurityContext securityContext) {
-        TriggerManager triggerManager=creationContainer.getTriggerManager();
-        if(updateTriggerManagerNoMerge(triggerManager,creationContainer)){
-            repository.merge(triggerManager);
+	private boolean updateTriggerManagerNoMerge(TriggerManager triggerManager,
+			TriggerManagerCreate creationContainer) {
+		boolean update = baseclassNewService.updateBaseclassNoMerge(
+				creationContainer, triggerManager);
 
-        }
-        return triggerManager;
+		if (creationContainer.getTriggerManagerScript() != null
+				&& (triggerManager.getTriggerManagerScript() == null || !creationContainer
+						.getTriggerManagerScript()
+						.getId()
+						.equals(triggerManager.getTriggerManagerScript()
+								.getId()))) {
+			triggerManager.setTriggerManagerScript(creationContainer
+					.getTriggerManagerScript());
+			update = true;
+		}
+		return update;
 
-    }
+	}
 
-    private TriggerManager createTriggerManagerNoMerge(TriggerManagerCreate creationContainer, SecurityContext securityContext) {
-        TriggerManager triggerManager=new TriggerManager(creationContainer.getName(),securityContext);
-        updateTriggerManagerNoMerge(triggerManager,creationContainer);
-        return triggerManager;
-    }
+	public PaginationResponse<TriggerManager> getAllTriggerManagers(
+			TriggerManagerFilter filter, SecurityContext securityContext) {
+		List<TriggerManager> list = repository.listAllTriggerManagers(filter,
+				securityContext);
+		long count = repository
+				.countAllTriggerManagers(filter, securityContext);
+		return new PaginationResponse<>(list, filter, count);
+	}
 
-    private boolean updateTriggerManagerNoMerge(TriggerManager triggerManager, TriggerManagerCreate creationContainer) {
-        boolean update=baseclassNewService.updateBaseclassNoMerge(creationContainer,triggerManager);
-
-
-
-        if(creationContainer.getTriggerManagerScript()!=null && (triggerManager.getTriggerManagerScript()==null||!creationContainer.getTriggerManagerScript().getId().equals(triggerManager.getTriggerManagerScript().getId()))){
-            triggerManager.setTriggerManagerScript(creationContainer.getTriggerManagerScript());
-            update=true;
-        }
-        return update;
-
-    }
-
-    public PaginationResponse<TriggerManager> getAllTriggerManagers(TriggerManagerFilter filter, SecurityContext securityContext) {
-        List<TriggerManager> list=repository.listAllTriggerManagers(filter,securityContext);
-        long count=repository.countAllTriggerManagers(filter,securityContext);
-        return new PaginationResponse<>(list,filter,count);
-    }
-
-
-    public <T> T findByIdOrNull(Class<T> type, String id) {
-        return repository.findByIdOrNull(type, id);
-    }
+	public <T> T findByIdOrNull(Class<T> type, String id) {
+		return repository.findByIdOrNull(type, id);
+	}
 }

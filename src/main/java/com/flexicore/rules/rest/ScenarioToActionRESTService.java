@@ -19,70 +19,76 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
-import javax.inject.Inject;
 import javax.interceptor.Interceptors;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
+import org.pf4j.Extension;
+import org.springframework.stereotype.Component;
+import org.springframework.beans.factory.annotation.Autowired;
 
 @PluginInfo(version = 1)
 @OperationsInside
 @ProtectedREST
 @Path("plugins/ScenarioToAction")
-@Tag(name="Rules")
-@Tag(name="Scenarios")
-@Tag(name="Actions")
+@Tag(name = "Rules")
+@Tag(name = "Scenarios")
+@Tag(name = "Actions")
+@Extension
+@Component
 public class ScenarioToActionRESTService implements RestServicePlugin {
 
-    @Inject
-    @PluginInfo(version = 1)
-    private ScenarioToActionService service;
+	@PluginInfo(version = 1)
+	@Autowired
+	private ScenarioToActionService service;
 
-    @POST
-    @Produces("application/json")
-    @Path("/getAllScenarioToActions")
-    @Operation(summary = "getAllScenarioToActions", description = "get all ScenarioToActions")
-    public PaginationResponse<ScenarioToAction> getAllScenarioToAction(
-            @HeaderParam("authenticationKey") String authenticationKey,
-            @Parameter(description = "Valid ScenarioToActionFilter, " +
-                    "can be {} (empty body for all instances," +
-                    " using pagination in filters is highly recommended") ScenarioToActionFilter filter,
-            @Context SecurityContext securityContext) {
-        service.validate(filter, securityContext);
-        return service.getAllScenarioToActions(filter, securityContext);
-    }
+	@POST
+	@Produces("application/json")
+	@Path("/getAllScenarioToActions")
+	@Operation(summary = "getAllScenarioToActions", description = "get all ScenarioToActions")
+	public PaginationResponse<ScenarioToAction> getAllScenarioToAction(
+			@HeaderParam("authenticationKey") String authenticationKey,
+			@Parameter(description = "Valid ScenarioToActionFilter, "
+					+ "can be {} (empty body for all instances,"
+					+ " using pagination in filters is highly recommended") ScenarioToActionFilter filter,
+			@Context SecurityContext securityContext) {
+		service.validate(filter, securityContext);
+		return service.getAllScenarioToActions(filter, securityContext);
+	}
 
+	@POST
+	@Produces("application/json")
+	@Path("/createScenarioToAction")
+	@Operation(summary = "createScenarioToAction", description = "create a new ScenarioToAction")
+	public ScenarioToAction createScenarioToAction(
+			@HeaderParam("authenticationKey") String authenticationKey,
+			@Parameter(description = "A valid ScenarioToActionCreate including "
+					+ "required fields for a new ScenarioToAction") ScenarioToActionCreate creationContainer,
+			@Context SecurityContext securityContext) {
+		service.validate(creationContainer, securityContext);
+		return service.createScenarioToAction(creationContainer,
+				securityContext);
+	}
 
-
-    @POST
-    @Produces("application/json")
-    @Path("/createScenarioToAction")
-    @Operation(summary = "createScenarioToAction", description = "create a new ScenarioToAction")
-    public ScenarioToAction createScenarioToAction(
-            @HeaderParam("authenticationKey") String authenticationKey,
-            @Parameter(description = "A valid ScenarioToActionCreate including " +
-                    "required fields for a new ScenarioToAction") ScenarioToActionCreate creationContainer,
-            @Context SecurityContext securityContext) {
-        service.validate(creationContainer, securityContext);
-        return service.createScenarioToAction(creationContainer, securityContext);
-    }
-
-    @PUT
-    @Produces("application/json")
-    @Path("/updateScenarioToAction")
-    @Operation(summary = "updateScenarioToAction", description = "Update ScenarioToAction")
-    public ScenarioToAction updateScenarioToAction(
-            @HeaderParam("authenticationKey") String authenticationKey,
-            @Parameter(description = "A valid ScenarioToActionUpdate including required" +
-                    " fields for a updating ScenarioToAction") ScenarioToActionUpdate scenarioToActionUpdate,
-            @Context SecurityContext securityContext) {
-        ScenarioToAction scenarioToAction=scenarioToActionUpdate.getId()!=null?service.getByIdOrNull(scenarioToActionUpdate.getId(),ScenarioToAction.class,null,securityContext):null;
-        if(scenarioToAction==null ){
-            throw new BadRequestException("No ScenarioToAction with id "+scenarioToActionUpdate.getId());
-        }
-        scenarioToActionUpdate.setScenarioToAction(scenarioToAction);
-        service.validate(scenarioToActionUpdate, securityContext);
-        return service.updateScenarioToAction(scenarioToActionUpdate, securityContext);
-    }
-
+	@PUT
+	@Produces("application/json")
+	@Path("/updateScenarioToAction")
+	@Operation(summary = "updateScenarioToAction", description = "Update ScenarioToAction")
+	public ScenarioToAction updateScenarioToAction(
+			@HeaderParam("authenticationKey") String authenticationKey,
+			@Parameter(description = "A valid ScenarioToActionUpdate including required"
+					+ " fields for a updating ScenarioToAction") ScenarioToActionUpdate scenarioToActionUpdate,
+			@Context SecurityContext securityContext) {
+		ScenarioToAction scenarioToAction = scenarioToActionUpdate.getId() != null
+				? service.getByIdOrNull(scenarioToActionUpdate.getId(),
+						ScenarioToAction.class, null, securityContext) : null;
+		if (scenarioToAction == null) {
+			throw new BadRequestException("No ScenarioToAction with id "
+					+ scenarioToActionUpdate.getId());
+		}
+		scenarioToActionUpdate.setScenarioToAction(scenarioToAction);
+		service.validate(scenarioToActionUpdate, securityContext);
+		return service.updateScenarioToAction(scenarioToActionUpdate,
+				securityContext);
+	}
 
 }

@@ -20,78 +20,84 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
-import javax.inject.Inject;
 import javax.interceptor.Interceptors;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
+import org.pf4j.Extension;
+import org.springframework.stereotype.Component;
+import org.springframework.beans.factory.annotation.Autowired;
 
 @PluginInfo(version = 1)
 @OperationsInside
 @ProtectedREST
 @Path("plugins/ScenarioTrigger")
-@Tag(name="Rules")
-@Tag(name="Scenarios")
-@Tag(name="Triggers")
+@Tag(name = "Rules")
+@Tag(name = "Scenarios")
+@Tag(name = "Triggers")
+@Extension
+@Component
 public class ScenarioTriggerRESTService implements RestServicePlugin {
 
-    @Inject
-    @PluginInfo(version = 1)
-    private ScenarioTriggerService service;
+	@PluginInfo(version = 1)
+	@Autowired
+	private ScenarioTriggerService service;
 
-    @POST
-    @Produces("application/json")
-    @Path("/fireTrigger")
-    @Operation(summary = "fireTrigger", description = "Fires a Generic Trigger")
-    public void fireTrigger(
-            @HeaderParam("authenticationKey") String authenticationKey,
-            @Parameter(description = "A valid FireScenarioTrigger or an empty one (new instance, {}") FireScenarioTrigger fireScenarioTrigger,
-            @Context SecurityContext securityContext) {
-        service.validate(fireScenarioTrigger, securityContext);
-        service.fireTrigger(fireScenarioTrigger, securityContext);
-    }
+	@POST
+	@Produces("application/json")
+	@Path("/fireTrigger")
+	@Operation(summary = "fireTrigger", description = "Fires a Generic Trigger")
+	public void fireTrigger(
+			@HeaderParam("authenticationKey") String authenticationKey,
+			@Parameter(description = "A valid FireScenarioTrigger or an empty one (new instance, {}") FireScenarioTrigger fireScenarioTrigger,
+			@Context SecurityContext securityContext) {
+		service.validate(fireScenarioTrigger, securityContext);
+		service.fireTrigger(fireScenarioTrigger, securityContext);
+	}
 
-    @POST
-    @Produces("application/json")
-    @Path("/getAllScenarioTriggers")
-    @Operation(summary = "getAllScenarioTriggers", description = "get all ScenarioTriggers, filtered, paged (optionally)")
-    public PaginationResponse<ScenarioTrigger> getAllScenarioTrigger(
-            @HeaderParam("authenticationKey") String authenticationKey,
-            @Parameter(description = "A valid ScenarioTriggerFilter or an empty one (new instance, {}") ScenarioTriggerFilter filter,
-            @Context SecurityContext securityContext) {
-        service.validate(filter, securityContext);
-        return service.getAllScenarioTriggers(filter, securityContext);
-    }
+	@POST
+	@Produces("application/json")
+	@Path("/getAllScenarioTriggers")
+	@Operation(summary = "getAllScenarioTriggers", description = "get all ScenarioTriggers, filtered, paged (optionally)")
+	public PaginationResponse<ScenarioTrigger> getAllScenarioTrigger(
+			@HeaderParam("authenticationKey") String authenticationKey,
+			@Parameter(description = "A valid ScenarioTriggerFilter or an empty one (new instance, {}") ScenarioTriggerFilter filter,
+			@Context SecurityContext securityContext) {
+		service.validate(filter, securityContext);
+		return service.getAllScenarioTriggers(filter, securityContext);
+	}
 
+	@POST
+	@Produces("application/json")
+	@Path("/createScenarioTrigger")
+	@Operation(summary = "createScenarioTrigger", description = "create ScenarioTrigger instance")
+	public ScenarioTrigger createScenarioTrigger(
+			@HeaderParam("authenticationKey") String authenticationKey,
+			ScenarioTriggerCreate creationContainer,
+			@Context SecurityContext securityContext) {
+		service.validate(creationContainer, securityContext);
+		return service
+				.createScenarioTrigger(creationContainer, securityContext);
+	}
 
-
-    @POST
-    @Produces("application/json")
-    @Path("/createScenarioTrigger")
-    @Operation(summary = "createScenarioTrigger", description = "create ScenarioTrigger instance")
-    public ScenarioTrigger createScenarioTrigger(
-            @HeaderParam("authenticationKey") String authenticationKey,
-            ScenarioTriggerCreate creationContainer,
-            @Context SecurityContext securityContext) {
-        service.validate(creationContainer, securityContext);
-        return service.createScenarioTrigger(creationContainer, securityContext);
-    }
-
-    @PUT
-    @Produces("application/json")
-    @Path("/updateScenarioTrigger")
-    @Operation(summary = "updateScenarioTrigger", description = "Update ScenarioTrigger")
-    public ScenarioTrigger updateScenarioTrigger(
-            @HeaderParam("authenticationKey") String authenticationKey,
-           @Parameter(description = "A valid ScenarioTriggerUpdate instance with a valid Id of an existing ScenarioTrigger ") ScenarioTriggerUpdate scenarioTriggerUpdate,
-            @Context SecurityContext securityContext) {
-        ScenarioTrigger scenarioTrigger=scenarioTriggerUpdate.getId()!=null?service.getByIdOrNull(scenarioTriggerUpdate.getId(),ScenarioTrigger.class,null,securityContext):null;
-        if(scenarioTrigger==null ){
-            throw new BadRequestException("No ScenarioTrigger with id "+scenarioTriggerUpdate.getId());
-        }
-        scenarioTriggerUpdate.setScenarioTrigger(scenarioTrigger);
-        service.validate(scenarioTriggerUpdate, securityContext);
-        return service.updateScenarioTrigger(scenarioTriggerUpdate, securityContext);
-    }
-
+	@PUT
+	@Produces("application/json")
+	@Path("/updateScenarioTrigger")
+	@Operation(summary = "updateScenarioTrigger", description = "Update ScenarioTrigger")
+	public ScenarioTrigger updateScenarioTrigger(
+			@HeaderParam("authenticationKey") String authenticationKey,
+			@Parameter(description = "A valid ScenarioTriggerUpdate instance with a valid Id of an existing ScenarioTrigger ") ScenarioTriggerUpdate scenarioTriggerUpdate,
+			@Context SecurityContext securityContext) {
+		ScenarioTrigger scenarioTrigger = scenarioTriggerUpdate.getId() != null
+				? service.getByIdOrNull(scenarioTriggerUpdate.getId(),
+						ScenarioTrigger.class, null, securityContext) : null;
+		if (scenarioTrigger == null) {
+			throw new BadRequestException("No ScenarioTrigger with id "
+					+ scenarioTriggerUpdate.getId());
+		}
+		scenarioTriggerUpdate.setScenarioTrigger(scenarioTrigger);
+		service.validate(scenarioTriggerUpdate, securityContext);
+		return service.updateScenarioTrigger(scenarioTriggerUpdate,
+				securityContext);
+	}
 
 }

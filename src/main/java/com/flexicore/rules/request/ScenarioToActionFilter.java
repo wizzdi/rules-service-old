@@ -13,58 +13,62 @@ import java.util.Set;
 @Schema(description = "ScenarioToActionFilter directly extends FilteringInformationHolder")
 public class ScenarioToActionFilter extends FilteringInformationHolder {
 
-    private Set<String> scenarioIds =new HashSet<>();
-    @JsonIgnore
-    private List<Scenario> scenarios;
-    private Set<String> actionsIds=new HashSet<>();
-    @JsonIgnore
-    private List<ScenarioAction> scenarioActions;
-    private Boolean enabled;
+	private Set<String> scenarioIds = new HashSet<>();
+	@JsonIgnore
+	private List<Scenario> scenarios;
+	private Set<String> actionsIds = new HashSet<>();
+	@JsonIgnore
+	private List<ScenarioAction> scenarioActions;
+	private Boolean enabled;
 
-    @JsonIgnore
-    public List<Scenario> getScenarios() {
-        return scenarios;
-    }
+	@JsonIgnore
+	public List<Scenario> getScenarios() {
+		return scenarios;
+	}
 
-    public <T extends ScenarioToActionFilter> T setScenarios(List<Scenario> scenarios) {
-        this.scenarios = scenarios;
-        return (T) this;
-    }
+	public <T extends ScenarioToActionFilter> T setScenarios(
+			List<Scenario> scenarios) {
+		this.scenarios = scenarios;
+		return (T) this;
+	}
 
-    public Boolean getEnabled() {
-        return enabled;
-    }
+	public Boolean getEnabled() {
+		return enabled;
+	}
 
-    public <T extends ScenarioToActionFilter> T setEnabled(Boolean enabled) {
-        this.enabled = enabled;
-        return (T) this;
-    }
+	public <T extends ScenarioToActionFilter> T setEnabled(Boolean enabled) {
+		this.enabled = enabled;
+		return (T) this;
+	}
 
-    public Set<String> getScenarioIds() {
-        return scenarioIds;
-    }
+	public Set<String> getScenarioIds() {
+		return scenarioIds;
+	}
 
-    public <T extends ScenarioToActionFilter> T setScenarioIds(Set<String> scenarioIds) {
-        this.scenarioIds = scenarioIds;
-        return (T) this;
-    }
+	public <T extends ScenarioToActionFilter> T setScenarioIds(
+			Set<String> scenarioIds) {
+		this.scenarioIds = scenarioIds;
+		return (T) this;
+	}
 
-    public Set<String> getActionsIds() {
-        return actionsIds;
-    }
+	public Set<String> getActionsIds() {
+		return actionsIds;
+	}
 
-    public <T extends ScenarioToActionFilter> T setActionsIds(Set<String> actionsIds) {
-        this.actionsIds = actionsIds;
-        return (T) this;
-    }
+	public <T extends ScenarioToActionFilter> T setActionsIds(
+			Set<String> actionsIds) {
+		this.actionsIds = actionsIds;
+		return (T) this;
+	}
 
-    @JsonIgnore
-    public List<ScenarioAction> getScenarioActions() {
-        return scenarioActions;
-    }
+	@JsonIgnore
+	public List<ScenarioAction> getScenarioActions() {
+		return scenarioActions;
+	}
 
-    public <T extends ScenarioToActionFilter> T setScenarioActions(List<ScenarioAction> scenarioActions) {
-        this.scenarioActions = scenarioActions;
-        return (T) this;
-    }
+	public <T extends ScenarioToActionFilter> T setScenarioActions(
+			List<ScenarioAction> scenarioActions) {
+		this.scenarioActions = scenarioActions;
+		return (T) this;
+	}
 }

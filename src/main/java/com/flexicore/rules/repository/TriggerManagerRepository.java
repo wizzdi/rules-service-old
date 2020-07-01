@@ -13,33 +13,41 @@ import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import java.util.ArrayList;
 import java.util.List;
+import org.pf4j.Extension;
+import org.springframework.stereotype.Component;
 
 @PluginInfo(version = 1)
+@Extension
+@Component
 public class TriggerManagerRepository extends AbstractRepositoryPlugin {
 
-    public List<TriggerManager> listAllTriggerManagers(TriggerManagerFilter filter, SecurityContext securityContext) {
-        CriteriaBuilder cb=em.getCriteriaBuilder();
-        CriteriaQuery<TriggerManager> q=cb.createQuery(TriggerManager.class);
-        Root<TriggerManager> r=q.from(TriggerManager.class);
-        List<Predicate> preds=new ArrayList<>();
-        addTriggerManagerPredicate(preds,r,cb,filter);
-        QueryInformationHolder<TriggerManager> queryInformationHolder=new QueryInformationHolder<>(filter,TriggerManager.class,securityContext);
-        return getAllFiltered(queryInformationHolder,preds,cb,q,r);
-    }
+	public List<TriggerManager> listAllTriggerManagers(
+			TriggerManagerFilter filter, SecurityContext securityContext) {
+		CriteriaBuilder cb = em.getCriteriaBuilder();
+		CriteriaQuery<TriggerManager> q = cb.createQuery(TriggerManager.class);
+		Root<TriggerManager> r = q.from(TriggerManager.class);
+		List<Predicate> preds = new ArrayList<>();
+		addTriggerManagerPredicate(preds, r, cb, filter);
+		QueryInformationHolder<TriggerManager> queryInformationHolder = new QueryInformationHolder<>(
+				filter, TriggerManager.class, securityContext);
+		return getAllFiltered(queryInformationHolder, preds, cb, q, r);
+	}
 
-    public static void addTriggerManagerPredicate(List<Predicate> preds, Root<TriggerManager> r, CriteriaBuilder cb, TriggerManagerFilter filter) {
+	public static void addTriggerManagerPredicate(List<Predicate> preds,
+			Root<TriggerManager> r, CriteriaBuilder cb,
+			TriggerManagerFilter filter) {
 
+	}
 
-    }
-
-
-    public long countAllTriggerManagers(TriggerManagerFilter filter, SecurityContext securityContext) {
-        CriteriaBuilder cb=em.getCriteriaBuilder();
-        CriteriaQuery<Long> q=cb.createQuery(Long.class);
-        Root<TriggerManager> r=q.from(TriggerManager.class);
-        List<Predicate> preds=new ArrayList<>();
-        addTriggerManagerPredicate(preds,r,cb,filter);
-        QueryInformationHolder<TriggerManager> queryInformationHolder=new QueryInformationHolder<>(filter,TriggerManager.class,securityContext);
-        return countAllFiltered(queryInformationHolder,preds,cb,q,r);
-    }
+	public long countAllTriggerManagers(TriggerManagerFilter filter,
+			SecurityContext securityContext) {
+		CriteriaBuilder cb = em.getCriteriaBuilder();
+		CriteriaQuery<Long> q = cb.createQuery(Long.class);
+		Root<TriggerManager> r = q.from(TriggerManager.class);
+		List<Predicate> preds = new ArrayList<>();
+		addTriggerManagerPredicate(preds, r, cb, filter);
+		QueryInformationHolder<TriggerManager> queryInformationHolder = new QueryInformationHolder<>(
+				filter, TriggerManager.class, securityContext);
+		return countAllFiltered(queryInformationHolder, preds, cb, q, r);
+	}
 }

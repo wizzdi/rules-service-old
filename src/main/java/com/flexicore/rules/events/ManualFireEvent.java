@@ -3,28 +3,27 @@ package com.flexicore.rules.events;
 import com.flexicore.product.model.Equipment;
 
 public class ManualFireEvent extends ScenarioEvent {
-    public ManualFireEvent() {
-    }
+	public ManualFireEvent() {
+	}
 
-    public ManualFireEvent(Equipment equipment) {
-        super(equipment);
-    }
+	public ManualFireEvent(Equipment equipment) {
+		super(equipment);
+	}
 
-    private String firingUserId;
+	private String firingUserId;
 
-    public String getFiringUserId() {
-        return firingUserId;
-    }
+	public String getFiringUserId() {
+		return firingUserId;
+	}
 
-    public <T extends ManualFireEvent> T setFiringUserId(String firingUserId) {
-        this.firingUserId = firingUserId;
-        return (T) this;
-    }
+	public <T extends ManualFireEvent> T setFiringUserId(String firingUserId) {
+		this.firingUserId = firingUserId;
+		return (T) this;
+	}
 
-    @Override
-    public String toString() {
-        return "ManualFireEvent{" +
-                "firingUserId='" + firingUserId + '\'' +
-                "} " + super.toString();
-    }
+	@Override
+	public String toString() {
+		return "ManualFireEvent{" + "firingUserId='" + firingUserId + '\''
+				+ "} " + super.toString();
+	}
 }
