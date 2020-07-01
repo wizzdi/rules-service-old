@@ -11,6 +11,7 @@ import com.flexicore.rules.request.ScenarioActionCreate;
 import com.flexicore.rules.request.ScenarioActionFilter;
 import com.flexicore.rules.request.ScenarioActionUpdate;
 import com.flexicore.security.SecurityContext;
+import com.flexicore.service.BaseclassNewService;
 import com.flexicore.service.DynamicInvokersService;
 
 import javax.ws.rs.BadRequestException;
@@ -29,15 +30,17 @@ public class ScenarioActionService implements ServicePlugin {
 	private ScenarioActionRepository repository;
 
 	@Autowired
-	private DynamicInvokersService dynamicInvokersService;
+	private BaseclassNewService baseclassNewService;
 
 	public void validate(ScenarioActionFilter scenarioActionArgumentFilter,
 			SecurityContext securityContext) {
+		baseclassNewService.validateFilter(scenarioActionArgumentFilter,securityContext);
 
 	}
 
 	public void validate(ScenarioActionCreate creationContainer,
 			SecurityContext securityContext) {
+		baseclassNewService.validateCreate(creationContainer,securityContext);
 		String dynamicExecutionId = creationContainer.getDynamicExecutionId();
 		DynamicExecution dynamicExecution = dynamicExecutionId != null
 				? getByIdOrNull(dynamicExecutionId, DynamicExecution.class,
@@ -58,8 +61,7 @@ public class ScenarioActionService implements ServicePlugin {
 	public ScenarioAction createScenarioAction(
 			ScenarioActionCreate creationContainer,
 			SecurityContext securityContext) {
-		ScenarioAction scenarioAction = createScenarioActionNoMerge(
-				creationContainer, securityContext);
+		ScenarioAction scenarioAction = createScenarioActionNoMerge(creationContainer, securityContext);
 		repository.merge(scenarioAction);
 		return scenarioAction;
 
@@ -80,35 +82,16 @@ public class ScenarioActionService implements ServicePlugin {
 	private ScenarioAction createScenarioActionNoMerge(
 			ScenarioActionCreate creationContainer,
 			SecurityContext securityContext) {
-		ScenarioAction scenarioAction = ScenarioAction.s().CreateUnchecked(
-				creationContainer.getName(), securityContext);
-		scenarioAction.Init();
+		ScenarioAction scenarioAction = new ScenarioAction(creationContainer.getName(), securityContext);
 		updateScenarioActionNoMerge(scenarioAction, creationContainer);
 		return scenarioAction;
 	}
 
 	private boolean updateScenarioActionNoMerge(ScenarioAction scenarioAction,
 			ScenarioActionCreate scenarioActionCreate) {
-		boolean update = false;
-		if (scenarioActionCreate.getName() != null
-				&& !scenarioActionCreate.getName().equals(
-						scenarioAction.getName())) {
-			scenarioAction.setName(scenarioActionCreate.getName());
-			update = true;
-		}
-		if (scenarioActionCreate.getDescription() != null
-				&& !scenarioActionCreate.getDescription().equals(
-						scenarioAction.getDescription())) {
-			scenarioAction
-					.setDescription(scenarioActionCreate.getDescription());
-			update = true;
-		}
-		if (scenarioActionCreate.getDynamicExecution() != null
-				&& (scenarioAction.getDynamicExecution() == null || !scenarioActionCreate
-						.getDynamicExecution().getId()
-						.equals(scenarioAction.getDynamicExecution().getId()))) {
-			scenarioAction.setDynamicExecution(scenarioActionCreate
-					.getDynamicExecution());
+		boolean update = baseclassNewService.updateBaseclassNoMerge(scenarioActionCreate,scenarioAction);
+		if (scenarioActionCreate.getDynamicExecution() != null && (scenarioAction.getDynamicExecution() == null || !scenarioActionCreate.getDynamicExecution().getId().equals(scenarioAction.getDynamicExecution().getId()))) {
+			scenarioAction.setDynamicExecution(scenarioActionCreate.getDynamicExecution());
 			update = true;
 		}
 		return update;

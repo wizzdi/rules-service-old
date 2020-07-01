@@ -2,25 +2,28 @@ package com.flexicore.rules.service;
 
 import com.flexicore.annotations.plugins.PluginInfo;
 import com.flexicore.data.jsoncontainers.PaginationResponse;
-import com.flexicore.interfaces.ServicePlugin;
 import com.flexicore.model.Baseclass;
-import com.flexicore.rules.events.ManualFireEvent;
-import com.flexicore.rules.events.ScenarioEvent;
+import com.flexicore.model.FileResource;
 import com.flexicore.rules.interfaces.IScenarioTriggerService;
+import com.flexicore.rules.model.Scenario;
 import com.flexicore.rules.model.ScenarioTrigger;
 import com.flexicore.rules.repository.ScenarioTriggerRepository;
-import com.flexicore.rules.request.*;
+import com.flexicore.rules.request.ScenarioTriggerCreate;
+import com.flexicore.rules.request.ScenarioTriggerEvent;
+import com.flexicore.rules.request.ScenarioTriggerFilter;
+import com.flexicore.rules.request.ScenarioTriggerUpdate;
 import com.flexicore.security.SecurityContext;
+import com.flexicore.service.BaseclassNewService;
+import org.pf4j.Extension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.stereotype.Component;
 
-import javax.enterprise.event.Event;
 import javax.ws.rs.BadRequestException;
 import java.sql.Date;
 import java.time.Instant;
 import java.util.List;
-import org.pf4j.Extension;
-import org.springframework.stereotype.Component;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationEventPublisher;
+import java.util.Set;
 
 @PluginInfo(version = 1)
 @Extension
@@ -31,25 +34,23 @@ public class ScenarioTriggerService implements IScenarioTriggerService {
 	@Autowired
 	private ScenarioTriggerRepository repository;
 
-	@PluginInfo(version = 1)
 	@Autowired
-	private ScenarioService scenarioService;
+	private BaseclassNewService baseclassNewService;
 
-	@Autowired
-	private ApplicationEventPublisher scenarioTriggerEvent;
+	public void validate(ScenarioTriggerFilter scenarioTriggerArgumentFilter, SecurityContext securityContext) {
+		baseclassNewService.validateFilter(scenarioTriggerArgumentFilter,securityContext);
 
-	public void validate(ScenarioTriggerFilter scenarioTriggerArgumentFilter,
-			SecurityContext securityContext) {
-		if (scenarioTriggerArgumentFilter.getScenarioFilter() != null) {
-			scenarioService.validate(
-					scenarioTriggerArgumentFilter.getScenarioFilter(),
-					securityContext);
-		}
 	}
 
 	@Override
-	public void validate(ScenarioTriggerCreate creationContainer,
-			SecurityContext securityContext) {
+	public void validate(ScenarioTriggerCreate creationContainer, SecurityContext securityContext) {
+		baseclassNewService.validateCreate(creationContainer,securityContext);
+		String evaluatingJSCodeId = creationContainer.getEvaluatingJSCodeId();
+		FileResource fileResource = evaluatingJSCodeId != null ? getByIdOrNull(evaluatingJSCodeId, FileResource.class, null, securityContext) : null;
+		if (fileResource == null) {
+			throw new BadRequestException("No Scenario with id " + evaluatingJSCodeId);
+		}
+		creationContainer.setEvaluatingJSCode(fileResource);
 	}
 
 	public <T extends Baseclass> T getByIdOrNull(String id, Class<T> c,
@@ -57,18 +58,14 @@ public class ScenarioTriggerService implements IScenarioTriggerService {
 		return repository.getByIdOrNull(id, c, batchString, securityContext);
 	}
 
-	public ScenarioTrigger createScenarioTrigger(
-			ScenarioTriggerCreate creationContainer,
-			SecurityContext securityContext) {
+	public ScenarioTrigger createScenarioTrigger(ScenarioTriggerCreate creationContainer, SecurityContext securityContext) {
 		ScenarioTrigger scenarioTrigger = createScenarioTriggerNoMerge(
 				creationContainer, securityContext);
 		repository.merge(scenarioTrigger);
 		return scenarioTrigger;
 	}
 
-	public ScenarioTrigger updateScenarioTrigger(
-			ScenarioTriggerUpdate creationContainer,
-			SecurityContext securityContext) {
+	public ScenarioTrigger updateScenarioTrigger(ScenarioTriggerUpdate creationContainer, SecurityContext securityContext) {
 		ScenarioTrigger scenarioTrigger = creationContainer
 				.getScenarioTrigger();
 		if (updateScenarioTriggerNoMerge(scenarioTrigger, creationContainer)) {
@@ -78,49 +75,42 @@ public class ScenarioTriggerService implements IScenarioTriggerService {
 	}
 
 	@Override
-	public ScenarioTrigger createScenarioTriggerNoMerge(
-			ScenarioTriggerCreate creationContainer,
-			SecurityContext securityContext) {
-		ScenarioTrigger scenarioTrigger = ScenarioTrigger.s().CreateUnchecked(
-				creationContainer.getName(), securityContext);
-		scenarioTrigger.Init();
+	public ScenarioTrigger createScenarioTriggerNoMerge(ScenarioTriggerCreate creationContainer, SecurityContext securityContext) {
+		ScenarioTrigger scenarioTrigger = new ScenarioTrigger(creationContainer.getName(), securityContext);
 		updateScenarioTriggerNoMerge(scenarioTrigger, creationContainer);
 		return scenarioTrigger;
 	}
 
 	@Override
-	public boolean updateScenarioTriggerNoMerge(
-			ScenarioTrigger scenarioTrigger,
-			ScenarioTriggerCreate creationContainer) {
-		boolean update = false;
-		if (creationContainer.getName() != null
-				&& !creationContainer.getName().equals(
-						scenarioTrigger.getName())) {
-			scenarioTrigger.setName(creationContainer.getName());
+	public boolean updateScenarioTriggerNoMerge(ScenarioTrigger scenarioTrigger, ScenarioTriggerCreate creationContainer) {
+		boolean update = baseclassNewService.updateBaseclassNoMerge(creationContainer,scenarioTrigger);
+		if (creationContainer.getScenarioTriggerType() != null && (creationContainer.getScenarioTriggerType()==null||!creationContainer.getScenarioTriggerType().getId().equals(scenarioTrigger.getScenarioTriggerType().getId()))) {
+			scenarioTrigger.setScenarioTriggerType(creationContainer.getScenarioTriggerType());
 			update = true;
 		}
-		if (creationContainer.getDescription() != null
-				&& !creationContainer.getDescription().equals(
-						scenarioTrigger.getDescription())) {
-			scenarioTrigger.setDescription(creationContainer.getDescription());
+		if (creationContainer.getValidFrom() != null && !creationContainer.getValidFrom().equals(scenarioTrigger.getValidFrom())) {
+			scenarioTrigger.setValidFrom(creationContainer.getValidFrom());
 			update = true;
 		}
-		if (creationContainer.getEventCanonicalClassName() != null
-				&& !creationContainer.getEventCanonicalClassName().equals(
-						scenarioTrigger.getEventCanonicalClassName())) {
-			scenarioTrigger.setEventCanonicalClassName(creationContainer
-					.getEventCanonicalClassName());
+		if (creationContainer.getValidTill() != null && !creationContainer.getValidTill().equals(scenarioTrigger.getValidTill())) {
+			scenarioTrigger.setValidTill(creationContainer.getValidTill());
+			update = true;
+		}
+
+		if (creationContainer.getActiveTill() != null && !creationContainer.getActiveTill().equals(scenarioTrigger.getActiveTill())) {
+			scenarioTrigger.setActiveTill(creationContainer.getActiveTill());
+			update = true;
+		}
+		if (creationContainer.getEvaluatingJSCode() != null && (creationContainer.getEvaluatingJSCode()==null||!creationContainer.getEvaluatingJSCode().getId().equals(scenarioTrigger.getEvaluatingJSCode().getId()))) {
+			scenarioTrigger.setEvaluatingJSCode(creationContainer.getEvaluatingJSCode());
 			update = true;
 		}
 		return update;
 	}
 
-	public PaginationResponse<ScenarioTrigger> getAllScenarioTriggers(
-			ScenarioTriggerFilter filter, SecurityContext securityContext) {
-		List<ScenarioTrigger> list = repository.listAllScenarioTriggers(filter,
-				securityContext);
-		long count = repository.countAllScenarioTriggers(filter,
-				securityContext);
+	public PaginationResponse<ScenarioTrigger> getAllScenarioTriggers(ScenarioTriggerFilter filter, SecurityContext securityContext) {
+		List<ScenarioTrigger> list = repository.listAllScenarioTriggers(filter, securityContext);
+		long count = repository.countAllScenarioTriggers(filter, securityContext);
 		return new PaginationResponse<>(list, filter, count);
 	}
 
@@ -128,40 +118,12 @@ public class ScenarioTriggerService implements IScenarioTriggerService {
 		return repository.findByIdOrNull(type, id);
 	}
 
-	public void validate(FireScenarioTrigger fireScenarioTrigger,
-			SecurityContext securityContext) {
-		String scenarioTriggerId = fireScenarioTrigger.getScenarioTriggerId();
-		ScenarioTrigger scenarioTrigger = scenarioTriggerId != null
-				? getByIdOrNull(scenarioTriggerId, ScenarioTrigger.class, null,
-						securityContext) : null;
-		if (scenarioTrigger == null) {
-			throw new BadRequestException("No Scenario Trigger With id "
-					+ scenarioTriggerId);
-		}
-		fireScenarioTrigger.setScenarioTrigger(scenarioTrigger);
+
+	public <T extends Baseclass> List<T> listByIds(Class<T> c, Set<String> ids, SecurityContext securityContext) {
+		return repository.listByIds(c, ids, securityContext);
 	}
 
-	public void fireTrigger(FireScenarioTrigger fireScenarioTrigger,
-			SecurityContext securityContext) {
-		ScenarioTrigger scenarioTrigger = fireScenarioTrigger
-				.getScenarioTrigger();
-		ManualFireEvent manualFireEvent = getManualFireEvent(
-				fireScenarioTrigger.getScenarioTrigger(), securityContext);
-		ScenarioTriggerEvent<ScenarioTrigger> scenarioTriggerEvent = new ScenarioTriggerEvent<>()
-				.setScenarioTrigger(scenarioTrigger)
-				.setSecurityContext(securityContext)
-				.setScenarioEvent(manualFireEvent);
-		this.scenarioTriggerEvent.publishEvent(scenarioTriggerEvent);
-	}
-
-	private ManualFireEvent getManualFireEvent(ScenarioTrigger scenarioTrigger,
-			SecurityContext securityContext) {
-		return new ManualFireEvent()
-				.setFiringUserId(securityContext.getUser().getId())
-				.setTriggerId(scenarioTrigger.getId())
-				.setEventDate(Date.from(Instant.now()))
-				.setHumanReadableText(
-						"Manual Firing of trigger " + scenarioTrigger.getName()
-								+ "(" + scenarioTrigger.getId() + ")");
+	public List<ScenarioTrigger> listAllScenarioTriggers(ScenarioTriggerFilter filter, SecurityContext securityContext) {
+		return repository.listAllScenarioTriggers(filter, securityContext);
 	}
 }

@@ -5,7 +5,6 @@ import com.flexicore.data.jsoncontainers.PaginationResponse;
 import com.flexicore.interfaces.ServicePlugin;
 import com.flexicore.model.Baseclass;
 import com.flexicore.model.FileResource;
-import com.flexicore.rules.model.FlexiCoreRule;
 import com.flexicore.rules.model.Scenario;
 import com.flexicore.rules.repository.ScenarioRepository;
 import com.flexicore.rules.request.ClearLogRequest;
@@ -13,16 +12,17 @@ import com.flexicore.rules.request.ScenarioCreate;
 import com.flexicore.rules.request.ScenarioFilter;
 import com.flexicore.rules.request.ScenarioUpdate;
 import com.flexicore.security.SecurityContext;
+import com.flexicore.service.BaseclassNewService;
 import com.flexicore.service.FileResourceService;
+import org.pf4j.Extension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import javax.ws.rs.BadRequestException;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
-import org.pf4j.Extension;
-import org.springframework.stereotype.Component;
-import org.springframework.beans.factory.annotation.Autowired;
 
 @PluginInfo(version = 1)
 @Extension
@@ -37,34 +37,29 @@ public class ScenarioService implements ServicePlugin {
 	private FileResourceService fileResourceService;
 
 	@Autowired
+	private BaseclassNewService baseclassNewService;
+
+	@Autowired
 	private Logger logger;
 
 	public void validate(ScenarioFilter scenarioArgumentFilter,
 			SecurityContext securityContext) {
+		baseclassNewService.validateFilter(scenarioArgumentFilter,securityContext);
 
 	}
 
 	public void validate(ScenarioCreate creationContainer,
 			SecurityContext securityContext) {
-		String ruleId = creationContainer.getRuleId();
-		FlexiCoreRule executionParametersHolder = ruleId != null
-				? getByIdOrNull(ruleId, FlexiCoreRule.class, null,
+		baseclassNewService.validateCreate(creationContainer,securityContext);
+		String evaluatingJSCodeId = creationContainer.getEvaluatingJSCodeId();
+		FileResource executionParametersHolder = evaluatingJSCodeId != null
+				? getByIdOrNull(evaluatingJSCodeId, FileResource.class, null,
 						securityContext) : null;
-		if (executionParametersHolder == null && ruleId != null) {
-			throw new BadRequestException("No FlexiCoreRule with id " + ruleId);
+		if (executionParametersHolder == null && evaluatingJSCodeId != null) {
+			throw new BadRequestException("No FileResource with id " + evaluatingJSCodeId);
 		}
-		creationContainer.setFlexiCoreRule(executionParametersHolder);
+		creationContainer.setEvaluatingJSCode(executionParametersHolder);
 
-		String actionManagerScriptId = creationContainer
-				.getActionManagerScriptId();
-		FileResource actionManagerScript = actionManagerScriptId != null
-				? getByIdOrNull(actionManagerScriptId, FileResource.class,
-						null, securityContext) : null;
-		if (actionManagerScript == null && actionManagerScriptId != null) {
-			throw new BadRequestException("No FileResource with id "
-					+ actionManagerScriptId);
-		}
-		creationContainer.setActionManagerScript(actionManagerScript);
 
 	}
 
@@ -112,19 +107,7 @@ public class ScenarioService implements ServicePlugin {
 
 	private boolean updateScenarioNoMerge(Scenario scenario,
 			ScenarioCreate creationContainer) {
-		boolean update = false;
-		if (creationContainer.getName() != null
-				&& !creationContainer.getName().equals(scenario.getName())) {
-			scenario.setName(creationContainer.getName());
-			update = true;
-		}
-
-		if (creationContainer.getDescription() != null
-				&& !creationContainer.getDescription().equals(
-						scenario.getDescription())) {
-			scenario.setDescription(creationContainer.getDescription());
-			update = true;
-		}
+		boolean update = baseclassNewService.updateBaseclassNoMerge(creationContainer,scenario);
 		if (creationContainer.getScenarioHint() != null
 				&& !creationContainer.getScenarioHint().equals(
 						scenario.getScenarioHint())) {
@@ -132,26 +115,12 @@ public class ScenarioService implements ServicePlugin {
 			update = true;
 		}
 
-		if (creationContainer.getFlexiCoreRule() != null
-				&& (scenario.getFlexiCoreRule() == null || !creationContainer
-						.getFlexiCoreRule().getId()
-						.equals(scenario.getFlexiCoreRule().getId()))) {
-			scenario.setFlexiCoreRule(creationContainer.getFlexiCoreRule());
+		if (creationContainer.getEvaluatingJSCode() != null && (scenario.getEvaluatingJSCode() == null || !creationContainer.getEvaluatingJSCode().getId().equals(scenario.getEvaluatingJSCode().getId()))) {
+			scenario.setEvaluatingJSCode(creationContainer.getEvaluatingJSCode());
 			update = true;
 		}
 
-		if (creationContainer.getActionManagerScript() != null
-				&& (scenario.getActionManagerScript() == null || !creationContainer
-						.getActionManagerScript().getId()
-						.equals(scenario.getActionManagerScript().getId()))) {
-			scenario.setActionManagerScript(creationContainer
-					.getActionManagerScript());
-			update = true;
-		}
-		if (creationContainer.getLogFileResource() != null
-				&& (scenario.getLogFileResource() == null || !creationContainer
-						.getLogFileResource().equals(
-								scenario.getLogFileResource()))) {
+		if (creationContainer.getLogFileResource() != null && (scenario.getLogFileResource() == null || !creationContainer.getLogFileResource().equals(scenario.getLogFileResource()))) {
 			scenario.setLogFileResource(creationContainer.getLogFileResource());
 			update = true;
 		}
@@ -173,12 +142,9 @@ public class ScenarioService implements ServicePlugin {
 
 	public void validate(ClearLogRequest clearLogRequest,
 			SecurityContext securityContext) {
-		Scenario scenario = clearLogRequest.getScenarioId() != null
-				? getByIdOrNull(clearLogRequest.getScenarioId(),
-						Scenario.class, null, securityContext) : null;
+		Scenario scenario = clearLogRequest.getScenarioId() != null ? getByIdOrNull(clearLogRequest.getScenarioId(), Scenario.class, null, securityContext) : null;
 		if (scenario == null) {
-			throw new BadRequestException("No Scenario with id "
-					+ clearLogRequest.getScenarioId());
+			throw new BadRequestException("No Scenario with id " + clearLogRequest.getScenarioId());
 		}
 		clearLogRequest.setScenario(scenario);
 	}

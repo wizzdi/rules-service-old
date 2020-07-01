@@ -1,30 +1,67 @@
 package com.flexicore.rules.request;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.flexicore.model.FilteringInformationHolder;
-import io.swagger.v3.oas.annotations.media.Schema;
+import com.flexicore.rules.model.ScenarioTriggerType;
 
-@Schema(description = "Currently this filter adds nothing on top of its super class fields")
+import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 public class ScenarioTriggerFilter extends FilteringInformationHolder {
 
-	private ScenarioFilter scenarioFilter;
-	private boolean connected;
+    private Set<String> scenarioTriggerTypeIds=new HashSet<>();
+    @JsonIgnore
+    private List<ScenarioTriggerType> scenarioTriggerType;
+    private OffsetDateTime validFrom;
+    private OffsetDateTime validTill;
+    private Set<String> eventCanonicalNames=new HashSet<>();
 
-	public ScenarioFilter getScenarioFilter() {
-		return scenarioFilter;
-	}
+    public Set<String> getScenarioTriggerTypeIds() {
+        return scenarioTriggerTypeIds;
+    }
 
-	public <T extends ScenarioTriggerFilter> T setScenarioFilter(
-			ScenarioFilter scenarioFilter) {
-		this.scenarioFilter = scenarioFilter;
-		return (T) this;
-	}
+    public <T extends ScenarioTriggerFilter> T setScenarioTriggerTypeIds(Set<String> scenarioTriggerTypeIds) {
+        this.scenarioTriggerTypeIds = scenarioTriggerTypeIds;
+        return (T) this;
+    }
 
-	public boolean isConnected() {
-		return connected;
-	}
+    public OffsetDateTime getValidFrom() {
+        return validFrom;
+    }
 
-	public <T extends ScenarioTriggerFilter> T setConnected(boolean connected) {
-		this.connected = connected;
-		return (T) this;
-	}
+    public <T extends ScenarioTriggerFilter> T setValidFrom(OffsetDateTime validFrom) {
+        this.validFrom = validFrom;
+        return (T) this;
+    }
+
+    public OffsetDateTime getValidTill() {
+        return validTill;
+    }
+
+    public <T extends ScenarioTriggerFilter> T setValidTill(OffsetDateTime validTill) {
+        this.validTill = validTill;
+        return (T) this;
+    }
+
+    @JsonIgnore
+    public List<ScenarioTriggerType> getScenarioTriggerType() {
+        return scenarioTriggerType;
+    }
+
+    public <T extends ScenarioTriggerFilter> T setScenarioTriggerType(List<ScenarioTriggerType> scenarioTriggerType) {
+        this.scenarioTriggerType = scenarioTriggerType;
+        return (T) this;
+    }
+
+    public Set<String> getEventCanonicalNames() {
+        return eventCanonicalNames;
+    }
+
+    public <T extends ScenarioTriggerFilter> T setEventCanonicalNames(Set<String> eventCanonicalNames) {
+        this.eventCanonicalNames = eventCanonicalNames;
+        return (T) this;
+    }
 }

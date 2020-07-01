@@ -1,16 +1,14 @@
 package com.flexicore.rules.request;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.flexicore.model.FileResource;
+import com.flexicore.request.BaseclassCreate;
 import com.flexicore.rules.model.Scenario;
 import com.flexicore.rules.model.ScenarioTrigger;
-import com.flexicore.rules.model.TriggerManager;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 @Schema(description = "A container for the creation of ScenarioToTrigger object, note that this is not the link itself")
-public class ScenarioToTriggerCreate {
-	private String name;
-	private String description;
+public class ScenarioToTriggerCreate extends BaseclassCreate {
+
 	private String scenarioId;
 	private String triggerId;
 	@JsonIgnore
@@ -18,28 +16,9 @@ public class ScenarioToTriggerCreate {
 	@JsonIgnore
 	private ScenarioTrigger scenarioTrigger;
 	private Boolean enabled;
-	private String triggerManagerId;
-	@JsonIgnore
-	private TriggerManager triggerManager;
+	private Integer ordinal;
+	private Boolean firing;
 
-	public String getName() {
-		return name;
-	}
-	@Schema(description = "The name of the link")
-	public <T extends ScenarioToTriggerCreate> T setName(String name) {
-		this.name = name;
-		return (T) this;
-	}
-
-	public String getDescription() {
-		return description;
-	}
-	@Schema(description = "The Description of the link")
-	public <T extends ScenarioToTriggerCreate> T setDescription(
-			String description) {
-		this.description = description;
-		return (T) this;
-	}
 
 	public String getScenarioId() {
 		return scenarioId;
@@ -89,24 +68,21 @@ public class ScenarioToTriggerCreate {
 		return (T) this;
 	}
 
-	public String getTriggerManagerId() {
-		return triggerManagerId;
+	public Integer getOrdinal() {
+		return ordinal;
 	}
 
-	public <T extends ScenarioToTriggerCreate> T setTriggerManagerId(
-			String triggerManagerId) {
-		this.triggerManagerId = triggerManagerId;
+	public <T extends ScenarioToTriggerCreate> T setOrdinal(Integer ordinal) {
+		this.ordinal = ordinal;
 		return (T) this;
 	}
 
-	@JsonIgnore
-	public TriggerManager getTriggerManager() {
-		return triggerManager;
+	public Boolean getFiring() {
+		return firing;
 	}
 
-	public <T extends ScenarioToTriggerCreate> T setTriggerManager(
-			TriggerManager triggerManager) {
-		this.triggerManager = triggerManager;
+	public <T extends ScenarioToTriggerCreate> T setFiring(Boolean firing) {
+		this.firing = firing;
 		return (T) this;
 	}
 }

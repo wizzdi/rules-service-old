@@ -1,38 +1,86 @@
 package com.flexicore.rules.request;
 
-import io.swagger.v3.oas.annotations.media.Schema;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.flexicore.model.FileResource;
+import com.flexicore.request.BaseclassCreate;
+import com.flexicore.rules.model.ScenarioTriggerType;
 
-@Schema(description = "A container for the creation of ScenarioTrigger")
-public class ScenarioTriggerCreate {
-	private String name;
-	private String description;
-	private String eventCanonicalClassName;
+import java.time.OffsetDateTime;
 
-	public String getName() {
-		return name;
+public class ScenarioTriggerCreate extends BaseclassCreate {
+
+
+	@JsonIgnore
+	private OffsetDateTime activeTill;
+	private OffsetDateTime validFrom;
+	private OffsetDateTime validTill;
+	private String scenarioTriggerTypeId;
+	private ScenarioTriggerType scenarioTriggerType;
+	private String evaluatingJSCodeId;
+	@JsonIgnore
+	private FileResource evaluatingJSCode;
+
+	public OffsetDateTime getActiveTill() {
+		return activeTill;
 	}
-	@Schema(description = "The name of the new trigger")
-	public <T extends ScenarioTriggerCreate> T setName(String name) {
-		this.name = name;
+
+	public <T extends ScenarioTriggerCreate> T setActiveTill(OffsetDateTime activeTill) {
+		this.activeTill = activeTill;
 		return (T) this;
 	}
 
-	public String getDescription() {
-		return description;
+	public OffsetDateTime getValidFrom() {
+		return validFrom;
 	}
-	@Schema(description = "The description of the new instance")
-	public <T extends ScenarioTriggerCreate> T setDescription(String description) {
-		this.description = description;
+
+	public <T extends ScenarioTriggerCreate> T setValidFrom(OffsetDateTime validFrom) {
+		this.validFrom = validFrom;
 		return (T) this;
 	}
 
-	public String getEventCanonicalClassName() {
-		return eventCanonicalClassName;
+	public OffsetDateTime getValidTill() {
+		return validTill;
 	}
-	@Schema(description = ".unique identifier for the trigger - when this will be a system generated event this field will contain the canonical class of the event ")
-	public <T extends ScenarioTriggerCreate> T setEventCanonicalClassName(
-			String eventCanonicalClassName) {
-		this.eventCanonicalClassName = eventCanonicalClassName;
+
+	public <T extends ScenarioTriggerCreate> T setValidTill(OffsetDateTime validTill) {
+		this.validTill = validTill;
+		return (T) this;
+	}
+
+	public String getScenarioTriggerTypeId() {
+		return scenarioTriggerTypeId;
+	}
+
+	public <T extends ScenarioTriggerCreate> T setScenarioTriggerTypeId(String scenarioTriggerTypeId) {
+		this.scenarioTriggerTypeId = scenarioTriggerTypeId;
+		return (T) this;
+	}
+
+	@JsonIgnore
+	public ScenarioTriggerType getScenarioTriggerType() {
+		return scenarioTriggerType;
+	}
+
+	public <T extends ScenarioTriggerCreate> T setScenarioTriggerType(ScenarioTriggerType scenarioTriggerType) {
+		this.scenarioTriggerType = scenarioTriggerType;
+		return (T) this;
+	}
+
+	public String getEvaluatingJSCodeId() {
+		return evaluatingJSCodeId;
+	}
+
+	public <T extends ScenarioTriggerCreate> T setEvaluatingJSCodeId(String evaluatingJSCodeId) {
+		this.evaluatingJSCodeId = evaluatingJSCodeId;
+		return (T) this;
+	}
+
+	public FileResource getEvaluatingJSCode() {
+		return evaluatingJSCode;
+	}
+
+	public <T extends ScenarioTriggerCreate> T setEvaluatingJSCode(FileResource evaluatingJSCode) {
+		this.evaluatingJSCode = evaluatingJSCode;
 		return (T) this;
 	}
 }

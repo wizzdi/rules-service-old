@@ -37,32 +37,27 @@ public class ScenarioToTriggerRepository extends AbstractRepositoryPlugin {
 			Root<ScenarioToTrigger> r, CriteriaBuilder cb,
 			ScenarioToTriggerFilter filter) {
 		Join<ScenarioToTrigger, Scenario> scenarioJoin = null;
-		if (filter.getScenarioTriggers() != null
-				&& !filter.getScenarioTriggers().isEmpty()) {
-			Set<String> ids = filter.getScenarioTriggers().parallelStream()
-					.map(f -> f.getId()).collect(Collectors.toSet());
-			Join<ScenarioToTrigger, ScenarioTrigger> join = r
-					.join(ScenarioToTrigger_.scenarioTrigger);
+		if (filter.getScenarioTriggers() != null && !filter.getScenarioTriggers().isEmpty()) {
+			Set<String> ids = filter.getScenarioTriggers().parallelStream().map(f -> f.getId()).collect(Collectors.toSet());
+			Join<ScenarioToTrigger, ScenarioTrigger> join = r.join(ScenarioToTrigger_.scenarioTrigger);
 			preds.add(join.get(ScenarioTrigger_.id).in(ids));
 		}
 
 		if (filter.getScenarios() != null && !filter.getScenarios().isEmpty()) {
-			Set<String> ids = filter.getScenarios().parallelStream()
-					.map(f -> f.getId()).collect(Collectors.toSet());
-			scenarioJoin = scenarioJoin == null ? r
-					.join(ScenarioToTrigger_.scenario) : scenarioJoin;
+			Set<String> ids = filter.getScenarios().parallelStream().map(f -> f.getId()).collect(Collectors.toSet());
+			scenarioJoin = scenarioJoin == null ? r.join(ScenarioToTrigger_.scenario) : scenarioJoin;
 			preds.add(scenarioJoin.get(Scenario_.id).in(ids));
 		}
 
 		if (filter.getEnabled() != null) {
-			preds.add(cb.equal(r.get(ScenarioToTrigger_.enabled),
-					filter.getEnabled()));
+			preds.add(cb.equal(r.get(ScenarioToTrigger_.enabled), filter.getEnabled()));
 		}
-		if (filter.getNonDeletedScenarios() != null
-				&& filter.getNonDeletedScenarios()) {
-			scenarioJoin = scenarioJoin == null ? r
-					.join(ScenarioToTrigger_.scenario) : scenarioJoin;
+		if (filter.getNonDeletedScenarios() != null && filter.getNonDeletedScenarios()) {
+			scenarioJoin = scenarioJoin == null ? r.join(ScenarioToTrigger_.scenario) : scenarioJoin;
 			preds.add(cb.isFalse(scenarioJoin.get(Scenario_.softDelete)));
+		}
+		if (filter.getFiring() != null && filter.getFiring()) {
+			preds.add(cb.equal(r.get(ScenarioToTrigger_.firing),filter.getFiring()));
 		}
 	}
 

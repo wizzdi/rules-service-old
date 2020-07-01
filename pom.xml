@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.wizzdi</groupId>
     <artifactId>rules-service</artifactId>
-    <version>1.2.15</version>
+    <version>2.0.0</version>
     <distributionManagement>
         <repository>
             <id>flexicore-local</id>
@@ -13,7 +13,7 @@
         </repository>
     </distributionManagement>
     <properties>
-        <flexicore-api.version>4.0.8</flexicore-api.version>
+        <flexicore-api.version>4.0.9</flexicore-api.version>
         <maven.compiler.source>1.8</maven.compiler.source>
         <jackson.version>2.11.0</jackson.version>
         <version.eclipselink>2.7.7</version.eclipselink>
@@ -78,7 +78,7 @@
         <dependency>
             <groupId>com.wizzdi</groupId>
             <artifactId>rules-model</artifactId>
-            <version>1.1.9</version>
+            <version>2.0.0</version>
             <scope>provided</scope>
         </dependency>
         <dependency>

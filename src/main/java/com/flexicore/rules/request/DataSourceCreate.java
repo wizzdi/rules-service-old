@@ -3,11 +3,11 @@ package com.flexicore.rules.request;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.flexicore.model.dynamic.DynamicExecution;
 import com.flexicore.request.BaseclassCreate;
-import com.flexicore.request.CreateDynamicExecution;
 import io.swagger.v3.oas.annotations.media.Schema;
 
-@Schema(description = "A ScenarioAction is created in the same way a DynamicExecution is created")
-public class ScenarioActionCreate extends BaseclassCreate {
+@Schema(description = "A DataSource is created in the same way a DynamicExecution is created")
+public class DataSourceCreate extends BaseclassCreate {
+
 
 	private String dynamicExecutionId;
 	@JsonIgnore
@@ -18,17 +18,18 @@ public class ScenarioActionCreate extends BaseclassCreate {
 		return dynamicExecution;
 	}
 
-	public <T extends ScenarioActionCreate> T setDynamicExecution(
+	public <T extends DataSourceCreate> T setDynamicExecution(
 			DynamicExecution dynamicExecution) {
 		this.dynamicExecution = dynamicExecution;
 		return (T) this;
 	}
 
+
 	public String getDynamicExecutionId() {
 		return dynamicExecutionId;
 	}
 
-	public <T extends ScenarioActionCreate> T setDynamicExecutionId(
+	public <T extends DataSourceCreate> T setDynamicExecutionId(
 			String dynamicExecutionId) {
 		this.dynamicExecutionId = dynamicExecutionId;
 		return (T) this;

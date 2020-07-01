@@ -1,7 +1,5 @@
 package com.flexicore.rules.service;
 
-import com.flexicore.rules.model.Scenario;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.nio.channels.FileChannel;
@@ -17,19 +15,18 @@ public class LogHolder {
 	private static final Logger logger = Logger.getLogger(LogHolder.class
 			.getCanonicalName());
 
-	public static Logger getLogger(Scenario scenario) {
-		return loggers.computeIfAbsent(scenario.getId(),
-				f -> createLogger(scenario));
+	public static Logger getLogger(String id,String path) {
+		return loggers.computeIfAbsent(id,
+				f -> createLogger(id,path));
 	}
 
-	public static void clearLogger(Scenario scenario) {
-		Logger scriptLogger = getLogger(scenario);
+	public static void clearLogger(String id,String path) {
+		Logger scriptLogger = getLogger(id,path);
 		synchronized (scriptLogger) {
 			closeAndRemoveLogger(scriptLogger);
 
-			if (scenario.getLogFileResource() != null) {
-				File file = new File(scenario.getLogFileResource()
-						.getFullPath());
+			if (path!= null) {
+				File file = new File(path);
 				try (FileChannel outChan = new FileOutputStream(file, true)
 						.getChannel()) {
 					outChan.truncate(0);
@@ -40,6 +37,7 @@ public class LogHolder {
 		}
 
 	}
+
 	public static class CustomFormatter extends SimpleFormatter {
 		private static final String format = "[%1$tF %1$tT] [%2$-7s] %3$s %n";
 
@@ -69,10 +67,10 @@ public class LogHolder {
 		}
 	}
 
-	private static Logger createLogger(Scenario scenario) {
-		Logger scriptLogger = Logger.getLogger(scenario.getId());
+	private static Logger createLogger(String id,String path) {
+		Logger scriptLogger = Logger.getLogger(id);
 		try {
-			if (scenario.getLogFileResource() != null) {
+			if (path != null) {
 				boolean hasFileHandler = false;
 				for (Handler handler : scriptLogger.getHandlers()) {
 					if (handler instanceof FileHandler) {
@@ -81,8 +79,7 @@ public class LogHolder {
 					}
 				}
 				if (!hasFileHandler) {
-					FileHandler handler = new FileHandler(scenario
-							.getLogFileResource().getFullPath(), 0, 1, true);
+					FileHandler handler = new FileHandler(path, 0, 1, true);
 					handler.setFormatter(new CustomFormatter());
 					scriptLogger.addHandler(handler);
 					scriptLogger.setUseParentHandlers(false);

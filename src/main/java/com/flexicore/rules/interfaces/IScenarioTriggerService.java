@@ -6,13 +6,10 @@ import com.flexicore.rules.request.ScenarioTriggerCreate;
 import com.flexicore.security.SecurityContext;
 
 public interface IScenarioTriggerService extends ServicePlugin {
-	void validate(ScenarioTriggerCreate creationContainer,
-			SecurityContext securityContext);
 
-	ScenarioTrigger createScenarioTriggerNoMerge(
-			ScenarioTriggerCreate creationContainer,
-			SecurityContext securityContext);
+	void validate(ScenarioTriggerCreate creationContainer, SecurityContext securityContext);
 
-	boolean updateScenarioTriggerNoMerge(ScenarioTrigger scenarioTrigger,
-			ScenarioTriggerCreate creationContainer);
+	ScenarioTrigger createScenarioTriggerNoMerge(ScenarioTriggerCreate creationContainer, SecurityContext securityContext);
+
+	boolean updateScenarioTriggerNoMerge(ScenarioTrigger scenarioTrigger, ScenarioTriggerCreate creationContainer);
 }
