@@ -16,6 +16,7 @@ public class ScenarioToDataSourceCreate extends BaseclassCreate {
 	@JsonIgnore
 	private DataSource dataSource;
 	private Boolean enabled;
+	private Integer ordinal;
 
 
 	public String getScenarioId() {
@@ -63,6 +64,15 @@ public class ScenarioToDataSourceCreate extends BaseclassCreate {
 
 	public <T extends ScenarioToDataSourceCreate> T setEnabled(Boolean enabled) {
 		this.enabled = enabled;
+		return (T) this;
+	}
+
+	public Integer getOrdinal() {
+		return ordinal;
+	}
+
+	public <T extends ScenarioToDataSourceCreate> T setOrdinal(Integer ordinal) {
+		this.ordinal = ordinal;
 		return (T) this;
 	}
 }

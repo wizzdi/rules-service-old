@@ -129,19 +129,8 @@ public class ScenarioToDataSourceService implements ServicePlugin {
 		return scenarioToDataSource;
 	}
 
-	private boolean updateScenarioToDataSourceNoMerge(
-			ScenarioToDataSource scenarioToDataSource,
-			ScenarioToDataSourceCreate creationContainer) {
-		boolean update = false;
-		if (creationContainer.getName() != null && !creationContainer.getName().equals(scenarioToDataSource.getName())) {
-			scenarioToDataSource.setName(creationContainer.getName());
-			update = true;
-		}
-
-		if (creationContainer.getDescription() != null && !creationContainer.getDescription().equals(scenarioToDataSource.getDescription())) {
-			scenarioToDataSource.setDescription(creationContainer.getDescription());
-			update = true;
-		}
+	private boolean updateScenarioToDataSourceNoMerge(ScenarioToDataSource scenarioToDataSource, ScenarioToDataSourceCreate creationContainer) {
+		boolean update = baseclassNewService.updateBaseclassNoMerge(creationContainer,scenarioToDataSource);
 		if (creationContainer.getScenario() != null && (scenarioToDataSource.getScenario() == null || !creationContainer.getScenario().getId().equals(scenarioToDataSource.getScenario().getId()))) {
 			scenarioToDataSource.setScenario(creationContainer.getScenario());
 			update = true;
@@ -158,6 +147,10 @@ public class ScenarioToDataSourceService implements ServicePlugin {
 			update = true;
 		}
 
+		if (creationContainer.getOrdinal() != null && creationContainer.getOrdinal() != scenarioToDataSource.getOrdinal()) {
+			scenarioToDataSource.setOrdinal(creationContainer.getOrdinal());
+			update = true;
+		}
 		return update;
 
 	}

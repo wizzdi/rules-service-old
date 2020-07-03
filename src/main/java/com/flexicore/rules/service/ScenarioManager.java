@@ -2,16 +2,13 @@ package com.flexicore.rules.service;
 
 import com.flexicore.annotations.plugins.PluginInfo;
 import com.flexicore.interfaces.ServicePlugin;
-import com.flexicore.model.Baseclass;
 import com.flexicore.model.FileResource;
 import com.flexicore.product.interfaces.IEventService;
-import com.flexicore.request.ExecuteInvokerRequest;
-import com.flexicore.response.ExecuteInvokersResponse;
 import com.flexicore.rules.events.ScenarioEvent;
 import com.flexicore.rules.model.*;
 import com.flexicore.rules.request.*;
+import com.flexicore.rules.response.EvaluateScenarioResponse;
 import com.flexicore.rules.response.EvaluateTriggerResponse;
-import com.flexicore.security.SecurityContext;
 import com.flexicore.service.DynamicInvokersService;
 import jdk.nashorn.api.scripting.ScriptObjectMirror;
 import org.apache.commons.io.FileUtils;
@@ -90,20 +87,86 @@ public class ScenarioManager implements ServicePlugin {
                 .setFiring(true)
                 .setNonDeletedScenarios(true)
                 .setScenarioTriggers(triggers);
-        List<ScenarioToTrigger> scenarioToTriggers = scenarioToTriggerService.listAllScenarioToTrigger(scenarioToTriggerFilter, null);
-        Map<String,Scenario> scenarioMap=scenarioToTriggers.stream().collect(Collectors.toMap(f->f.getScenario().getId(),f->f.getScenario(),(a,b)->a))
+        List<ScenarioToTrigger> scenarioToTriggers = triggers.isEmpty()?new ArrayList<>():scenarioToTriggerService.listAllScenarioToTrigger(scenarioToTriggerFilter, null);
+        Map<String,Scenario> scenarioMap=scenarioToTriggers.stream().collect(Collectors.toMap(f->f.getScenario().getId(),f->f.getScenario(),(a,b)->a));
         Map<String,List<ScenarioToTrigger>> fireingScenarios= scenarioToTriggers.stream().collect(Collectors.groupingBy(f->f.getScenario().getId()));
         ScenarioToDataSourceFilter scenarioToDataSourceFilter = new ScenarioToDataSourceFilter()
                 .setEnabled(true)
                 .setScenarios(new ArrayList<>(scenarioMap.values()));
-        Map<String,List<ScenarioToDataSource>> scenarioToDataSource=scenarioToDataSourceService.listAllScenarioToDataSource(scenarioToDataSourceFilter,null).stream().collect(Collectors.groupingBy(f->f.getScenario().getId()));
+        Map<String,List<ScenarioToDataSource>> scenarioToDataSource=scenarioMap.isEmpty()?new HashMap<>():scenarioToDataSourceService.listAllScenarioToDataSource(scenarioToDataSourceFilter,null).stream().collect(Collectors.groupingBy(f->f.getScenario().getId()));
+        List<EvaluateScenarioResponse> evaluateScenarioResponses=new ArrayList<>();
         for (Map.Entry<String, List<ScenarioToTrigger>> entry : fireingScenarios.entrySet()) {
             String scenarioId = entry.getKey();
             Scenario scenario=scenarioMap.get(scenarioId);
-            List<ScenarioToTrigger> scenarioToTriggerList=entry.getValue();
-            List<ScenarioToDataSource> scenarioToDataSources=scenarioToDataSource.getOrDefault(scenarioId,new ArrayList<>());
-            //TODO: evaluate scenario
+            List<ScenarioTrigger> scenarioToTriggerList=entry.getValue().stream().sorted(Comparator.comparing(f->f.getOrdinal())).map(f->f.getScenarioTrigger()).collect(Collectors.toList());
+            List<DataSource> scenarioToDataSources=scenarioToDataSource.getOrDefault(scenarioId,new ArrayList<>()).stream().sorted(Comparator.comparing(f->f.getOrdinal())).map(f->f.getDataSource()).collect(Collectors.toList());
+            EvaluateScenarioRequest evaluateScenarioRequest = new EvaluateScenarioRequest()
+                    .setScenario(scenario)
+                    .setScenarioEvent(scenarioEvent)
+                    .setScenarioTriggers(scenarioToTriggerList)
+                    .setDataSources(scenarioToDataSources);
+            EvaluateScenarioResponse evaluateScenarioResponse=evaluateScenario(evaluateScenarioRequest);
+            if(evaluateScenarioResponse.isResult()){
+                evaluateScenarioResponses.add(evaluateScenarioResponse);
+            }
         }
+        if(!evaluateScenarioResponses.isEmpty()){
+            Map<String,EvaluateScenarioResponse> responseMap=evaluateScenarioResponses.stream().collect(Collectors.toMap(f->f.getEvaluateScenarioRequest().getScenario().getId(),f->f));
+            List<Scenario> activeScenarios = evaluateScenarioResponses.stream().map(f -> f.getEvaluateScenarioRequest().getScenario()).collect(Collectors.toList());
+            Map<String,List<ScenarioAction>> actions=scenarioToActionService.listAllScenarioToAction(new ScenarioToActionFilter().setEnabled(true).setScenarios(activeScenarios),null).stream().collect(Collectors.groupingBy(f->f.getScenario().getId(),Collectors.mapping(f->f.getScenarioAction(),Collectors.toList())));
+            for (Scenario activeScenario : activeScenarios) {
+                EvaluateScenarioResponse evaluateScenarioResponse = responseMap.get(activeScenario.getId());
+                List<ScenarioAction> scenarioActions=actions.getOrDefault(activeScenario.getId(),new ArrayList<>());
+                for (ScenarioAction scenarioAction : scenarioActions) {
+                    executeAction(scenarioAction,evaluateScenarioResponse);
+                }
+
+            }
+
+        }
+
+
+    }
+
+    private void executeAction(ScenarioAction scenarioAction, EvaluateScenarioResponse evaluateScenarioResponse) {
+
+    }
+
+    private EvaluateScenarioResponse evaluateScenario(EvaluateScenarioRequest evaluateScenarioRequest) {
+        EvaluateScenarioResponse evaluateScenarioResponse = new EvaluateScenarioResponse()
+                .setEvaluateScenarioRequest(evaluateScenarioRequest);
+        List<ScenarioTrigger> scenarioTriggers = evaluateScenarioRequest.getScenarioTriggers();
+        List<DataSource> scenarioToDataSources=evaluateScenarioRequest.getDataSources();
+        ScenarioEvent scenarioEvent = evaluateScenarioRequest.getScenarioEvent();
+        Scenario scenario=evaluateScenarioRequest.getScenario();
+        FileResource script = scenario.getEvaluatingJSCode();
+        Logger scenarioTriggerLogger = getLogger(scenario.getId(), scenario.getLogFileResource().getFullPath());
+        try {
+            File file = new File(script.getFullPath());
+            ScriptObjectMirror loaded = loadScript(file,
+                    buildFunctionTableFunction(FunctionTypes.EVALUATE));
+            ScenarioEventScriptContext scenarioEventScriptContext = new ScenarioEventScriptContext()
+                    .setLogger(scenarioTriggerLogger)
+                    .setScenarioEvent(scenarioEvent)
+                    .setScenarioToDataSources(scenarioToDataSources)
+                    .setScenarioTriggers(scenarioTriggers);
+            Object[] parameters = new Object[]{scenarioEventScriptContext};
+            boolean res = (boolean) loaded.callMember(
+                    FunctionTypes.EVALUATE.getFunctionName(), parameters);
+            evaluateScenarioResponse.setResult(res);
+
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, "failed executing script", e);
+            scenarioTriggerLogger.log(Level.SEVERE,
+                    "failed executing script: " + e.toString(), e);
+        } finally {
+            flush(scenarioTriggerLogger);
+        }
+
+        return evaluateScenarioResponse;
+    }
+
+    private void handleTriggerActive(ScenarioTrigger trigger, ScenarioEvent scenarioEvent) {
 
     }
 
