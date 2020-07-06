@@ -142,4 +142,5 @@ public class ScenarioEventRepository extends AbstractNoSqlRepositoryPlugin {
 		DeleteResult deleteResult = collection.deleteMany(pred);
 		return deleteResult.getDeletedCount();
 	}
+
 }

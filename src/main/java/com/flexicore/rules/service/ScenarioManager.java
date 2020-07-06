@@ -3,7 +3,9 @@ package com.flexicore.rules.service;
 import com.flexicore.annotations.plugins.PluginInfo;
 import com.flexicore.interfaces.ServicePlugin;
 import com.flexicore.model.FileResource;
+import com.flexicore.model.dynamic.DynamicExecution;
 import com.flexicore.product.interfaces.IEventService;
+import com.flexicore.request.ExecuteDynamicExecution;
 import com.flexicore.rules.events.ScenarioEvent;
 import com.flexicore.rules.model.*;
 import com.flexicore.rules.request.*;
@@ -12,6 +14,7 @@ import com.flexicore.rules.response.EvaluateTriggerResponse;
 import com.flexicore.service.DynamicInvokersService;
 import jdk.nashorn.api.scripting.ScriptObjectMirror;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.pf4j.Extension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
@@ -21,7 +24,11 @@ import org.springframework.stereotype.Component;
 import javax.script.*;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
+import java.time.OffsetDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
@@ -66,59 +73,95 @@ public class ScenarioManager implements ServicePlugin {
     private DynamicInvokersService dynamicInvokersService;
 
     @Autowired
+    private ActionReplacementService actionReplacementService;
+
+    @Autowired
     private Logger logger;
 
     @Autowired
+    private ScenarioEventService scenarioEventService;
+
+    @Autowired
     private ApplicationEventPublisher scenarioEventEvent;
+
+    private boolean isActive(ScenarioTrigger trigger) {
+        return trigger.getActiveTill() != null && trigger.getActiveTill().isAfter(OffsetDateTime.now());
+    }
 
     @EventListener
     public void handleTrigger(ScenarioEvent scenarioEvent) {
         logger.info("Scenario Trigger Event " + scenarioEvent
                 + "captured by Scenario Manager");
         List<ScenarioTrigger> triggers = scenarioTriggerService.listAllScenarioTriggers(new ScenarioTriggerFilter().setEventCanonicalNames(Collections.singleton(scenarioEvent.getClass().getCanonicalName())), null);
+        List<ScenarioTrigger> activeTriggers = new ArrayList<>();
+        List<Object> toMerge = new ArrayList<>();
         for (ScenarioTrigger trigger : triggers) {
-            EvaluateTriggerResponse evaluateTriggerResponse=evaluateTrigger(new EvaluateTriggerRequest().setScenarioTrigger(trigger).setScenarioEvent(scenarioEvent));
-            if(evaluateTriggerResponse.isResult()){
-                handleTriggerActive(trigger,scenarioEvent);
+            EvaluateTriggerResponse evaluateTriggerResponse = evaluateTrigger(new EvaluateTriggerRequest().setScenarioTrigger(trigger).setScenarioEvent(scenarioEvent));
+            if (evaluateTriggerResponse.isActive()) {
+                activeTriggers.add(trigger);
             }
+            if (changeTriggerState(trigger, scenarioEvent, evaluateTriggerResponse)) {
+                logger.info("Trigger " + trigger.getName() + "(" + trigger.getId() + ") state changed to Active till" + trigger.getActiveTill());
+                toMerge.add(trigger);
+            }
+            else{
+                logger.fine("Trigger " + trigger.getName() + "(" + trigger.getId() + ") state stayed Active till" + trigger.getActiveTill());
+            }
+
+
         }
+        scenarioTriggerService.massMerge(toMerge);
+
+        if (activeTriggers.isEmpty()) {
+            logger.fine("No Active triggers for event "+scenarioEvent);
+            return;
+        }
+        scenarioEvent.setEvaluatedScenarioTriggerIds(activeTriggers.stream().map(f -> f.getId()).collect(Collectors.toSet()));
+        scenarioEventService.mergeScenarioEvent(scenarioEvent);
+
         ScenarioToTriggerFilter scenarioToTriggerFilter = new ScenarioToTriggerFilter()
                 .setEnabled(true)
                 .setFiring(true)
                 .setNonDeletedScenarios(true)
-                .setScenarioTriggers(triggers);
-        List<ScenarioToTrigger> scenarioToTriggers = triggers.isEmpty()?new ArrayList<>():scenarioToTriggerService.listAllScenarioToTrigger(scenarioToTriggerFilter, null);
-        Map<String,Scenario> scenarioMap=scenarioToTriggers.stream().collect(Collectors.toMap(f->f.getScenario().getId(),f->f.getScenario(),(a,b)->a));
-        Map<String,List<ScenarioToTrigger>> fireingScenarios= scenarioToTriggers.stream().collect(Collectors.groupingBy(f->f.getScenario().getId()));
+                .setScenarioTriggers(activeTriggers);
+        List<ScenarioToTrigger> scenarioToTriggers = activeTriggers.isEmpty() ? new ArrayList<>() : scenarioToTriggerService.listAllScenarioToTrigger(scenarioToTriggerFilter, null);
+        Map<String, Scenario> scenarioMap = scenarioToTriggers.stream().collect(Collectors.toMap(f -> f.getScenario().getId(), f -> f.getScenario(), (a, b) -> a));
+        Map<String, List<ScenarioToTrigger>> fireingScenarios = scenarioToTriggers.stream().collect(Collectors.groupingBy(f -> f.getScenario().getId()));
         ScenarioToDataSourceFilter scenarioToDataSourceFilter = new ScenarioToDataSourceFilter()
                 .setEnabled(true)
                 .setScenarios(new ArrayList<>(scenarioMap.values()));
-        Map<String,List<ScenarioToDataSource>> scenarioToDataSource=scenarioMap.isEmpty()?new HashMap<>():scenarioToDataSourceService.listAllScenarioToDataSource(scenarioToDataSourceFilter,null).stream().collect(Collectors.groupingBy(f->f.getScenario().getId()));
-        List<EvaluateScenarioResponse> evaluateScenarioResponses=new ArrayList<>();
+        Map<String, List<ScenarioToDataSource>> scenarioToDataSource = scenarioMap.isEmpty() ? new HashMap<>() : scenarioToDataSourceService.listAllScenarioToDataSource(scenarioToDataSourceFilter, null).stream().collect(Collectors.groupingBy(f -> f.getScenario().getId()));
+        List<EvaluateScenarioResponse> evaluateScenarioResponses = new ArrayList<>();
         for (Map.Entry<String, List<ScenarioToTrigger>> entry : fireingScenarios.entrySet()) {
             String scenarioId = entry.getKey();
-            Scenario scenario=scenarioMap.get(scenarioId);
-            List<ScenarioTrigger> scenarioToTriggerList=entry.getValue().stream().sorted(Comparator.comparing(f->f.getOrdinal())).map(f->f.getScenarioTrigger()).collect(Collectors.toList());
-            List<DataSource> scenarioToDataSources=scenarioToDataSource.getOrDefault(scenarioId,new ArrayList<>()).stream().sorted(Comparator.comparing(f->f.getOrdinal())).map(f->f.getDataSource()).collect(Collectors.toList());
+            Scenario scenario = scenarioMap.get(scenarioId);
+            List<ScenarioTrigger> scenarioToTriggerList = entry.getValue().stream().sorted(Comparator.comparing(f -> f.getOrdinal())).map(f -> f.getScenarioTrigger()).collect(Collectors.toList());
+            List<DataSource> scenarioToDataSources = scenarioToDataSource.getOrDefault(scenarioId, new ArrayList<>()).stream().sorted(Comparator.comparing(f -> f.getOrdinal())).map(f -> f.getDataSource()).collect(Collectors.toList());
             EvaluateScenarioRequest evaluateScenarioRequest = new EvaluateScenarioRequest()
                     .setScenario(scenario)
                     .setScenarioEvent(scenarioEvent)
                     .setScenarioTriggers(scenarioToTriggerList)
                     .setDataSources(scenarioToDataSources);
-            EvaluateScenarioResponse evaluateScenarioResponse=evaluateScenario(evaluateScenarioRequest);
-            if(evaluateScenarioResponse.isResult()){
+            EvaluateScenarioResponse evaluateScenarioResponse = evaluateScenario(evaluateScenarioRequest);
+            if (evaluateScenarioResponse.isResult()) {
                 evaluateScenarioResponses.add(evaluateScenarioResponse);
             }
         }
-        if(!evaluateScenarioResponses.isEmpty()){
-            Map<String,EvaluateScenarioResponse> responseMap=evaluateScenarioResponses.stream().collect(Collectors.toMap(f->f.getEvaluateScenarioRequest().getScenario().getId(),f->f));
+        if (!evaluateScenarioResponses.isEmpty()) {
+            Map<String, EvaluateScenarioResponse> responseMap = evaluateScenarioResponses.stream().collect(Collectors.toMap(f -> f.getEvaluateScenarioRequest().getScenario().getId(), f -> f));
             List<Scenario> activeScenarios = evaluateScenarioResponses.stream().map(f -> f.getEvaluateScenarioRequest().getScenario()).collect(Collectors.toList());
-            Map<String,List<ScenarioAction>> actions=scenarioToActionService.listAllScenarioToAction(new ScenarioToActionFilter().setEnabled(true).setScenarios(activeScenarios),null).stream().collect(Collectors.groupingBy(f->f.getScenario().getId(),Collectors.mapping(f->f.getScenarioAction(),Collectors.toList())));
+            List<ScenarioToAction> scenarioToActions = scenarioToActionService.listAllScenarioToAction(new ScenarioToActionFilter().setEnabled(true).setScenarios(activeScenarios), null);
+            Map<String, List<ScenarioToAction>> actions = scenarioToActions.stream().collect(Collectors.groupingBy(f -> f.getScenario().getId()));
+            List<ActionReplacement> actionReplacements = scenarioToActions.isEmpty() ? new ArrayList<>() : actionReplacementService.listAllActionReplacements(new ActionReplacementFilter().setScenarioToActions(scenarioToActions), null);
+            List<ScenarioTrigger> relevantTriggers = new ArrayList<>(actionReplacements.stream().map(f -> f.getScenarioTrigger()).collect(Collectors.toMap(f -> f.getId(), f -> f, (a, b) -> a)).values());
+            Map<String, ScenarioEvent> lastScenarioEvents = relevantTriggers.isEmpty() ? new HashMap<>() : scenarioEventService.listByIds(relevantTriggers.stream().map(f -> f.getLastEventId()).collect(Collectors.toSet())).stream().collect(Collectors.toMap(f -> f.getId(), f -> f));
+            Map<String, Map<String, List<ActionReplacement>>> actionReplacementsMap = actionReplacements.stream().collect(Collectors.groupingBy(f -> f.getScenarioToAction().getId(), Collectors.groupingBy(f -> f.getScenarioTrigger().getId())));
             for (Scenario activeScenario : activeScenarios) {
                 EvaluateScenarioResponse evaluateScenarioResponse = responseMap.get(activeScenario.getId());
-                List<ScenarioAction> scenarioActions=actions.getOrDefault(activeScenario.getId(),new ArrayList<>());
-                for (ScenarioAction scenarioAction : scenarioActions) {
-                    executeAction(scenarioAction,evaluateScenarioResponse);
+                List<ScenarioToAction> scenarioActions = actions.getOrDefault(activeScenario.getId(), new ArrayList<>());
+                for (ScenarioToAction scenarioAction : scenarioActions) {
+                    Map<String, List<ActionReplacement>> replacements = actionReplacementsMap.get(scenarioAction.getId());
+                    executeAction(scenarioAction, replacements, lastScenarioEvents, evaluateScenarioResponse);
                 }
 
             }
@@ -128,17 +171,64 @@ public class ScenarioManager implements ServicePlugin {
 
     }
 
-    private void executeAction(ScenarioAction scenarioAction, EvaluateScenarioResponse evaluateScenarioResponse) {
+    private void executeAction(ScenarioToAction scenarioAction, Map<String, List<ActionReplacement>> replacements, Map<String, ScenarioEvent> lastScenarioEvents, EvaluateScenarioResponse evaluateScenarioResponse) {
+        for (Map.Entry<String, List<ActionReplacement>> entry : replacements.entrySet()) {
+            ScenarioEvent scenarioEvent = lastScenarioEvents.get(entry.getKey());
+            List<ActionReplacement> replacementsForEvents = entry.getValue();
+            for (ActionReplacement replacementsForEvent : replacementsForEvents) {
+                try {
+                    replace(scenarioAction.getScenarioAction().getDynamicExecution(), scenarioEvent, replacementsForEvent);
+                } catch (Exception e) {
+                    logger.log(Level.SEVERE, "failed replacing values " + replacementsForEvent.getName() + "(" + replacementsForEvent.getId() + ")", e);
+                }
+            }
+        }
+        dynamicInvokersService.executeInvoker(new ExecuteDynamicExecution().setDynamicExecution(scenarioAction.getScenarioAction().getDynamicExecution()), null);
 
+    }
+
+    private void replace(DynamicExecution dynamicExecution, ScenarioEvent scenarioEvent, ActionReplacement replacementsForEvent) throws IllegalAccessException, NoSuchMethodException, InvocationTargetException {
+        String[] fields = replacementsForEvent.getEventSourcePath().split("\\.");
+        Class<?> current = scenarioEvent.getClass();
+        Object currentVal = scenarioEvent;
+        for (String fieldName : fields) {
+            Method method = getGetter(current, fieldName);
+            currentVal = method.invoke(currentVal);
+            current = currentVal.getClass();
+        }
+        String[] target = replacementsForEvent.getExecutionTargetPath().split("\\.");
+        Class<?> currentTarget = dynamicExecution.getClass();
+        Object currentTargetVal = dynamicExecution;
+        for (int i = 0; i < target.length - 1; i++) {
+            String fieldName = target[i];
+            Method method = getGetter(current, fieldName);
+            currentTargetVal = method.invoke(currentTargetVal);
+        }
+        Method setter = getSetter(currentTarget, target[target.length - 1]);
+        setter.invoke(currentTargetVal, currentVal);
+
+    }
+
+    private Method getSetter(Class<?> current, String fieldName) throws NoSuchMethodException {
+        return current.getMethod("set" + StringUtils.capitalize(fieldName));
+    }
+
+    private Method getGetter(Class<?> current, String fieldName) throws NoSuchMethodException {
+        try {
+            return current.getMethod("get" + StringUtils.capitalize(fieldName));
+        } catch (NoSuchMethodException e) {
+            return current.getMethod("is" + StringUtils.capitalize(fieldName));
+
+        }
     }
 
     private EvaluateScenarioResponse evaluateScenario(EvaluateScenarioRequest evaluateScenarioRequest) {
         EvaluateScenarioResponse evaluateScenarioResponse = new EvaluateScenarioResponse()
                 .setEvaluateScenarioRequest(evaluateScenarioRequest);
         List<ScenarioTrigger> scenarioTriggers = evaluateScenarioRequest.getScenarioTriggers();
-        List<DataSource> scenarioToDataSources=evaluateScenarioRequest.getDataSources();
+        List<DataSource> scenarioToDataSources = evaluateScenarioRequest.getDataSources();
         ScenarioEvent scenarioEvent = evaluateScenarioRequest.getScenarioEvent();
-        Scenario scenario=evaluateScenarioRequest.getScenario();
+        Scenario scenario = evaluateScenarioRequest.getScenario();
         FileResource script = scenario.getEvaluatingJSCode();
         Logger scenarioTriggerLogger = getLogger(scenario.getId(), scenario.getLogFileResource().getFullPath());
         try {
@@ -166,7 +256,25 @@ public class ScenarioManager implements ServicePlugin {
         return evaluateScenarioResponse;
     }
 
-    private void handleTriggerActive(ScenarioTrigger trigger, ScenarioEvent scenarioEvent) {
+    private boolean changeTriggerState(ScenarioTrigger trigger, ScenarioEvent scenarioEvent, EvaluateTriggerResponse evaluateTriggerResponse) {
+        boolean update = false;
+        boolean active = isActive(trigger);
+        if (active != evaluateTriggerResponse.isActive()) {
+            OffsetDateTime activeTill;
+            if (active) {
+                activeTill = trigger.getActiveMs() > 0 ? OffsetDateTime.now().plus(trigger.getActiveMs(), ChronoUnit.MILLIS) : OffsetDateTime.MAX;
+            } else {
+                activeTill = OffsetDateTime.now();
+            }
+            trigger.setActiveTill(activeTill);
+
+
+            update = true;
+        }
+        if (trigger.getLastEventId() == null || (!trigger.getLastEventId().equals(scenarioEvent.getId()))) {
+            trigger.setLastEventId(scenarioEvent.getId());
+        }
+        return update;
 
     }
 
@@ -186,7 +294,7 @@ public class ScenarioManager implements ServicePlugin {
             Object[] parameters = new Object[]{scenarioEventScriptContext};
             boolean res = (boolean) loaded.callMember(
                     FunctionTypes.EVALUATE.getFunctionName(), parameters);
-            evaluateTriggerResponse.setResult(res);
+            evaluateTriggerResponse.setActive(res);
 
         } catch (Exception e) {
             logger.log(Level.SEVERE, "failed executing script", e);

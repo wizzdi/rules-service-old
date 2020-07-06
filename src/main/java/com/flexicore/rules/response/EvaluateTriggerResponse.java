@@ -1,14 +1,14 @@
 package com.flexicore.rules.response;
 
 public class EvaluateTriggerResponse {
-	private boolean result;
+	private boolean active;
 
-	public boolean isResult() {
-		return result;
+	public boolean isActive() {
+		return active;
 	}
 
-	public <T extends EvaluateTriggerResponse> T setResult(boolean result) {
-		this.result = result;
+	public <T extends EvaluateTriggerResponse> T setActive(boolean active) {
+		this.active = active;
 		return (T) this;
 	}
 }

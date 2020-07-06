@@ -19,6 +19,7 @@ public class ScenarioTriggerCreate extends BaseclassCreate {
 	private String evaluatingJSCodeId;
 	@JsonIgnore
 	private FileResource evaluatingJSCode;
+	private Long activeMs;
 
 	public OffsetDateTime getActiveTill() {
 		return activeTill;
@@ -81,6 +82,15 @@ public class ScenarioTriggerCreate extends BaseclassCreate {
 
 	public <T extends ScenarioTriggerCreate> T setEvaluatingJSCode(FileResource evaluatingJSCode) {
 		this.evaluatingJSCode = evaluatingJSCode;
+		return (T) this;
+	}
+
+	public Long getActiveMs() {
+		return activeMs;
+	}
+
+	public <T extends ScenarioTriggerCreate> T setActiveMs(Long activeMs) {
+		this.activeMs = activeMs;
 		return (T) this;
 	}
 }

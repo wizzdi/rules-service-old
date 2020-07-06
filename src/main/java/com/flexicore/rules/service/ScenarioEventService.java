@@ -90,8 +90,8 @@ public class ScenarioEventService implements ServicePlugin {
 	private boolean updateScenarioEventNoMerge(ScenarioEvent scenarioEvent,
 			ScenarioEventCreate creationContainer) {
 		boolean update = baseclassNoSQLService.updateBaseclassNoSQLNoMerge(scenarioEvent, creationContainer);
-		if (creationContainer.getEvaluatedScenarioTriggerId() != null && !creationContainer.getEvaluatedScenarioTriggerId().equals(scenarioEvent.getEvaluatedScenarioTriggerId())) {
-			scenarioEvent.setEvaluatedScenarioTriggerId(creationContainer.getEvaluatedScenarioTriggerId());
+		if (creationContainer.getEvaluatedScenarioTriggerIds() != null && !creationContainer.getEvaluatedScenarioTriggerIds().equals(scenarioEvent.getEvaluatedScenarioTriggerIds())) {
+			scenarioEvent.setEvaluatedScenarioTriggerIds(creationContainer.getEvaluatedScenarioTriggerIds());
 			update = true;
 		}
 
@@ -106,5 +106,11 @@ public class ScenarioEventService implements ServicePlugin {
 		return new PaginationResponse<>(list, filter, count);
 	}
 
+	public void mergeScenarioEvent(ScenarioEvent o) {
+		scenarioEventRepository.mergeScenarioEvent(o);
+	}
 
+	public List<ScenarioEvent> listByIds(Set<String> scenarioEventIds) {
+		return scenarioEventRepository.listByIds(ScenarioEvent.class,scenarioEventIds);
+	}
 }

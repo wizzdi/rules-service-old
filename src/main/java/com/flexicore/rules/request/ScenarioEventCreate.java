@@ -2,16 +2,18 @@ package com.flexicore.rules.request;
 
 import com.flexicore.request.BaseclassNoSQLCreate;
 
+import java.util.Set;
+
 public class ScenarioEventCreate extends BaseclassNoSQLCreate {
 
-    private String evaluatedScenarioTriggerId;
+    private Set<String> evaluatedScenarioTriggerIds;
 
-    public String getEvaluatedScenarioTriggerId() {
-        return evaluatedScenarioTriggerId;
+    public Set<String> getEvaluatedScenarioTriggerIds() {
+        return evaluatedScenarioTriggerIds;
     }
 
-    public <T extends ScenarioEventCreate> T setEvaluatedScenarioTriggerId(String evaluatedScenarioTriggerId) {
-        this.evaluatedScenarioTriggerId = evaluatedScenarioTriggerId;
+    public <T extends ScenarioEventCreate> T setEvaluatedScenarioTriggerIds(Set<String> evaluatedScenarioTriggerIds) {
+        this.evaluatedScenarioTriggerIds = evaluatedScenarioTriggerIds;
         return (T) this;
     }
 }

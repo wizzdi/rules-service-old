@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 
+import javax.transaction.Transactional;
 import javax.ws.rs.BadRequestException;
 import java.sql.Date;
 import java.time.Instant;
@@ -101,6 +102,10 @@ public class ScenarioTriggerService implements IScenarioTriggerService {
 			scenarioTrigger.setActiveTill(creationContainer.getActiveTill());
 			update = true;
 		}
+		if (creationContainer.getActiveMs() != null && !creationContainer.getActiveMs().equals(scenarioTrigger.getActiveMs())) {
+			scenarioTrigger.setActiveMs(creationContainer.getActiveMs());
+			update = true;
+		}
 		if (creationContainer.getEvaluatingJSCode() != null && (creationContainer.getEvaluatingJSCode()==null||!creationContainer.getEvaluatingJSCode().getId().equals(scenarioTrigger.getEvaluatingJSCode().getId()))) {
 			scenarioTrigger.setEvaluatingJSCode(creationContainer.getEvaluatingJSCode());
 			update = true;
@@ -125,5 +130,10 @@ public class ScenarioTriggerService implements IScenarioTriggerService {
 
 	public List<ScenarioTrigger> listAllScenarioTriggers(ScenarioTriggerFilter filter, SecurityContext securityContext) {
 		return repository.listAllScenarioTriggers(filter, securityContext);
+	}
+
+	@Transactional(Transactional.TxType.REQUIRED)
+	public void massMerge(List<?> toMerge) {
+		repository.massMerge(toMerge);
 	}
 }
