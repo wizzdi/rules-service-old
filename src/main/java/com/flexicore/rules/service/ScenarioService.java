@@ -151,7 +151,7 @@ public class ScenarioService implements ServicePlugin {
 
 	public void clearLog(ClearLogRequest creationContainer,
 			SecurityContext securityContext) {
-		LogHolder.clearLogger(creationContainer.getScenario());
+		LogHolder.clearLogger(creationContainer.getScenario().getId(),creationContainer.getScenario().getLogFileResource().getFullPath());
 	}
 
 }

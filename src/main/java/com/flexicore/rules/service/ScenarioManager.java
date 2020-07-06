@@ -96,6 +96,10 @@ public class ScenarioManager implements ServicePlugin {
         List<ScenarioTrigger> activeTriggers = new ArrayList<>();
         List<Object> toMerge = new ArrayList<>();
         for (ScenarioTrigger trigger : triggers) {
+            if(!isValid(trigger)){
+                logger.fine("Trigger "+trigger.getName()+"("+trigger.getId()+") invalid");
+                continue;
+            }
             EvaluateTriggerResponse evaluateTriggerResponse = evaluateTrigger(new EvaluateTriggerRequest().setScenarioTrigger(trigger).setScenarioEvent(scenarioEvent));
             if (evaluateTriggerResponse.isActive()) {
                 activeTriggers.add(trigger);
@@ -169,6 +173,31 @@ public class ScenarioManager implements ServicePlugin {
         }
 
 
+    }
+
+    private boolean isValid(ScenarioTrigger trigger) {
+        OffsetDateTime now = OffsetDateTime.now();
+        return triggerValidTimes(now,trigger)&&scenarioCoolDown(now,trigger);
+    }
+
+    private boolean scenarioCoolDown(OffsetDateTime now, ScenarioTrigger trigger) {
+        OffsetDateTime cooldownMin = now.plus(trigger.getCooldownIntervalMs(), ChronoUnit.MILLIS);
+        boolean cooldown = trigger.getLastActivated() == null || cooldownMin.isAfter(trigger.getLastActivated());
+        if(!cooldown){
+            logger.fine("Trigger "+trigger.getName()+"("+trigger.getId()+") invalid cooldown ("+cooldownMin+" vs "+now+")");
+
+        }
+        return cooldown;
+    }
+
+    private boolean triggerValidTimes(OffsetDateTime now,ScenarioTrigger trigger) {
+        OffsetDateTime start=trigger.getValidFrom().withDayOfYear(now.getDayOfYear()).withYear(now.getYear());
+        OffsetDateTime end=trigger.getActiveTill().withDayOfYear(now.getDayOfYear()).withYear(now.getYear());
+        boolean validTimes = (now.isAfter(start) || now.equals(start)) && (now.isBefore(end) || now.equals(end));
+        if(!validTimes){
+            logger.fine("Trigger "+trigger.getName()+"("+trigger.getId()+") invalid times ("+start +"-"+end+" vs "+now+")");
+        }
+        return validTimes;
     }
 
     private void executeAction(ScenarioToAction scenarioAction, Map<String, List<ActionReplacement>> replacements, Map<String, ScenarioEvent> lastScenarioEvents, EvaluateScenarioResponse evaluateScenarioResponse) {
@@ -263,6 +292,7 @@ public class ScenarioManager implements ServicePlugin {
             OffsetDateTime activeTill;
             if (active) {
                 activeTill = trigger.getActiveMs() > 0 ? OffsetDateTime.now().plus(trigger.getActiveMs(), ChronoUnit.MILLIS) : OffsetDateTime.MAX;
+                trigger.setLastActivated(OffsetDateTime.now());
             } else {
                 activeTill = OffsetDateTime.now();
             }
