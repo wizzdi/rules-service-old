@@ -2,6 +2,7 @@ package com.flexicore.rules.service;
 
 import com.flexicore.annotations.plugins.PluginInfo;
 import com.flexicore.interfaces.ServicePlugin;
+import com.flexicore.model.Baseclass;
 import com.flexicore.model.FileResource;
 import com.flexicore.model.dynamic.DynamicExecution;
 import com.flexicore.product.interfaces.IEventService;
@@ -234,7 +235,16 @@ public class ScenarioManager implements ServicePlugin {
             currentTargetVal = method.invoke(currentTargetVal);
         }
         Method setter = getSetter(currentTarget, target[target.length - 1]);
-        setter.invoke(currentTargetVal, currentVal);
+        if(replacementsForEvent.isFetchSource()&&currentVal instanceof String&& Baseclass.class.isAssignableFrom(setter.getParameters()[0].getType())){
+            String id= (String) currentVal;
+            Class<? extends Baseclass> c= (Class<? extends Baseclass>) setter.getParameters()[0].getType();
+            Baseclass b=actionReplacementService.findByIdOrNull(c,id);
+            setter.invoke(currentTargetVal, b);
+
+        }
+        else{
+            setter.invoke(currentTargetVal, currentVal);
+        }
 
     }
 
@@ -264,7 +274,7 @@ public class ScenarioManager implements ServicePlugin {
             File file = new File(script.getFullPath());
             ScriptObjectMirror loaded = loadScript(file,
                     buildFunctionTableFunction(FunctionTypes.EVALUATE));
-            ScenarioEventScriptContext scenarioEventScriptContext = new ScenarioEventScriptContext()
+            EvaluateScenarioScriptContext scenarioEventScriptContext = new EvaluateScenarioScriptContext(this::fetchEvent)
                     .setLogger(scenarioTriggerLogger)
                     .setScenarioEvent(scenarioEvent)
                     .setScenarioToDataSources(scenarioToDataSources)
@@ -283,6 +293,14 @@ public class ScenarioManager implements ServicePlugin {
         }
 
         return evaluateScenarioResponse;
+    }
+
+    private ScenarioEvent fetchEvent(String eventId) {
+        if(eventId==null){
+            return null;
+        }
+        List<ScenarioEvent> scenarioEvents = scenarioEventService.listByIds(Collections.singleton(eventId));
+        return scenarioEvents.isEmpty()?null:scenarioEvents.get(0);
     }
 
     private boolean changeTriggerState(ScenarioTrigger trigger, ScenarioEvent scenarioEvent, EvaluateTriggerResponse evaluateTriggerResponse) {
@@ -318,7 +336,7 @@ public class ScenarioManager implements ServicePlugin {
             File file = new File(script.getFullPath());
             ScriptObjectMirror loaded = loadScript(file,
                     buildFunctionTableFunction(FunctionTypes.EVALUATE));
-            ScenarioEventScriptContext scenarioEventScriptContext = new ScenarioEventScriptContext()
+            EvaluateTriggerScriptContext scenarioEventScriptContext = new EvaluateTriggerScriptContext()
                     .setLogger(scenarioTriggerLogger)
                     .setScenarioEvent(scenarioEvent);
             Object[] parameters = new Object[]{scenarioEventScriptContext};

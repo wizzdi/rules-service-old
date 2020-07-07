@@ -140,8 +140,7 @@ public class ScenarioService implements ServicePlugin {
 		return repository.findByIdOrNull(type, id);
 	}
 
-	public void validate(ClearLogRequest clearLogRequest,
-			SecurityContext securityContext) {
+	public void validate(ClearLogRequest clearLogRequest, SecurityContext securityContext) {
 		Scenario scenario = clearLogRequest.getScenarioId() != null ? getByIdOrNull(clearLogRequest.getScenarioId(), Scenario.class, null, securityContext) : null;
 		if (scenario == null) {
 			throw new BadRequestException("No Scenario with id " + clearLogRequest.getScenarioId());
@@ -149,8 +148,7 @@ public class ScenarioService implements ServicePlugin {
 		clearLogRequest.setScenario(scenario);
 	}
 
-	public void clearLog(ClearLogRequest creationContainer,
-			SecurityContext securityContext) {
+	public void clearLog(ClearLogRequest creationContainer, SecurityContext securityContext) {
 		LogHolder.clearLogger(creationContainer.getScenario().getId(),creationContainer.getScenario().getLogFileResource().getFullPath());
 	}
 

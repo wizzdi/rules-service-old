@@ -134,4 +134,5 @@ public class ActionReplacementService implements ServicePlugin {
     public <T> T findByIdOrNull(Class<T> type, String id) {
         return repository.findByIdOrNull(type, id);
     }
+
 }

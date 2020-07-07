@@ -10,7 +10,7 @@ import com.flexicore.security.SecurityContext;
 
 import java.util.logging.Logger;
 
-public class ScenarioScriptContext {
+public class EvaluateTriggerScriptContext {
 	@JsonIgnore
 	private Logger logger;
 	private SecurityContext securityContext;
@@ -24,7 +24,7 @@ public class ScenarioScriptContext {
 		return logger;
 	}
 
-	public <T extends ScenarioScriptContext> T setLogger(Logger logger) {
+	public <T extends EvaluateTriggerScriptContext> T setLogger(Logger logger) {
 		this.logger = logger;
 		return (T) this;
 	}
@@ -33,7 +33,7 @@ public class ScenarioScriptContext {
 		return securityContext;
 	}
 
-	public <T extends ScenarioScriptContext> T setSecurityContext(
+	public <T extends EvaluateTriggerScriptContext> T setSecurityContext(
 			SecurityContext securityContext) {
 		this.securityContext = securityContext;
 		return (T) this;
@@ -43,7 +43,7 @@ public class ScenarioScriptContext {
 		return scenarioEvent;
 	}
 
-	public <T extends ScenarioScriptContext> T setScenarioEvent(ScenarioEvent scenarioEvent) {
+	public <T extends EvaluateTriggerScriptContext> T setScenarioEvent(ScenarioEvent scenarioEvent) {
 		this.scenarioEvent = scenarioEvent;
 		return (T) this;
 	}
