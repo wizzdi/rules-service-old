@@ -24,6 +24,7 @@ import java.util.function.Predicate;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import org.pf4j.Extension;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
@@ -61,6 +62,7 @@ public class ScenarioManager implements ServicePlugin {
 	private ApplicationEventPublisher scenarioEventEvent;
 
 	@EventListener
+	@Async
 	public void handleTrigger(ScenarioTriggerEvent scenarioTriggerEvent) {
 		logger.info("Scenario Trigger Event " + scenarioTriggerEvent
 				+ "captured by Scenario Manager");
