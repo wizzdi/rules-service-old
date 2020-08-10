@@ -4,6 +4,7 @@ import com.flexicore.annotations.plugins.PluginInfo;
 import com.flexicore.interfaces.AbstractRepositoryPlugin;
 import com.flexicore.model.QueryInformationHolder;
 import com.flexicore.rules.model.Scenario;
+import com.flexicore.rules.model.Scenario_;
 import com.flexicore.rules.request.ScenarioFilter;
 import com.flexicore.security.SecurityContext;
 
@@ -35,6 +36,9 @@ public class ScenarioRepository extends AbstractRepositoryPlugin {
 
 	public static void addScenarioPredicate(List<Predicate> preds,
 			Root<Scenario> r, CriteriaBuilder cb, ScenarioFilter filter) {
+		if(filter.getNoLogs()!=null){
+			preds.add(filter.getNoLogs()?r.get(Scenario_.logFileResource).isNull():r.get(Scenario_.logFileResource).isNotNull());
+		}
 
 	}
 

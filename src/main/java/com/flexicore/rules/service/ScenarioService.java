@@ -2,16 +2,14 @@ package com.flexicore.rules.service;
 
 import com.flexicore.annotations.plugins.PluginInfo;
 import com.flexicore.data.jsoncontainers.PaginationResponse;
+import com.flexicore.events.PluginsLoadedEvent;
 import com.flexicore.interfaces.ServicePlugin;
 import com.flexicore.model.Baseclass;
 import com.flexicore.model.FileResource;
 import com.flexicore.rules.model.FlexiCoreRule;
 import com.flexicore.rules.model.Scenario;
 import com.flexicore.rules.repository.ScenarioRepository;
-import com.flexicore.rules.request.ClearLogRequest;
-import com.flexicore.rules.request.ScenarioCreate;
-import com.flexicore.rules.request.ScenarioFilter;
-import com.flexicore.rules.request.ScenarioUpdate;
+import com.flexicore.rules.request.*;
 import com.flexicore.security.SecurityContext;
 import com.flexicore.service.FileResourceService;
 
@@ -20,7 +18,11 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
+
+import com.flexicore.service.SecurityService;
 import org.pf4j.Extension;
+import org.springframework.context.event.EventListener;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -38,6 +40,26 @@ public class ScenarioService implements ServicePlugin {
 
 	@Autowired
 	private Logger logger;
+	@Autowired
+	private SecurityService securityService;
+
+	@EventListener
+	@Async
+	public void handleTrigger(PluginsLoadedEvent pluginsLoadedEvent) {
+		SecurityContext securityContext=securityService.getAdminUserSecurityContext();
+		List<Scenario> scenarios=repository.listAllScenarios(new ScenarioFilter().setNoLogs(true),null);
+		List<Object> toMerge=new ArrayList<>();
+		for (Scenario scenario : scenarios) {
+			FileResource fileResource=createScenarioLogFileNoMerge(securityContext);
+			scenario.setLogFileResource(fileResource);
+			toMerge.add(fileResource);
+			toMerge.add(scenario);
+		}
+		repository.massMerge(toMerge);
+		if(!scenarios.isEmpty()){
+			logger.info("created logs for "+scenarios.size() +" scenarios");
+		}
+	}
 
 	public void validate(ScenarioFilter scenarioArgumentFilter,
 			SecurityContext securityContext) {
@@ -76,10 +98,7 @@ public class ScenarioService implements ServicePlugin {
 	public Scenario createScenario(ScenarioCreate creationContainer,
 			SecurityContext securityContext) {
 		List<Object> toMerge = new ArrayList<>();
-		File log = new File(FileResourceService.generateNewPathForFileResource(
-				"scenario-log-", securityContext.getUser()) + ".log");
-		FileResource fileResource = fileResourceService.createDontPersist(
-				log.getAbsolutePath(), securityContext);
+		FileResource fileResource = createScenarioLogFileNoMerge(securityContext);
 		toMerge.add(fileResource);
 		creationContainer.setLogFileResource(fileResource);
 		Scenario scenario = createScenarioNoMerge(creationContainer,
@@ -89,6 +108,14 @@ public class ScenarioService implements ServicePlugin {
 		repository.massMerge(toMerge);
 		return scenario;
 
+	}
+
+	public FileResource createScenarioLogFileNoMerge(SecurityContext securityContext) {
+		File log = new File(FileResourceService.generateNewPathForFileResource(
+				"scenario-log-", securityContext.getUser()) + ".log");
+		FileResource fileResource = fileResourceService.createDontPersist(
+				log.getAbsolutePath(), securityContext);
+		return fileResource;
 	}
 
 	public Scenario updateScenario(ScenarioUpdate creationContainer,
