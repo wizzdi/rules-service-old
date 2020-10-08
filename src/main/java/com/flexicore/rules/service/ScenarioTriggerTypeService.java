@@ -15,6 +15,7 @@ import org.pf4j.Extension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import javax.transaction.Transactional;
 import java.util.List;
 
 @PluginInfo(version = 1)
@@ -85,13 +86,24 @@ public class ScenarioTriggerTypeService implements IScenarioTriggerTypeService {
 
 	@Override
 	public PaginationResponse<ScenarioTriggerType> getAllScenarioTriggerTypes(ScenarioTriggerTypeFilter filter, SecurityContext securityContext) {
-		List<ScenarioTriggerType> list = repository.listAllScenarioTriggerTypes(filter, securityContext);
+		List<ScenarioTriggerType> list = listAllTriggerTypes(filter, securityContext);
 		long count = repository.countAllScenarioTriggerTypes(filter, securityContext);
 		return new PaginationResponse<>(list, filter, count);
+	}
+
+	public List<ScenarioTriggerType> listAllTriggerTypes(ScenarioTriggerTypeFilter filter, SecurityContext securityContext) {
+		return repository.listAllScenarioTriggerTypes(filter, securityContext);
 	}
 
 	public <T> T findByIdOrNull(Class<T> type, String id) {
 		return repository.findByIdOrNull(type, id);
 	}
 
+	public void merge(Object base) {
+		repository.merge(base);
+	}
+
+	public void massMerge(List<?> toMerge) {
+		repository.massMerge(toMerge);
+	}
 }

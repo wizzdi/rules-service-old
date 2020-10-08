@@ -15,6 +15,7 @@ public class ScenarioTriggerCreate extends BaseclassCreate {
 	private OffsetDateTime validFrom;
 	private OffsetDateTime validTill;
 	private String scenarioTriggerTypeId;
+	@JsonIgnore
 	private ScenarioTriggerType scenarioTriggerType;
 	private String evaluatingJSCodeId;
 	@JsonIgnore
