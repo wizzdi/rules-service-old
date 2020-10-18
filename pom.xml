@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.wizzdi</groupId>
     <artifactId>rules-service</artifactId>
-    <version>1.2.17</version>
+    <version>1.2.18</version>
     <distributionManagement>
         <repository>
             <id>flexicore-local</id>
