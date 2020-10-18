@@ -2,6 +2,7 @@ package com.flexicore.rules.config;
 
 import com.flexicore.annotations.plugins.PluginInfo;
 import com.flexicore.data.jsoncontainers.CrossLoaderResolver;
+import com.flexicore.events.PluginsLoadedEvent;
 import com.flexicore.interfaces.InitPlugin;
 import com.flexicore.interfaces.ServicePlugin;
 import com.flexicore.product.containers.request.EventFiltering;
@@ -27,7 +28,7 @@ public class Config implements ServicePlugin {
 
 	@Async
 	@EventListener
-	public void init() {
+	public void init(PluginsLoadedEvent pluginsLoadedEvent) {
 		if (init.compareAndSet(false, true)) {
 			IEventService.addClassForMongoCodec(ScenarioEvent.class);
 			InheritanceUtils.registerClass(ScenarioEvent.class, true);
