@@ -117,9 +117,7 @@ public class ScenarioToActionService implements ServicePlugin {
 	private ScenarioToAction createScenarioToActionNoMerge(
 			ScenarioToActionCreate creationContainer,
 			SecurityContext securityContext) {
-		ScenarioToAction scenarioToAction = ScenarioToAction.s()
-				.CreateUnchecked(creationContainer.getName(), securityContext);
-		scenarioToAction.Init();
+		ScenarioToAction scenarioToAction = new ScenarioToAction(creationContainer.getName(), securityContext);
 		updateScenarioToActionNoMerge(scenarioToAction, creationContainer);
 		return scenarioToAction;
 	}

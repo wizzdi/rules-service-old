@@ -132,9 +132,7 @@ public class ScenarioToTriggerService implements ServicePlugin {
 	private ScenarioToTrigger createScenarioToTriggerNoMerge(
 			ScenarioToTriggerCreate creationContainer,
 			SecurityContext securityContext) {
-		ScenarioToTrigger scenarioToTrigger = ScenarioToTrigger.s()
-				.CreateUnchecked(creationContainer.getName(), securityContext);
-		scenarioToTrigger.Init();
+		ScenarioToTrigger scenarioToTrigger = new ScenarioToTrigger(creationContainer.getName(), securityContext);
 		updateScenarioToTriggerNoMerge(scenarioToTrigger, creationContainer);
 		return scenarioToTrigger;
 	}

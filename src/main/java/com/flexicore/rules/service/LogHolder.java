@@ -36,6 +36,7 @@ public class LogHolder {
 				} catch (Exception e) {
 					logger.log(Level.SEVERE, "failed clearing log file", e);
 				}
+				scriptLogger.info("Log Started");
 			}
 		}
 
@@ -88,6 +89,7 @@ public class LogHolder {
 					scriptLogger.setUseParentHandlers(false);
 
 				}
+				scriptLogger.info("Log Started");
 			}
 		} catch (Exception e) {
 			logger.log(Level.SEVERE, "failed getting script logger", e);

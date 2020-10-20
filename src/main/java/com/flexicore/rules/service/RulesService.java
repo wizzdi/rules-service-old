@@ -108,9 +108,8 @@ public class RulesService implements ServicePlugin {
 
 	private FlexiCoreRule createRuleNoMerge(RuleCreate creationContainer,
 			SecurityContext securityContext) {
-		FlexiCoreRule flexiCoreRule = FlexiCoreRule.s().CreateUnchecked(
+		FlexiCoreRule flexiCoreRule = new FlexiCoreRule(
 				creationContainer.getName(), securityContext);
-		flexiCoreRule.Init();
 		updateRuleNoMerge(flexiCoreRule, creationContainer);
 		return flexiCoreRule;
 	}
@@ -267,19 +266,8 @@ public class RulesService implements ServicePlugin {
 										.isResult());
 				break;
 			case NOT :
-				res = flexiCoreRules
-						.stream()
-						.noneMatch(
-								f -> evaluateRule(
-										new EvaluateRuleRequest()
-												.setScenario(
-														evaluateRuleRequest
-																.getScenario())
-												.setScenarioTriggerEvent(
-														evaluateRuleRequest
-																.getScenarioTriggerEvent())
-												.setRule(f), securityContext)
-										.isResult());
+				res = flexiCoreRules.stream().noneMatch(f -> evaluateRule(
+						new EvaluateRuleRequest().setScenario(evaluateRuleRequest.getScenario()).setScenarioTriggerEvent(evaluateRuleRequest.getScenarioTriggerEvent()).setRule(f), securityContext).isResult());
 				break;
 
 		}
@@ -424,9 +412,8 @@ public class RulesService implements ServicePlugin {
 
 	private FlexiCoreRuleOp createRuleOpNoMerge(RuleCreateOp creationContainer,
 			SecurityContext securityContext) {
-		FlexiCoreRuleOp flexiCoreRuleOp = FlexiCoreRuleOp.s().CreateUnchecked(
+		FlexiCoreRuleOp flexiCoreRuleOp = new FlexiCoreRuleOp(
 				creationContainer.getName(), securityContext);
-		flexiCoreRuleOp.Init();
 		updateRuleOpNoMerge(flexiCoreRuleOp, creationContainer);
 		return flexiCoreRuleOp;
 	}
@@ -499,9 +486,7 @@ public class RulesService implements ServicePlugin {
 
 	private FlexiCoreRuleLink createRuleLinkNoMerge(
 			RuleLinkCreate creationContainer, SecurityContext securityContext) {
-		FlexiCoreRuleLink flexiCoreRuleLink = FlexiCoreRuleLink.s()
-				.CreateUnchecked("RuleLink", securityContext);
-		flexiCoreRuleLink.Init();
+		FlexiCoreRuleLink flexiCoreRuleLink = new FlexiCoreRuleLink("RuleLink", securityContext);
 		updateRuleLinkNoMerge(flexiCoreRuleLink, creationContainer);
 		return flexiCoreRuleLink;
 	}

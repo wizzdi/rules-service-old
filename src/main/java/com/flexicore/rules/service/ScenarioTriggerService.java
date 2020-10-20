@@ -81,9 +81,8 @@ public class ScenarioTriggerService implements IScenarioTriggerService {
 	public ScenarioTrigger createScenarioTriggerNoMerge(
 			ScenarioTriggerCreate creationContainer,
 			SecurityContext securityContext) {
-		ScenarioTrigger scenarioTrigger = ScenarioTrigger.s().CreateUnchecked(
+		ScenarioTrigger scenarioTrigger = new ScenarioTrigger(
 				creationContainer.getName(), securityContext);
-		scenarioTrigger.Init();
 		updateScenarioTriggerNoMerge(scenarioTrigger, creationContainer);
 		return scenarioTrigger;
 	}

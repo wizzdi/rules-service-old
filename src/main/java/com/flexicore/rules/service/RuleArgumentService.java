@@ -85,9 +85,7 @@ public class RuleArgumentService implements ServicePlugin {
 	private FlexiCoreRuleArgument createRuleArgumentNoMerge(
 			RuleArgumentCreate creationContainer,
 			SecurityContext securityContext) {
-		FlexiCoreRuleArgument flexiCoreRuleArgument = FlexiCoreRuleArgument.s()
-				.CreateUnchecked(creationContainer.getName(), securityContext);
-		flexiCoreRuleArgument.Init();
+		FlexiCoreRuleArgument flexiCoreRuleArgument = new FlexiCoreRuleArgument(creationContainer.getName(), securityContext);
 		updateRuleArgumentNoMerge(flexiCoreRuleArgument, creationContainer);
 		return flexiCoreRuleArgument;
 	}

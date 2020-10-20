@@ -2,7 +2,6 @@ package com.flexicore.rules.service;
 
 import com.flexicore.annotations.plugins.PluginInfo;
 import com.flexicore.events.PluginsLoadedEvent;
-import com.flexicore.interfaces.InitPlugin;
 import com.flexicore.interfaces.ServicePlugin;
 import com.flexicore.model.Baseclass;
 import com.flexicore.rules.events.GenericTriggerScenarioEvent;
@@ -16,7 +15,6 @@ import com.flexicore.security.SecurityContext;
 import com.flexicore.service.BaseclassNewService;
 import com.flexicore.service.SecurityService;
 
-import javax.enterprise.event.Event;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;

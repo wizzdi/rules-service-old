@@ -104,6 +104,7 @@ public class ScenarioService implements ServicePlugin {
 		Scenario scenario = createScenarioNoMerge(creationContainer,
 				securityContext);
 		toMerge.add(scenario);
+		Logger logger = LogHolder.getLogger(scenario);
 
 		repository.massMerge(toMerge);
 		return scenario;

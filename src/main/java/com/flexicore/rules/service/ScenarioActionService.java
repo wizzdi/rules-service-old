@@ -80,9 +80,8 @@ public class ScenarioActionService implements ServicePlugin {
 	private ScenarioAction createScenarioActionNoMerge(
 			ScenarioActionCreate creationContainer,
 			SecurityContext securityContext) {
-		ScenarioAction scenarioAction = ScenarioAction.s().CreateUnchecked(
+		ScenarioAction scenarioAction = new ScenarioAction(
 				creationContainer.getName(), securityContext);
-		scenarioAction.Init();
 		updateScenarioActionNoMerge(scenarioAction, creationContainer);
 		return scenarioAction;
 	}

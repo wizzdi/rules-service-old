@@ -107,9 +107,7 @@ public class RuleToArgumentService implements ServicePlugin {
 	private RuleToArgument createRulesToExecutionParameterNoMerge(
 			RuleToArgumentCreate creationContainer,
 			SecurityContext securityContext) {
-		RuleToArgument flexiCoreRulesToExecutionParameter = RuleToArgument.s()
-				.CreateUnchecked(creationContainer.getName(), securityContext);
-		flexiCoreRulesToExecutionParameter.Init();
+		RuleToArgument flexiCoreRulesToExecutionParameter = new RuleToArgument(creationContainer.getName(), securityContext);
 		updateRulesToExecutionParameterNoMerge(
 				flexiCoreRulesToExecutionParameter, creationContainer);
 		return flexiCoreRulesToExecutionParameter;
