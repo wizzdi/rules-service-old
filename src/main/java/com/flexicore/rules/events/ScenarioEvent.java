@@ -5,7 +5,7 @@ import com.flexicore.product.model.Event;
 
 import java.util.Set;
 
-public class ScenarioEvent extends Event {
+public class ScenarioEvent extends Event implements IScenarioEvent {
 
 	private String triggerId;
 	private Set<String> scenarioHints;
@@ -23,6 +23,7 @@ public class ScenarioEvent extends Event {
 		return executedActions;
 	}
 
+	@Override
 	public <T extends ScenarioEvent> T setExecutedActions(
 			Set<String> executedActions) {
 		this.executedActions = executedActions;
@@ -33,11 +34,13 @@ public class ScenarioEvent extends Event {
 		return triggerId;
 	}
 
+	@Override
 	public <T extends ScenarioEvent> T setTriggerId(String triggerId) {
 		this.triggerId = triggerId;
 		return (T) this;
 	}
 
+	@Override
 	public void addToHumanReadableString(String s) {
 		String existing = getHumanReadableText();
 		setHumanReadableText(existing != null ? (existing + "," + s) : s);
@@ -47,6 +50,7 @@ public class ScenarioEvent extends Event {
 		return scenarioHints;
 	}
 
+	@Override
 	public <T extends ScenarioEvent> T setScenarioHints(
 			Set<String> scenarioHints) {
 		this.scenarioHints = scenarioHints;

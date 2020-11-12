@@ -1,17 +1,17 @@
 package com.flexicore.rules.request;
 
 import com.flexicore.model.dynamic.ExecutionContext;
+import com.flexicore.product.interfaces.IEvent;
+import com.flexicore.rules.events.IScenarioEvent;
 import com.flexicore.rules.events.ScenarioEvent;
 import com.flexicore.rules.model.ScenarioTrigger;
 import com.flexicore.security.SecurityContext;
 
-public class ScenarioTriggerEvent<E extends ScenarioTrigger>
-		implements
-			ExecutionContext {
+public class ScenarioTriggerEvent<E extends ScenarioTrigger> implements ExecutionContext {
 
 	private SecurityContext securityContext;
 	private E scenarioTrigger;
-	private ScenarioEvent scenarioEvent;
+	private IEvent scenarioEvent;
 
 	public SecurityContext getSecurityContext() {
 		return securityContext;
@@ -33,12 +33,12 @@ public class ScenarioTriggerEvent<E extends ScenarioTrigger>
 		return (T) this;
 	}
 
-	public ScenarioEvent getScenarioEvent() {
+	public IEvent getScenarioEvent() {
 		return scenarioEvent;
 	}
 
 	public <T extends ScenarioTriggerEvent<E>> T setScenarioEvent(
-			ScenarioEvent scenarioEvent) {
+			IEvent scenarioEvent) {
 		this.scenarioEvent = scenarioEvent;
 		return (T) this;
 	}
