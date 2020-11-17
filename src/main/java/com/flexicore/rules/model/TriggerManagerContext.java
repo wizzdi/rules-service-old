@@ -8,7 +8,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.flexicore.rules.request.ScenarioTriggerEvent;
 import com.flexicore.security.SecurityContext;
 
-import java.util.logging.Logger;
+import org.slf4j.Logger;
 
 public class TriggerManagerContext {
 	@JsonIgnore

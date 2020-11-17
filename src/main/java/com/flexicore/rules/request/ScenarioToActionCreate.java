@@ -1,15 +1,15 @@
 package com.flexicore.rules.request;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.flexicore.request.BaseclassCreate;
 import com.flexicore.rules.model.Scenario;
 import com.flexicore.rules.model.ScenarioAction;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 @Schema(description = "Container used for the creation of ScenarioToActionCreate a ScenarioToActionCreate creates Many To Many Link between an Action and Scenario"
 		+ "This means that ScenarioAction can be reused across multiple Scenarios, A Scenario can fire multiple ScenarioActions")
-public class ScenarioToActionCreate {
-	private String name;
-	private String description;
+public class ScenarioToActionCreate extends BaseclassCreate {
+
 	private String scenarioId;
 	private String actionId;
 	@JsonIgnore
@@ -18,24 +18,6 @@ public class ScenarioToActionCreate {
 	private ScenarioAction scenarioAction;
 	private Boolean enabled;
 
-	public String getName() {
-		return name;
-	}
-	@Schema(description = "Human readable name")
-	public <T extends ScenarioToActionCreate> T setName(String name) {
-		this.name = name;
-		return (T) this;
-	}
-
-	public String getDescription() {
-		return description;
-	}
-	@Schema(description = "Human readable description")
-	public <T extends ScenarioToActionCreate> T setDescription(
-			String description) {
-		this.description = description;
-		return (T) this;
-	}
 
 	public String getScenarioId() {
 		return scenarioId;

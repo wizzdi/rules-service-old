@@ -10,7 +10,7 @@ import com.flexicore.rules.request.ScenarioTriggerEvent;
 import com.flexicore.security.SecurityContext;
 
 import java.util.Map;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
 
 public class ActionManagerContext {
 	@JsonIgnore

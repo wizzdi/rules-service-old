@@ -1,19 +1,22 @@
 package com.flexicore.rules.response;
 
+import com.flexicore.request.ExecuteInvokerRequest;
 import com.flexicore.rules.request.EvaluateScenarioRequest;
+
+import java.util.Map;
 
 public class EvaluateScenarioResponse {
 
-    private boolean result;
+    private Map<String, ExecuteInvokerRequest> actions;
     private EvaluateScenarioRequest evaluateScenarioRequest;
 
 
-    public boolean isResult() {
-        return result;
+    public Map<String, ExecuteInvokerRequest> getActions() {
+        return actions;
     }
 
-    public <T extends EvaluateScenarioResponse> T setResult(boolean result) {
-        this.result = result;
+    public <T extends EvaluateScenarioResponse> T setActions(Map<String, ExecuteInvokerRequest> actions) {
+        this.actions = actions;
         return (T) this;
     }
 

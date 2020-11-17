@@ -11,6 +11,7 @@ import com.flexicore.rules.request.DataSourceCreate;
 import com.flexicore.rules.request.DataSourceFilter;
 import com.flexicore.rules.request.DataSourceUpdate;
 import com.flexicore.security.SecurityContext;
+import com.flexicore.service.BaseclassNewService;
 import com.flexicore.service.DynamicInvokersService;
 import org.pf4j.Extension;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,7 +30,7 @@ public class DataSourceService implements ServicePlugin {
 	private DataSourceRepository repository;
 
 	@Autowired
-	private DynamicInvokersService dynamicInvokersService;
+	private BaseclassNewService baseclassNewService;
 
 	public void validate(DataSourceFilter dataSourceArgumentFilter,
 			SecurityContext securityContext) {
@@ -87,26 +88,10 @@ public class DataSourceService implements ServicePlugin {
 
 	private boolean updateDataSourceNoMerge(DataSource dataSource,
 			DataSourceCreate dataSourceCreate) {
-		boolean update = false;
-		if (dataSourceCreate.getName() != null
-				&& !dataSourceCreate.getName().equals(
-						dataSource.getName())) {
-			dataSource.setName(dataSourceCreate.getName());
-			update = true;
-		}
-		if (dataSourceCreate.getDescription() != null
-				&& !dataSourceCreate.getDescription().equals(
-						dataSource.getDescription())) {
-			dataSource
-					.setDescription(dataSourceCreate.getDescription());
-			update = true;
-		}
-		if (dataSourceCreate.getDynamicExecution() != null
-				&& (dataSource.getDynamicExecution() == null || !dataSourceCreate
-						.getDynamicExecution().getId()
-						.equals(dataSource.getDynamicExecution().getId()))) {
-			dataSource.setDynamicExecution(dataSourceCreate
-					.getDynamicExecution());
+		boolean update = baseclassNewService.updateBaseclassNoMerge(dataSourceCreate,dataSource);
+
+		if (dataSourceCreate.getDynamicExecution() != null && (dataSource.getDynamicExecution() == null || !dataSourceCreate.getDynamicExecution().getId().equals(dataSource.getDynamicExecution().getId()))) {
+			dataSource.setDynamicExecution(dataSourceCreate.getDynamicExecution());
 			update = true;
 		}
 		return update;

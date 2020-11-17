@@ -1,15 +1,18 @@
 package com.flexicore.rules.request;
 
+import com.flexicore.request.ExecuteInvokerRequest;
 import com.flexicore.rules.events.ScenarioEvent;
 import com.flexicore.rules.model.*;
 
 import java.util.List;
+import java.util.Map;
 
 public class EvaluateScenarioRequest {
     private Scenario scenario;
     private List<ScenarioTrigger> scenarioTriggers;
     private List<DataSource> dataSources;
     private ScenarioEvent scenarioEvent;
+    private Map<String, ExecuteInvokerRequest> actions;
 
     public Scenario getScenario() {
         return scenario;
@@ -45,6 +48,15 @@ public class EvaluateScenarioRequest {
 
     public <T extends EvaluateScenarioRequest> T setScenarioEvent(ScenarioEvent scenarioEvent) {
         this.scenarioEvent = scenarioEvent;
+        return (T) this;
+    }
+
+    public Map<String, ExecuteInvokerRequest> getActions() {
+        return actions;
+    }
+
+    public <T extends EvaluateScenarioRequest> T setActions(Map<String, ExecuteInvokerRequest> actions) {
+        this.actions = actions;
         return (T) this;
     }
 }

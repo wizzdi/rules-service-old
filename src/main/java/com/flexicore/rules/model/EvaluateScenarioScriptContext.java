@@ -5,7 +5,9 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.flexicore.request.ExecuteInvokerRequest;
 import com.flexicore.rules.events.ScenarioEvent;
+import com.flexicore.rules.events.ScenarioSavableEvent;
 import com.flexicore.security.SecurityContext;
 
 import java.util.List;
@@ -22,13 +24,15 @@ public class EvaluateScenarioScriptContext {
 	private List<DataSource> scenarioToDataSources;
 	private ScenarioEvent scenarioEvent;
 	private Scenario scenario;
-	private Map<String,ScenarioEvent> eventCache=new ConcurrentHashMap<>();
-	private Function<String,ScenarioEvent> fetchEvent;
+	private Map<String, ExecuteInvokerRequest> actions;
+
+	private Map<String,ScenarioSavableEvent> eventCache=new ConcurrentHashMap<>();
+	private Function<String, ScenarioSavableEvent> fetchEvent;
 	private static final ObjectMapper objectMapper = new ObjectMapper()
 			.registerModule(new JavaTimeModule()).configure(
 					DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
-	public EvaluateScenarioScriptContext(Function<String, ScenarioEvent> fetchEvent) {
+	public EvaluateScenarioScriptContext(Function<String, ScenarioSavableEvent> fetchEvent) {
 		this.fetchEvent = fetchEvent;
 	}
 
@@ -69,7 +73,7 @@ public class EvaluateScenarioScriptContext {
 		return objectMapper.writeValueAsString(o);
 	}
 
-	public ScenarioEvent getEvent(ScenarioTrigger scenarioTrigger){
+	public ScenarioSavableEvent getEvent(ScenarioTrigger scenarioTrigger){
 		return eventCache.computeIfAbsent(scenarioTrigger.getId(),f->fetchEvent.apply(scenarioTrigger.getLastEventId()));
 	}
 
@@ -97,6 +101,15 @@ public class EvaluateScenarioScriptContext {
 
 	public <T extends EvaluateScenarioScriptContext> T setScenario(Scenario scenario) {
 		this.scenario = scenario;
+		return (T) this;
+	}
+
+	public Map<String, ExecuteInvokerRequest> getActions() {
+		return actions;
+	}
+
+	public <T extends EvaluateScenarioScriptContext> T setActions(Map<String, ExecuteInvokerRequest> actions) {
+		this.actions = actions;
 		return (T) this;
 	}
 }

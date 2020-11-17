@@ -10,6 +10,7 @@ import com.flexicore.security.SecurityContext;
 
 import java.util.logging.Logger;
 
+
 public class EvaluateTriggerScriptContext {
 	@JsonIgnore
 	private Logger logger;

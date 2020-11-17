@@ -10,6 +10,7 @@ import com.flexicore.rules.request.ScenarioToActionCreate;
 import com.flexicore.rules.request.ScenarioToActionFilter;
 import com.flexicore.rules.request.ScenarioToActionUpdate;
 import com.flexicore.security.SecurityContext;
+import com.flexicore.service.BaseclassNewService;
 import com.flexicore.service.DynamicInvokersService;
 
 import javax.ws.rs.BadRequestException;
@@ -27,6 +28,9 @@ public class ScenarioToActionService implements ServicePlugin {
 	@PluginInfo(version = 1)
 	@Autowired
 	private ScenarioToActionRepository repository;
+
+	@Autowired
+	private BaseclassNewService baseclassNewService;
 
 	public <T extends Baseclass> List<T> listByIds(Class<T> c, Set<String> ids,
 			SecurityContext securityContext) {
@@ -117,51 +121,28 @@ public class ScenarioToActionService implements ServicePlugin {
 	private ScenarioToAction createScenarioToActionNoMerge(
 			ScenarioToActionCreate creationContainer,
 			SecurityContext securityContext) {
-		ScenarioToAction scenarioToAction = ScenarioToAction.s()
-				.CreateUnchecked(creationContainer.getName(), securityContext);
-		scenarioToAction.Init();
+		ScenarioToAction scenarioToAction = new ScenarioToAction(creationContainer.getName(), securityContext);
 		updateScenarioToActionNoMerge(scenarioToAction, creationContainer);
 		return scenarioToAction;
 	}
 
 	private boolean updateScenarioToActionNoMerge(
 			ScenarioToAction scenarioToAction,
-			ScenarioToActionCreate creationContainer) {
-		boolean update = false;
-		if (creationContainer.getName() != null
-				&& !creationContainer.getName().equals(
-						scenarioToAction.getName())) {
-			scenarioToAction.setName(creationContainer.getName());
+			ScenarioToActionCreate scenarioToActionCreate) {
+		boolean update = baseclassNewService.updateBaseclassNoMerge(scenarioToActionCreate,scenarioToAction);
+		if (scenarioToActionCreate.getScenario() != null && (scenarioToAction.getScenario() == null || !scenarioToActionCreate.getScenario().getId().equals(scenarioToAction.getScenario().getId()))) {
+			scenarioToAction.setScenario(scenarioToActionCreate.getScenario());
 			update = true;
 		}
 
-		if (creationContainer.getDescription() != null
-				&& !creationContainer.getDescription().equals(
-						scenarioToAction.getDescription())) {
-			scenarioToAction.setDescription(creationContainer.getDescription());
-			update = true;
-		}
-		if (creationContainer.getScenario() != null
-				&& (scenarioToAction.getScenario() == null || !creationContainer
-						.getScenario().getId()
-						.equals(scenarioToAction.getScenario().getId()))) {
-			scenarioToAction.setScenario(creationContainer.getScenario());
-			update = true;
-		}
-
-		if (creationContainer.getScenarioAction() != null
-				&& (scenarioToAction.getScenarioAction() == null || !creationContainer
-						.getScenarioAction().getId()
-						.equals(scenarioToAction.getScenarioAction().getId()))) {
-			scenarioToAction.setScenarioAction(creationContainer
+		if (scenarioToActionCreate.getScenarioAction() != null && (scenarioToAction.getScenarioAction() == null || !scenarioToActionCreate.getScenarioAction().getId().equals(scenarioToAction.getScenarioAction().getId()))) {
+			scenarioToAction.setScenarioAction(scenarioToActionCreate
 					.getScenarioAction());
 			update = true;
 		}
 
-		if (creationContainer.getEnabled() != null
-				&& creationContainer.getEnabled() != scenarioToAction
-						.isEnabled()) {
-			scenarioToAction.setEnabled(creationContainer.getEnabled());
+		if (scenarioToActionCreate.getEnabled() != null && scenarioToActionCreate.getEnabled() != scenarioToAction.isEnabled()) {
+			scenarioToAction.setEnabled(scenarioToActionCreate.getEnabled());
 			update = true;
 		}
 

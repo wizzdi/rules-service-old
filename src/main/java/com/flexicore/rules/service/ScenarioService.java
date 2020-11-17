@@ -22,7 +22,7 @@ import javax.ws.rs.BadRequestException;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
 
 @PluginInfo(version = 1)
 @Extension
@@ -38,9 +38,6 @@ public class ScenarioService implements ServicePlugin {
 
 	@Autowired
 	private BaseclassNewService baseclassNewService;
-
-	@Autowired
-	private Logger logger;
 
 	public void validate(ScenarioFilter scenarioArgumentFilter,
 			SecurityContext securityContext) {
