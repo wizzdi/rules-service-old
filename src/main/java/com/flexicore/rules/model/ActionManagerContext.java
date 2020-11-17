@@ -5,9 +5,13 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.flexicore.model.Baseclass;
+import com.flexicore.request.BaseclassCreate;
 import com.flexicore.request.ExecuteInvokerRequest;
 import com.flexicore.rules.request.ScenarioTriggerEvent;
+import com.flexicore.rules.service.RulesService;
 import com.flexicore.security.SecurityContext;
+import com.flexicore.service.BaseclassNewService;
 
 import java.util.Map;
 import java.util.logging.Logger;
@@ -22,6 +26,13 @@ public class ActionManagerContext {
 	private static final ObjectMapper objectMapper = new ObjectMapper()
 			.registerModule(new JavaTimeModule()).configure(
 					DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+	private RulesService rulesService;
+	private BaseclassNewService baseclassNewService;
+
+	public ActionManagerContext(RulesService rulesService, BaseclassNewService baseclassNewService) {
+		this.rulesService = rulesService;
+		this.baseclassNewService = baseclassNewService;
+	}
 
 	@JsonIgnore
 	public Logger getLogger() {
@@ -74,5 +85,21 @@ public class ActionManagerContext {
 
 	public String toJson(Object o) throws JsonProcessingException {
 		return objectMapper.writeValueAsString(o);
+	}
+	public void setDynamicValue(Baseclass baseclass,String key, Object value){
+		BaseclassCreateDynamic baseclassCreate=new BaseclassCreateDynamic();
+		baseclassCreate.set(key, value);
+		baseclassNewService.updateBaseclassNoMerge(baseclassCreate,baseclass);
+	}
+
+	public void merge(Object o){
+		rulesService.merge(o);
+	}
+
+	private static class BaseclassCreateDynamic extends BaseclassCreate{
+		@Override
+		public boolean supportingDynamic() {
+			return true;
+		}
 	}
 }

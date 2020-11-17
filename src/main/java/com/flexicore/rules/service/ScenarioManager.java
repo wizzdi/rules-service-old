@@ -95,7 +95,7 @@ public class ScenarioManager implements ServicePlugin {
 				for (Map.Entry<String, ExecuteInvokerRequest> executeInvokerRequestEntry : filtered.entrySet()) {
 					ExecuteInvokerRequest executeInvokerRequest = executeInvokerRequestEntry.getValue();
 					ExecuteInvokersResponse response = dynamicInvokersService.executeInvoker(executeInvokerRequest, securityContext);
-					ScenarioAction scenarioAction = actionsToExecute.get(executeInvokerRequestEntry.getKey());
+					ScenarioAction scenarioAction = actionsToExecute	.get(executeInvokerRequestEntry.getKey());
 					logger.info("invocation of scenario action " + scenarioAction.getId() + "resulted in " + response);
 					executedActions.put(scenarioAction.getId(), scenarioAction);
 					scenarioAction.getDynamicExecution().setLastExecuted(OffsetDateTime.now());
@@ -113,6 +113,8 @@ public class ScenarioManager implements ServicePlugin {
 					eventService.merge((com.flexicore.product.model.Event) scenarioEvent);
 
 				}
+			}
+			if(scenarioEvent!=null){
 				scenarioEventEvent.publishEvent(scenarioEvent);
 			}
 		} else {
