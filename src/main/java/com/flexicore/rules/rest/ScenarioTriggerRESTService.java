@@ -26,8 +26,7 @@ import javax.ws.rs.core.Context;
 @ProtectedREST
 @Path("plugins/ScenarioTrigger")
 @Tag(name = "Rules")
-@Tag(name = "Scenarios")
-@Tag(name = "Triggers")
+@Tag(name = "ScenarioTrigger")
 @Extension
 @Component
 public class ScenarioTriggerRESTService implements RestServicePlugin {

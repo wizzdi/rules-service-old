@@ -32,6 +32,9 @@ public class ScenarioTriggerTypeRepository extends AbstractRepositoryPlugin {
 	private void addScenarioTriggerTypePredicate(List<Predicate> preds,
 			Root<ScenarioTriggerType> r, CriteriaQuery<?> q, CriteriaBuilder cb,
 			ScenarioTriggerTypeFilter filter, SecurityContext securityContext) {
+		if(filter.getEventCanonicalNames()!=null&&!filter.getEventCanonicalNames().isEmpty()){
+			preds.add(r.get(ScenarioTriggerType_.eventCanonicalName).in(filter.getEventCanonicalNames()));
+		}
 
 
 	}

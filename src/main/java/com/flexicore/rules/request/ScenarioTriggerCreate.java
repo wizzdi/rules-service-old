@@ -21,6 +21,7 @@ public class ScenarioTriggerCreate extends BaseclassCreate {
 	@JsonIgnore
 	private FileResource evaluatingJSCode;
 	private Long activeMs;
+	private Long cooldownIntervalMs;
 
 	public OffsetDateTime getActiveTill() {
 		return activeTill;
@@ -92,6 +93,15 @@ public class ScenarioTriggerCreate extends BaseclassCreate {
 
 	public <T extends ScenarioTriggerCreate> T setActiveMs(Long activeMs) {
 		this.activeMs = activeMs;
+		return (T) this;
+	}
+
+	public Long getCooldownIntervalMs() {
+		return cooldownIntervalMs;
+	}
+
+	public <T extends ScenarioTriggerCreate> T setCooldownIntervalMs(Long cooldownIntervalMs) {
+		this.cooldownIntervalMs = cooldownIntervalMs;
 		return (T) this;
 	}
 }

@@ -31,8 +31,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 @ProtectedREST
 @Path("plugins/ScenarioToTrigger")
 @Tag(name = "Rules")
-@Tag(name = "Scenarios")
-@Tag(name = "Triggers")
+@Tag(name = "ScenarioToTrigger")
 @Extension
 @Component
 public class ScenarioToTriggerRESTService implements RestServicePlugin {

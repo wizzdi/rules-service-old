@@ -2,34 +2,29 @@ package com.flexicore.rules.service;
 
 import com.flexicore.annotations.plugins.PluginInfo;
 import com.flexicore.data.jsoncontainers.PaginationResponse;
+import com.flexicore.interfaces.ServicePlugin;
 import com.flexicore.model.Baseclass;
 import com.flexicore.model.FileResource;
-import com.flexicore.rules.interfaces.IScenarioTriggerService;
-import com.flexicore.rules.model.Scenario;
 import com.flexicore.rules.model.ScenarioTrigger;
 import com.flexicore.rules.repository.ScenarioTriggerRepository;
 import com.flexicore.rules.request.ScenarioTriggerCreate;
-import com.flexicore.rules.request.ScenarioTriggerEvent;
 import com.flexicore.rules.request.ScenarioTriggerFilter;
 import com.flexicore.rules.request.ScenarioTriggerUpdate;
 import com.flexicore.security.SecurityContext;
 import com.flexicore.service.BaseclassNewService;
 import org.pf4j.Extension;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 
 import javax.transaction.Transactional;
 import javax.ws.rs.BadRequestException;
-import java.sql.Date;
-import java.time.Instant;
 import java.util.List;
 import java.util.Set;
 
 @PluginInfo(version = 1)
 @Extension
 @Component
-public class ScenarioTriggerService implements IScenarioTriggerService {
+public class ScenarioTriggerService implements ServicePlugin {
 
 	@PluginInfo(version = 1)
 	@Autowired
@@ -43,7 +38,7 @@ public class ScenarioTriggerService implements IScenarioTriggerService {
 
 	}
 
-	@Override
+	
 	public void validate(ScenarioTriggerCreate creationContainer, SecurityContext securityContext) {
 		baseclassNewService.validateCreate(creationContainer,securityContext);
 		String evaluatingJSCodeId = creationContainer.getEvaluatingJSCodeId();
@@ -75,14 +70,14 @@ public class ScenarioTriggerService implements IScenarioTriggerService {
 		return scenarioTrigger;
 	}
 
-	@Override
+	
 	public ScenarioTrigger createScenarioTriggerNoMerge(ScenarioTriggerCreate creationContainer, SecurityContext securityContext) {
 		ScenarioTrigger scenarioTrigger = new ScenarioTrigger(creationContainer.getName(), securityContext);
 		updateScenarioTriggerNoMerge(scenarioTrigger, creationContainer);
 		return scenarioTrigger;
 	}
 
-	@Override
+	
 	public boolean updateScenarioTriggerNoMerge(ScenarioTrigger scenarioTrigger, ScenarioTriggerCreate creationContainer) {
 		boolean update = baseclassNewService.updateBaseclassNoMerge(creationContainer,scenarioTrigger);
 		if (creationContainer.getScenarioTriggerType() != null && (creationContainer.getScenarioTriggerType()==null||!creationContainer.getScenarioTriggerType().getId().equals(scenarioTrigger.getScenarioTriggerType().getId()))) {
@@ -104,6 +99,10 @@ public class ScenarioTriggerService implements IScenarioTriggerService {
 		}
 		if (creationContainer.getActiveMs() != null && !creationContainer.getActiveMs().equals(scenarioTrigger.getActiveMs())) {
 			scenarioTrigger.setActiveMs(creationContainer.getActiveMs());
+			update = true;
+		}
+		if (creationContainer.getCooldownIntervalMs() != null && !creationContainer.getCooldownIntervalMs().equals(scenarioTrigger.getCooldownIntervalMs())) {
+			scenarioTrigger.setCooldownIntervalMs(creationContainer.getCooldownIntervalMs());
 			update = true;
 		}
 		if (creationContainer.getEvaluatingJSCode() != null && (creationContainer.getEvaluatingJSCode()==null||!creationContainer.getEvaluatingJSCode().getId().equals(scenarioTrigger.getEvaluatingJSCode().getId()))) {
