@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.wizzdi</groupId>
     <artifactId>rules-service</artifactId>
-    <version>2.0.2</version>
+    <version>2.0.3-SNAPSHOT</version>
     <name>${project.artifactId}</name>
     <description>FlexiCore service plugin , rule engine support</description>
     <url>https://wizzdi.com</url>
@@ -66,7 +66,7 @@
         <connection>scm:git:git://wizzdi/rules-service.git</connection>
         <developerConnection>scm:git:git@github.com:wizzdi/rules-service.git</developerConnection>
         <url>https://github.com/wizzdi/rules-service</url>
-        <tag>rules-service-2.0.2</tag>
+        <tag>rules-service-{version}</tag>
     </scm>
     <dependencies>
         <dependency>
