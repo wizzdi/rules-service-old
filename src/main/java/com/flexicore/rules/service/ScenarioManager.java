@@ -90,7 +90,7 @@ public class ScenarioManager implements ServicePlugin {
 				}
 				if (filtered == null) {
 					logger.warning("Action manager failed");
-					return;
+					continue;
 				}
 				for (Map.Entry<String, ExecuteInvokerRequest> executeInvokerRequestEntry : filtered.entrySet()) {
 					ExecuteInvokerRequest executeInvokerRequest = executeInvokerRequestEntry.getValue();
