@@ -43,8 +43,8 @@ public class ScenarioTriggerService implements ServicePlugin {
 		baseclassNewService.validateCreate(creationContainer,securityContext);
 		String evaluatingJSCodeId = creationContainer.getEvaluatingJSCodeId();
 		FileResource fileResource = evaluatingJSCodeId != null ? getByIdOrNull(evaluatingJSCodeId, FileResource.class, null, securityContext) : null;
-		if (fileResource == null) {
-			throw new BadRequestException("No Scenario with id " + evaluatingJSCodeId);
+		if (fileResource == null&&evaluatingJSCodeId!=null) {
+			throw new BadRequestException("No FileResource with id " + evaluatingJSCodeId);
 		}
 		creationContainer.setEvaluatingJSCode(fileResource);
 	}

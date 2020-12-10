@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.wizzdi</groupId>
     <artifactId>rules-service</artifactId>
-    <version>2.0.3-SNAPSHOT</version>
+    <version>${project.numericVersion}-SNAPSHOT</version>
     <name>${project.artifactId}</name>
     <description>FlexiCore service plugin , rule engine support</description>
     <url>https://wizzdi.com</url>
@@ -24,6 +24,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <product-service.version>3.4.0</product-service.version>
         <pf4j-spring.version>0.6.0</pf4j-spring.version>
+        <project.numericVersion>2.0.3</project.numericVersion>
     </properties>
     <dependencyManagement>
         <dependencies>
@@ -196,7 +197,7 @@
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                                     <manifestEntries>
                                         <Plugin-Id>${artifactId}</Plugin-Id>
-                                        <Plugin-Version>${version}</Plugin-Version>
+                                        <Plugin-Version>${project.numericVersion}</Plugin-Version>
                                         <!--suppress UnresolvedMavenProperty -->
                                         <Plugin-Dependencies>product-service@&gt;=${product-service.version}
                                         </Plugin-Dependencies>
