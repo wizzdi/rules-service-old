@@ -44,7 +44,7 @@ public class JSFunctionService implements ServicePlugin {
 		String evaluatingJSCodeId = creationContainer.getEvaluatingJSCodeId();
 		FileResource fileResource = evaluatingJSCodeId != null ? getByIdOrNull(evaluatingJSCodeId, FileResource.class, null, securityContext) : null;
 		if (fileResource == null) {
-			throw new BadRequestException("No Scenario with id " + evaluatingJSCodeId);
+			throw new BadRequestException("No FileResource with id " + evaluatingJSCodeId);
 		}
 		creationContainer.setEvaluatingJSCode(fileResource);
 	}
@@ -80,7 +80,7 @@ public class JSFunctionService implements ServicePlugin {
 	
 	public boolean updateJSFunctionNoMerge(JSFunction jSFunction, JSFunctionCreate creationContainer) {
 		boolean update = baseclassNewService.updateBaseclassNoMerge(creationContainer,jSFunction);
-		if (creationContainer.getEvaluatingJSCode() != null && (creationContainer.getEvaluatingJSCode()==null||!creationContainer.getEvaluatingJSCode().getId().equals(jSFunction.getEvaluatingJSCode().getId()))) {
+		if (creationContainer.getEvaluatingJSCode() != null && (jSFunction.getEvaluatingJSCode()==null||!creationContainer.getEvaluatingJSCode().getId().equals(jSFunction.getEvaluatingJSCode().getId()))) {
 			jSFunction.setEvaluatingJSCode(creationContainer.getEvaluatingJSCode());
 			update = true;
 		}

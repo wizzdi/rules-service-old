@@ -24,7 +24,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <product-service.version>3.4.0</product-service.version>
         <pf4j-spring.version>0.6.0</pf4j-spring.version>
-        <project.numericVersion>2.0.3</project.numericVersion>
+        <project.numericVersion>2.0.4</project.numericVersion>
     </properties>
     <dependencyManagement>
         <dependencies>

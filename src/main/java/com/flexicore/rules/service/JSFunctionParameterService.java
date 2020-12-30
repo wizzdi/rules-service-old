@@ -87,7 +87,7 @@ public class JSFunctionParameterService implements ServicePlugin {
 	
 	public boolean updateJSFunctionParameterNoMerge(JSFunctionParameter jSFunctionParameter, JSFunctionParameterCreate creationContainer) {
 		boolean update = baseclassNewService.updateBaseclassNoMerge(creationContainer,jSFunctionParameter);
-		if (creationContainer.getJsFunction() != null && (creationContainer.getJsFunction()==null||!creationContainer.getJsFunction().getId().equals(jSFunctionParameter.getJsFunction().getId()))) {
+		if (creationContainer.getJsFunction() != null && (jSFunctionParameter.getJsFunction()==null||!creationContainer.getJsFunction().getId().equals(jSFunctionParameter.getJsFunction().getId()))) {
 			jSFunctionParameter.setJsFunction(creationContainer.getJsFunction());
 			update = true;
 		}
