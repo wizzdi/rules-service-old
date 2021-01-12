@@ -80,7 +80,7 @@ public class ScenarioTriggerService implements ServicePlugin {
 	
 	public boolean updateScenarioTriggerNoMerge(ScenarioTrigger scenarioTrigger, ScenarioTriggerCreate creationContainer) {
 		boolean update = baseclassNewService.updateBaseclassNoMerge(creationContainer,scenarioTrigger);
-		if (creationContainer.getScenarioTriggerType() != null && (creationContainer.getScenarioTriggerType()==null||!creationContainer.getScenarioTriggerType().getId().equals(scenarioTrigger.getScenarioTriggerType().getId()))) {
+		if (creationContainer.getScenarioTriggerType() != null && (scenarioTrigger.getScenarioTriggerType()==null||!creationContainer.getScenarioTriggerType().getId().equals(scenarioTrigger.getScenarioTriggerType().getId()))) {
 			scenarioTrigger.setScenarioTriggerType(creationContainer.getScenarioTriggerType());
 			update = true;
 		}
@@ -105,7 +105,7 @@ public class ScenarioTriggerService implements ServicePlugin {
 			scenarioTrigger.setCooldownIntervalMs(creationContainer.getCooldownIntervalMs());
 			update = true;
 		}
-		if (creationContainer.getEvaluatingJSCode() != null && (creationContainer.getEvaluatingJSCode()==null||!creationContainer.getEvaluatingJSCode().getId().equals(scenarioTrigger.getEvaluatingJSCode().getId()))) {
+		if (creationContainer.getEvaluatingJSCode() != null && (scenarioTrigger.getEvaluatingJSCode()==null||!creationContainer.getEvaluatingJSCode().getId().equals(scenarioTrigger.getEvaluatingJSCode().getId()))) {
 			scenarioTrigger.setEvaluatingJSCode(creationContainer.getEvaluatingJSCode());
 			update = true;
 		}
