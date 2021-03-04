@@ -5,17 +5,19 @@ import com.flexicore.data.jsoncontainers.PaginationResponse;
 import com.flexicore.interfaces.ServicePlugin;
 import com.flexicore.model.Baseclass;
 import com.flexicore.model.FileResource;
-import com.flexicore.request.ExecuteInvokerRequest;
-import com.flexicore.response.ExecuteInvokerResponse;
-import com.flexicore.response.ExecuteInvokersResponse;
+
 import com.flexicore.rules.model.*;
 import com.flexicore.rules.repository.RulesRepository;
 import com.flexicore.rules.request.*;
 import com.flexicore.rules.response.EvaluateRuleResponse;
 import com.flexicore.security.SecurityContext;
 import com.flexicore.service.BaseclassNewService;
-import com.flexicore.service.DynamicInvokersService;
 import com.flexicore.service.FileResourceService;
+import com.wizzdi.flexicore.boot.dynamic.invokers.request.ExecuteInvokerRequest;
+import com.wizzdi.flexicore.boot.dynamic.invokers.request.ExecuteInvokerResponse;
+import com.wizzdi.flexicore.boot.dynamic.invokers.request.ExecuteInvokersResponse;
+import com.wizzdi.flexicore.boot.dynamic.invokers.service.DynamicExecutionService;
+import com.wizzdi.flexicore.boot.dynamic.invokers.service.DynamicInvokerService;
 import jdk.nashorn.api.scripting.ScriptObjectMirror;
 import org.apache.commons.io.FileUtils;
 import org.pf4j.Extension;
@@ -49,7 +51,10 @@ public class RulesService implements ServicePlugin {
     private RulesRepository repository;
 
     @Autowired
-    private DynamicInvokersService dynamicInvokersService;
+    private DynamicInvokerService dynamicInvokersService;
+
+    @Autowired
+    private DynamicExecutionService dynamicExecutionService;
 
     @PluginInfo(version = 1)
     @Autowired
@@ -314,7 +319,7 @@ public class RulesService implements ServicePlugin {
                     .map(f -> f.getFlexiCoreRuleArgument())
                     .map(f -> f.getDynamicExecution() != null
                             ? dynamicInvokersService.executeInvoker(
-                            dynamicInvokersService
+                            dynamicExecutionService
                                     .getExecuteInvokerRequest(
                                             f.getDynamicExecution(),
                                             scenarioTriggerEvent,

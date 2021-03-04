@@ -10,7 +10,6 @@ import com.flexicore.rules.request.ScenarioToTriggerCreate;
 import com.flexicore.rules.request.ScenarioToTriggerFilter;
 import com.flexicore.rules.request.ScenarioToTriggerUpdate;
 import com.flexicore.security.SecurityContext;
-import com.flexicore.service.DynamicInvokersService;
 
 import javax.ws.rs.BadRequestException;
 import java.util.*;
@@ -27,9 +26,6 @@ public class ScenarioToTriggerService implements ServicePlugin {
 	@PluginInfo(version = 1)
 	@Autowired
 	private ScenarioToTriggerRepository repository;
-
-	@Autowired
-	private DynamicInvokersService dynamicInvokersService;
 
 	public <T extends Baseclass> List<T> listByIds(Class<T> c, Set<String> ids,
 			SecurityContext securityContext) {

@@ -10,7 +10,6 @@ import com.flexicore.rules.request.ScenarioToActionCreate;
 import com.flexicore.rules.request.ScenarioToActionFilter;
 import com.flexicore.rules.request.ScenarioToActionUpdate;
 import com.flexicore.security.SecurityContext;
-import com.flexicore.service.DynamicInvokersService;
 
 import javax.ws.rs.BadRequestException;
 import java.util.*;

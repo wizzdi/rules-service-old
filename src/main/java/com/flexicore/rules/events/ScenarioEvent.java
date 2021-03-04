@@ -24,7 +24,7 @@ public class ScenarioEvent extends Event implements IScenarioEvent {
 	}
 
 	@Override
-	public <T extends ScenarioEvent> T setExecutedActions(
+	public <T extends IScenarioEvent> T setExecutedActions(
 			Set<String> executedActions) {
 		this.executedActions = executedActions;
 		return (T) this;
@@ -35,7 +35,7 @@ public class ScenarioEvent extends Event implements IScenarioEvent {
 	}
 
 	@Override
-	public <T extends ScenarioEvent> T setTriggerId(String triggerId) {
+	public <T extends IScenarioEvent> T setTriggerId(String triggerId) {
 		this.triggerId = triggerId;
 		return (T) this;
 	}
@@ -51,7 +51,7 @@ public class ScenarioEvent extends Event implements IScenarioEvent {
 	}
 
 	@Override
-	public <T extends ScenarioEvent> T setScenarioHints(
+	public <T extends IScenarioEvent> T setScenarioHints(
 			Set<String> scenarioHints) {
 		this.scenarioHints = scenarioHints;
 		return (T) this;

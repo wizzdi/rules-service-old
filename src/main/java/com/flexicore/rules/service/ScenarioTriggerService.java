@@ -155,12 +155,13 @@ public class ScenarioTriggerService implements IScenarioTriggerService {
 
 	private ManualFireEvent getManualFireEvent(ScenarioTrigger scenarioTrigger,
 			SecurityContext securityContext) {
-		return new ManualFireEvent()
+		ManualFireEvent manualFireEvent = new ManualFireEvent()
 				.setFiringUserId(securityContext.getUser().getId())
-				.setTriggerId(scenarioTrigger.getId())
 				.setEventDate(Date.from(Instant.now()))
-				.setHumanReadableText(
-						"Manual Firing of trigger " + scenarioTrigger.getName()
-								+ "(" + scenarioTrigger.getId() + ")");
+				.setHumanReadableText("Manual Firing of trigger " + scenarioTrigger.getName() + "(" + scenarioTrigger.getId() + ")");
+		manualFireEvent.setTriggerId(scenarioTrigger.getId());
+
+		return manualFireEvent;
+
 	}
 }

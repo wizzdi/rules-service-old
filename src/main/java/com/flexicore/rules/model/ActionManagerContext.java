@@ -7,11 +7,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.flexicore.model.Baseclass;
 import com.flexicore.request.BaseclassCreate;
-import com.flexicore.request.ExecuteInvokerRequest;
 import com.flexicore.rules.request.ScenarioTriggerEvent;
 import com.flexicore.rules.service.RulesService;
 import com.flexicore.security.SecurityContext;
 import com.flexicore.service.BaseclassNewService;
+import com.wizzdi.flexicore.boot.dynamic.invokers.request.ExecuteInvokerRequest;
 
 import java.util.Map;
 import java.util.logging.Logger;

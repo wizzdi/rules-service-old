@@ -4,17 +4,19 @@ import com.flexicore.annotations.plugins.PluginInfo;
 import com.flexicore.data.jsoncontainers.PaginationResponse;
 import com.flexicore.interfaces.ServicePlugin;
 import com.flexicore.model.Baseclass;
-import com.flexicore.model.dynamic.DynamicExecution;
 import com.flexicore.rules.model.ScenarioAction;
 import com.flexicore.rules.repository.ScenarioActionRepository;
 import com.flexicore.rules.request.ScenarioActionCreate;
 import com.flexicore.rules.request.ScenarioActionFilter;
 import com.flexicore.rules.request.ScenarioActionUpdate;
 import com.flexicore.security.SecurityContext;
-import com.flexicore.service.DynamicInvokersService;
 
 import javax.ws.rs.BadRequestException;
 import java.util.List;
+
+import com.flexicore.service.impl.DynamicInvokersService;
+import com.wizzdi.flexicore.boot.dynamic.invokers.model.DynamicExecution;
+import com.wizzdi.flexicore.boot.dynamic.invokers.service.DynamicExecutionService;
 import org.pf4j.Extension;
 import org.springframework.stereotype.Component;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +32,8 @@ public class ScenarioActionService implements ServicePlugin {
 
 	@Autowired
 	private DynamicInvokersService dynamicInvokersService;
+	@Autowired
+	private DynamicExecutionService dynamicExecutionService;
 
 	public void validate(ScenarioActionFilter scenarioActionArgumentFilter,
 			SecurityContext securityContext) {
@@ -40,8 +44,7 @@ public class ScenarioActionService implements ServicePlugin {
 			SecurityContext securityContext) {
 		String dynamicExecutionId = creationContainer.getDynamicExecutionId();
 		DynamicExecution dynamicExecution = dynamicExecutionId != null
-				? getByIdOrNull(dynamicExecutionId, DynamicExecution.class,
-						null, securityContext) : null;
+				? dynamicExecutionService.getByIdOrNull(dynamicExecutionId, DynamicExecution.class, securityContext) : null;
 		if (dynamicExecution == null && dynamicExecutionId != null) {
 			throw new BadRequestException("No Dynamic Execution With id "
 					+ dynamicExecutionId);

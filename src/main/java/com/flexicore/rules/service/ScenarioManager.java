@@ -5,8 +5,6 @@ import com.flexicore.interfaces.ServicePlugin;
 import com.flexicore.model.Baseclass;
 import com.flexicore.product.interfaces.IEvent;
 import com.flexicore.product.interfaces.IEventService;
-import com.flexicore.request.ExecuteInvokerRequest;
-import com.flexicore.response.ExecuteInvokersResponse;
 import com.flexicore.rules.events.IScenarioEvent;
 import com.flexicore.rules.model.*;
 import com.flexicore.rules.request.EvaluateRuleRequest;
@@ -14,10 +12,8 @@ import com.flexicore.rules.request.ScenarioToActionFilter;
 import com.flexicore.rules.request.ScenarioToTriggerFilter;
 import com.flexicore.rules.request.ScenarioTriggerEvent;
 import com.flexicore.security.SecurityContext;
-import com.flexicore.service.DynamicInvokersService;
 
 import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.event.Event;
 import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -25,6 +21,12 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+
+import com.flexicore.service.impl.DynamicInvokersService;
+import com.wizzdi.flexicore.boot.dynamic.invokers.request.ExecuteInvokerRequest;
+import com.wizzdi.flexicore.boot.dynamic.invokers.request.ExecuteInvokersResponse;
+import com.wizzdi.flexicore.boot.dynamic.invokers.service.DynamicExecutionService;
+import com.wizzdi.flexicore.boot.dynamic.invokers.service.DynamicInvokerService;
 import org.pf4j.Extension;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
@@ -55,8 +57,9 @@ public class ScenarioManager implements ServicePlugin {
 	private RulesService rulesService;
 
 	@Autowired
-	private DynamicInvokersService dynamicInvokersService;
-
+	private DynamicInvokerService dynamicInvokerService;
+	@Autowired
+	private DynamicExecutionService dynamicExecutionService;
 	@Autowired
 	private Logger logger;
 
@@ -81,7 +84,7 @@ public class ScenarioManager implements ServicePlugin {
 			for (Map.Entry<String, List<ScenarioAction>> entry : scenarioActions
 					.entrySet()) {
 				Map<String, ScenarioAction> actionsToExecute = entry.getValue().parallelStream().collect(Collectors.toMap(f -> f.getId(), f -> f, (a, b) -> a));
-				Map<String, ExecuteInvokerRequest> executeInvokerRequests = actionsToExecute.values().parallelStream().collect(Collectors.toMap(f -> f.getId(), f -> dynamicInvokersService.getExecuteInvokerRequest(f.getDynamicExecution(), scenarioTriggerEvent, securityContext)));
+				Map<String, ExecuteInvokerRequest> executeInvokerRequests = actionsToExecute.values().parallelStream().collect(Collectors.toMap(f -> f.getId(), f -> dynamicExecutionService.getExecuteInvokerRequest(f.getDynamicExecution(), scenarioTriggerEvent, securityContext)));
 				Scenario scenario = activeScenarios.get(entry.getKey());
 				Map<String, ExecuteInvokerRequest> filtered = executeInvokerRequests;
 				if (scenario.getActionManagerScript() != null) {
@@ -94,12 +97,12 @@ public class ScenarioManager implements ServicePlugin {
 				}
 				for (Map.Entry<String, ExecuteInvokerRequest> executeInvokerRequestEntry : filtered.entrySet()) {
 					ExecuteInvokerRequest executeInvokerRequest = executeInvokerRequestEntry.getValue();
-					ExecuteInvokersResponse response = dynamicInvokersService.executeInvoker(executeInvokerRequest, securityContext);
+					ExecuteInvokersResponse response = dynamicInvokerService.executeInvoker(executeInvokerRequest, securityContext);
 					ScenarioAction scenarioAction = actionsToExecute	.get(executeInvokerRequestEntry.getKey());
 					logger.info("invocation of scenario action " + scenarioAction.getId() + "resulted in " + response);
 					executedActions.put(scenarioAction.getId(), scenarioAction);
 					scenarioAction.getDynamicExecution().setLastExecuted(OffsetDateTime.now());
-					dynamicInvokersService.massMerge(Collections.singletonList(scenarioAction.getDynamicExecution()));
+					dynamicExecutionService.massMerge(Collections.singletonList(scenarioAction.getDynamicExecution()));
 				}
 			}
 			IEvent scenarioEvent = scenarioTriggerEvent.getScenarioEvent();
