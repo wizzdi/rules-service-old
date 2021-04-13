@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.wizzdi</groupId>
     <artifactId>rules-service</artifactId>
-    <version>1.4.0</version>
+    <version>1.5.0</version>
     <distributionManagement>
         <repository>
             <id>flexicore-local</id>
@@ -31,6 +31,13 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
+            <dependency>
+                <groupId>com.wizzdi</groupId>
+                <artifactId>flexicore-boot-dependencies</artifactId>
+                <version>1.0.3</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
         </dependencies>
     </dependencyManagement>
     <dependencies>
@@ -42,13 +49,13 @@
         <dependency>
             <groupId>com.wizzdi</groupId>
             <artifactId>flexicore-boot-dynamic-invokers-model</artifactId>
-            <version>1.0.1-SNAPSHOT</version>
+            <version>1.0.2-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>com.wizzdi</groupId>
             <artifactId>flexicore-boot-dynamic-invokers-service</artifactId>
-            <version>1.0.2-SNAPSHOT</version>
+            <version>1.0.3-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -90,7 +97,7 @@
         <dependency>
             <groupId>com.wizzdi</groupId>
             <artifactId>rules-model</artifactId>
-            <version>1.2.0</version>
+            <version>1.2.1</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -124,20 +131,32 @@
         </dependency>
         <dependency>
             <groupId>com.wizzdi</groupId>
+            <artifactId>flexicore-security-model</artifactId>
+            <version>1.0.6-SNAPSHOT</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.wizzdi</groupId>
+            <artifactId>flexicore-security-service</artifactId>
+            <version>1.0.6-SNAPSHOT</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.wizzdi</groupId>
             <artifactId>flexicore-base-model</artifactId>
-            <version>1.0.2-SNAPSHOT</version>
+            <version>1.0.5.1-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>com.wizzdi</groupId>
             <artifactId>flexicore-boot-vintage</artifactId>
-            <version>1.0.1-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>com.wizzdi</groupId>
             <artifactId>flexicore-base-service</artifactId>
-            <version>1.0.1-SNAPSHOT</version>
+            <version>1.0.5.1-SNAPSHOT</version>
+
             <scope>provided</scope>
         </dependency>
     </dependencies>

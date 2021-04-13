@@ -4,6 +4,7 @@ import com.flexicore.annotations.plugins.PluginInfo;
 import com.flexicore.data.jsoncontainers.PaginationResponse;
 import com.flexicore.interfaces.ServicePlugin;
 import com.flexicore.model.Baseclass;
+import com.flexicore.model.SecuredBasic_;
 import com.flexicore.rules.model.ScenarioAction;
 import com.flexicore.rules.repository.ScenarioActionRepository;
 import com.flexicore.rules.request.ScenarioActionCreate;
@@ -44,7 +45,7 @@ public class ScenarioActionService implements ServicePlugin {
 			SecurityContext securityContext) {
 		String dynamicExecutionId = creationContainer.getDynamicExecutionId();
 		DynamicExecution dynamicExecution = dynamicExecutionId != null
-				? dynamicExecutionService.getByIdOrNull(dynamicExecutionId, DynamicExecution.class, securityContext) : null;
+				? dynamicExecutionService.getByIdOrNull(dynamicExecutionId, DynamicExecution.class, SecuredBasic_.security, securityContext) : null;
 		if (dynamicExecution == null && dynamicExecutionId != null) {
 			throw new BadRequestException("No Dynamic Execution With id "
 					+ dynamicExecutionId);
